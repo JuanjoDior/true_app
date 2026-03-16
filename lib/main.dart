@@ -47,7 +47,7 @@ class TrueAppHomePage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    'Base lista para empezar.',
+                    'Bienvenido hijo de puta de caviar',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleMedium,
                   ),

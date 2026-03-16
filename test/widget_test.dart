@@ -7,6 +7,6 @@ void main() {
     await tester.pumpWidget(const TrueApp());
 
     expect(find.text('true_app'), findsOneWidget);
-    expect(find.text('Base lista para empezar.'), findsOneWidget);
+    expect(find.text('Bienvenido hijo de puta de caviar'), findsOneWidget);
   });
 }
