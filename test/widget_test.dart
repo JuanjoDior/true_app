@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:true_app/main.dart';
@@ -8,5 +9,6 @@ void main() {
 
     expect(find.text('true_app'), findsOneWidget);
     expect(find.text('Bienvenido hijo de puta de caviar'), findsOneWidget);
+    expect(find.byIcon(Icons.spa_rounded), findsNWidgets(2));
   });
 }
