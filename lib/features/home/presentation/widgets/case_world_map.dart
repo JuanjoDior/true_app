@@ -3,7 +3,9 @@ import 'package:flutter_map/flutter_map.dart';
 
 import '../../../../core/config/map_config.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../cases/domain/case_category.dart';
 import '../../../cases/domain/true_crime_case.dart';
+import '../../../cases/presentation/case_category_presentation.dart';
 
 class CaseWorldMap extends StatelessWidget {
   const CaseWorldMap({
@@ -101,11 +103,15 @@ class CaseWorldMap extends StatelessWidget {
                 border: Border.all(color: AppColors.border),
               ),
               child: Text(
-                '${cases.length} puntos curados',
+                cases.isEmpty
+                    ? 'Sin marcadores publicados'
+                    : '${cases.length} marcadores visibles',
                 style: Theme.of(context).textTheme.labelLarge,
               ),
             ),
           ),
+          const Positioned(left: 18, bottom: 54, child: _MapLegend()),
+          if (cases.isEmpty) const Positioned.fill(child: _MapEmptyState()),
           Positioned(
             bottom: 16,
             right: 16,
@@ -130,6 +136,106 @@ class CaseWorldMap extends StatelessWidget {
   }
 }
 
+class _MapEmptyState extends StatelessWidget {
+  const _MapEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return IgnorePointer(
+      child: Center(
+        child: Container(
+          key: const Key('case-world-map-empty-state'),
+          constraints: const BoxConstraints(maxWidth: 420),
+          margin: const EdgeInsets.symmetric(horizontal: 24),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: const Color(0xE612151B),
+            borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: AppColors.border),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.3),
+                blurRadius: 28,
+                offset: const Offset(0, 20),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Aún no hay casos publicados en el mapa.',
+                style: theme.textTheme.headlineMedium,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'La estructura ya está lista para cargar expedientes por tipo y visualizarlos por ubicación.',
+                style: theme.textTheme.bodyLarge,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _MapLegend extends StatelessWidget {
+  const _MapLegend();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: const Color(0xCC111317),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Tipos de caso',
+            style: Theme.of(
+              context,
+            ).textTheme.labelLarge?.copyWith(color: AppColors.gold),
+          ),
+          const SizedBox(height: 10),
+          ...CaseCategory.values.map((category) {
+            final presentation = category.presentation;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 10,
+                    height: 10,
+                    decoration: BoxDecoration(
+                      color: presentation.color,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    presentation.shortLabel,
+                    style: Theme.of(context).textTheme.labelMedium,
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+}
+
 class _MapMarker extends StatelessWidget {
   const _MapMarker({
     super.key,
@@ -148,6 +254,7 @@ class _MapMarker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = crimeCase.category.presentation.color;
     final scale = isSelected
         ? 1.14
         : isHovered
@@ -155,7 +262,7 @@ class _MapMarker extends StatelessWidget {
         : 1.0;
 
     return Tooltip(
-      message: crimeCase.title,
+      message: '${crimeCase.title} · ${crimeCase.category.presentation.label}',
       child: MouseRegion(
         onEnter: (_) => onHoverChanged(crimeCase.id),
         onExit: (_) => onHoverChanged(null),
@@ -171,7 +278,7 @@ class _MapMarker extends StatelessWidget {
                   width: 28,
                   height: 28,
                   decoration: BoxDecoration(
-                    color: AppColors.accent.withValues(alpha: 0.18),
+                    color: color.withValues(alpha: 0.18),
                     shape: BoxShape.circle,
                   ),
                 ),
@@ -181,10 +288,10 @@ class _MapMarker extends StatelessWidget {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.gold : AppColors.accent,
+                      color: isSelected ? AppColors.gold : color,
                       shape: BoxShape.circle,
                       border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.7),
+                        color: Colors.white.withValues(alpha: 0.72),
                         width: 1.4,
                       ),
                     ),
@@ -195,7 +302,7 @@ class _MapMarker extends StatelessWidget {
                   child: Icon(
                     Icons.location_on_rounded,
                     size: 32,
-                    color: isSelected ? AppColors.gold : AppColors.accent,
+                    color: isSelected ? AppColors.gold : color,
                   ),
                 ),
               ],

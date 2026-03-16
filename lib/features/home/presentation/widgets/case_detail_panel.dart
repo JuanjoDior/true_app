@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../cases/domain/case_source.dart';
 import '../../../cases/domain/true_crime_case.dart';
+import '../../../cases/presentation/case_category_presentation.dart';
 
 class CaseDetailPanel extends StatelessWidget {
   const CaseDetailPanel({
@@ -47,6 +48,8 @@ class CaseDetailPanel extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      _CategoryBadge(crimeCase: crimeCase),
+                      const SizedBox(height: 12),
                       Text(
                         crimeCase.title,
                         style: theme.textTheme.headlineMedium?.copyWith(
@@ -110,6 +113,33 @@ class CaseDetailPanel extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _CategoryBadge extends StatelessWidget {
+  const _CategoryBadge({required this.crimeCase});
+
+  final TrueCrimeCase crimeCase;
+
+  @override
+  Widget build(BuildContext context) {
+    final presentation = crimeCase.category.presentation;
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: presentation.color.withValues(alpha: 0.18),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: presentation.color.withValues(alpha: 0.42)),
+      ),
+      child: Text(
+        presentation.label,
+        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

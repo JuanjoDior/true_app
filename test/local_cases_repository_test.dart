@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/data/local_cases_repository.dart';
 
 class _FakeAssetBundle extends CachingAssetBundle {
@@ -20,13 +21,14 @@ class _FakeAssetBundle extends CachingAssetBundle {
 }
 
 void main() {
-  test('parses cases from bundled json', () async {
+  test('parses cases from bundled json with category', () async {
     const payload = '''
     [
       {
         "id": "sample",
         "slug": "sample",
         "title": "Sample Case",
+        "category": "unsolved",
         "country": "Spain",
         "countryCode": "ES",
         "regionOrCity": "Madrid",
@@ -54,6 +56,14 @@ void main() {
 
     expect(cases, hasLength(1));
     expect(cases.first.title, 'Sample Case');
+    expect(cases.first.category, CaseCategory.unsolved);
     expect(cases.first.investigationSources, hasLength(1));
+  });
+
+  test('parses an empty catalog payload', () async {
+    final repository = LocalCasesRepository(bundle: _FakeAssetBundle('[]'));
+    final cases = await repository.getCases();
+
+    expect(cases, isEmpty);
   });
 }

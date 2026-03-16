@@ -9,12 +9,14 @@ class HomeHeader extends ConsumerStatefulWidget {
   const HomeHeader({
     super.key,
     required this.suggestions,
-    required this.onCarteleraTap,
+    required this.catalogIsEmpty,
+    required this.onMapTap,
     required this.onCaseSelected,
   });
 
   final List<TrueCrimeCase> suggestions;
-  final VoidCallback onCarteleraTap;
+  final bool catalogIsEmpty;
+  final VoidCallback onMapTap;
   final ValueChanged<TrueCrimeCase> onCaseSelected;
 
   @override
@@ -114,6 +116,7 @@ class _HomeHeaderState extends ConsumerState<HomeHeader> {
                                 controller: _controller,
                                 focusNode: _focusNode,
                                 query: query,
+                                catalogIsEmpty: widget.catalogIsEmpty,
                                 showSuggestions: showSuggestions,
                                 suggestions: widget.suggestions,
                                 onChanged: _handleQueryChanged,
@@ -124,9 +127,9 @@ class _HomeHeaderState extends ConsumerState<HomeHeader> {
                               Align(
                                 alignment: Alignment.centerLeft,
                                 child: FilledButton.tonalIcon(
-                                  onPressed: widget.onCarteleraTap,
-                                  icon: const Icon(Icons.view_carousel_rounded),
-                                  label: const Text('Cartelera'),
+                                  onPressed: widget.onMapTap,
+                                  icon: const Icon(Icons.public_rounded),
+                                  label: const Text('Mapa'),
                                 ),
                               ),
                             ],
@@ -145,6 +148,7 @@ class _HomeHeaderState extends ConsumerState<HomeHeader> {
                                   controller: _controller,
                                   focusNode: _focusNode,
                                   query: query,
+                                  catalogIsEmpty: widget.catalogIsEmpty,
                                   showSuggestions: showSuggestions,
                                   suggestions: widget.suggestions,
                                   onChanged: _handleQueryChanged,
@@ -154,9 +158,9 @@ class _HomeHeaderState extends ConsumerState<HomeHeader> {
                               ),
                               const SizedBox(width: 24),
                               FilledButton.tonalIcon(
-                                onPressed: widget.onCarteleraTap,
-                                icon: const Icon(Icons.view_carousel_rounded),
-                                label: const Text('Cartelera'),
+                                onPressed: widget.onMapTap,
+                                icon: const Icon(Icons.public_rounded),
+                                label: const Text('Mapa'),
                               ),
                             ],
                           ),
@@ -208,6 +212,7 @@ class _SearchBlock extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.query,
+    required this.catalogIsEmpty,
     required this.showSuggestions,
     required this.suggestions,
     required this.onChanged,
@@ -218,6 +223,7 @@ class _SearchBlock extends StatelessWidget {
   final TextEditingController controller;
   final FocusNode focusNode;
   final String query;
+  final bool catalogIsEmpty;
   final bool showSuggestions;
   final List<TrueCrimeCase> suggestions;
   final ValueChanged<String> onChanged;
@@ -235,7 +241,7 @@ class _SearchBlock extends StatelessWidget {
           onChanged: onChanged,
           decoration: InputDecoration(
             prefixIcon: const Icon(Icons.search_rounded),
-            hintText: 'Busca casos, países o tags',
+            hintText: 'Busca casos, países, ciudades o tipos',
             suffixIcon: query.isNotEmpty
                 ? IconButton(
                     onPressed: onClear,
@@ -244,6 +250,18 @@ class _SearchBlock extends StatelessWidget {
                 : null,
           ),
         ),
+        if (catalogIsEmpty)
+          Padding(
+            padding: const EdgeInsets.only(top: 12),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'El catálogo aún no está cargado. Estamos preparando la primera selección de casos.',
+                key: const Key('catalog-empty-message'),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+            ),
+          ),
         if (showSuggestions)
           Container(
             margin: const EdgeInsets.only(top: 12),

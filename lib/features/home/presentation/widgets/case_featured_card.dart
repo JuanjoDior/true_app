@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/theme/app_theme.dart';
 import '../../../cases/domain/true_crime_case.dart';
+import '../../../cases/presentation/case_category_presentation.dart';
 
 class CaseFeaturedCard extends StatelessWidget {
   const CaseFeaturedCard({
@@ -55,24 +56,51 @@ class CaseFeaturedCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: AppColors.accent.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      '#${crimeCase.featuredRank}',
-                      style: theme.textTheme.labelMedium?.copyWith(
-                        color: AppColors.gold,
-                        fontWeight: FontWeight.w600,
+                  Expanded(
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: crimeCase.category.presentation.color
+                              .withValues(alpha: 0.18),
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Text(
+                          crimeCase.category.presentation.shortLabel,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.labelMedium?.copyWith(
+                            color: AppColors.textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  const Spacer(),
+                  const SizedBox(width: 10),
+                  if (crimeCase.featuredRank != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.14),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Text(
+                        '#${crimeCase.featuredRank}',
+                        style: theme.textTheme.labelMedium?.copyWith(
+                          color: AppColors.gold,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  if (crimeCase.featuredRank != null) const SizedBox(width: 10),
                   Icon(
                     Icons.arrow_outward_rounded,
                     color: isSelected ? AppColors.gold : AppColors.textMuted,

@@ -1,18 +1,28 @@
+import '../domain/case_category.dart';
 import '../domain/true_crime_case.dart';
 
 class CaseSearchService {
   const CaseSearchService();
 
   List<TrueCrimeCase> topFeatured(List<TrueCrimeCase> cases, {int limit = 8}) {
-    final sorted = [...cases]
-      ..sort((left, right) => left.featuredRank.compareTo(right.featuredRank));
+    final sorted =
+        cases
+            .where((crimeCase) => crimeCase.featuredRank != null)
+            .toList(growable: false)
+          ..sort((left, right) {
+            final rankComparison = left.featuredRank!.compareTo(
+              right.featuredRank!,
+            );
+            if (rankComparison != 0) {
+              return rankComparison;
+            }
+            return left.title.compareTo(right.title);
+          });
     return sorted.take(limit).toList(growable: false);
   }
 
   List<TrueCrimeCase> topRelevant(List<TrueCrimeCase> cases, {int limit = 6}) {
-    final sorted = [
-      ...cases,
-    ]..sort((left, right) => left.relevanceRank.compareTo(right.relevanceRank));
+    final sorted = [...cases]..sort(_compareByRelevance);
     return sorted.take(limit).toList(growable: false);
   }
 
@@ -20,10 +30,7 @@ class CaseSearchService {
     final normalizedQuery = _normalize(query);
 
     if (normalizedQuery.isEmpty) {
-      final sorted = [...cases]
-        ..sort(
-          (left, right) => left.relevanceRank.compareTo(right.relevanceRank),
-        );
+      final sorted = [...cases]..sort(_compareByRelevance);
       return sorted;
     }
 
@@ -33,6 +40,9 @@ class CaseSearchService {
             crimeCase.title,
             crimeCase.country,
             crimeCase.regionOrCity,
+            crimeCase.category.label,
+            crimeCase.category.shortLabel,
+            ...crimeCase.category.searchTerms,
             ...crimeCase.tags,
           ].map(_normalize).join(' ');
 
@@ -46,7 +56,7 @@ class CaseSearchService {
       if (leftScore != rightScore) {
         return rightScore.compareTo(leftScore);
       }
-      return left.relevanceRank.compareTo(right.relevanceRank);
+      return _compareByRelevance(left, right);
     });
 
     return matches;
@@ -56,21 +66,51 @@ class CaseSearchService {
     final normalizedTitle = _normalize(crimeCase.title);
     final normalizedCountry = _normalize(crimeCase.country);
     final normalizedRegion = _normalize(crimeCase.regionOrCity);
+    final normalizedCategory = _normalize(crimeCase.category.label);
+    final normalizedShortCategory = _normalize(crimeCase.category.shortLabel);
     final normalizedTags = crimeCase.tags.map(_normalize);
+    final normalizedCategoryTerms = crimeCase.category.searchTerms.map(
+      _normalize,
+    );
 
     if (normalizedTitle == query) {
-      return 4;
+      return 5;
     }
     if (normalizedTitle.startsWith(query)) {
+      return 4;
+    }
+    if (normalizedCategory == query || normalizedShortCategory == query) {
       return 3;
     }
     if (normalizedRegion.contains(query) || normalizedCountry.contains(query)) {
       return 2;
     }
-    if (normalizedTags.any((tag) => tag.contains(query))) {
+    if (normalizedTags.any((tag) => tag.contains(query)) ||
+        normalizedCategoryTerms.any((term) => term.contains(query))) {
       return 1;
     }
     return 0;
+  }
+
+  Map<CaseCategory, int> countByCategory(List<TrueCrimeCase> cases) {
+    final counts = {for (final category in CaseCategory.values) category: 0};
+
+    for (final crimeCase in cases) {
+      counts.update(crimeCase.category, (value) => value + 1);
+    }
+
+    return counts;
+  }
+
+  int _compareByRelevance(TrueCrimeCase left, TrueCrimeCase right) {
+    final leftRank = left.relevanceRank ?? 1 << 20;
+    final rightRank = right.relevanceRank ?? 1 << 20;
+
+    if (leftRank != rightRank) {
+      return leftRank.compareTo(rightRank);
+    }
+
+    return left.title.compareTo(right.title);
   }
 
   String _normalize(String value) {

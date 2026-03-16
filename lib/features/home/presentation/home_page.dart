@@ -6,8 +6,11 @@ import '../../../core/config/map_config.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/section_heading.dart';
 import '../../cases/application/cases_providers.dart';
+import '../../cases/domain/case_category.dart';
 import '../../cases/domain/true_crime_case.dart';
+import '../../cases/presentation/case_category_presentation.dart';
 import 'widgets/case_detail_panel.dart';
+import 'widgets/case_type_filter_bar.dart';
 import 'widgets/case_world_map.dart';
 import 'widgets/featured_case_rail.dart';
 import 'widgets/home_header.dart';
@@ -22,7 +25,6 @@ class TrueCrimeHomePage extends ConsumerStatefulWidget {
 class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
   final ScrollController _scrollController = ScrollController();
   final MapController _mapController = MapController();
-  final GlobalKey _featuredSectionKey = GlobalKey();
   final GlobalKey _mapSectionKey = GlobalKey();
 
   String? _hoveredCaseId;
@@ -58,6 +60,14 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
     }
   }
 
+  void _handleCategorySelected(CaseCategory? category) {
+    ref.read(activeCategoryProvider.notifier).state = category;
+    ref.read(selectedCaseIdProvider.notifier).state = null;
+
+    final config = ref.read(mapConfigProvider);
+    _mapController.move(config.initialCenter, config.initialZoom);
+  }
+
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.sizeOf(context);
@@ -66,14 +76,17 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
 
     final casesAsync = ref.watch(casesProvider);
     final featuredAsync = ref.watch(featuredCasesProvider);
-    final searchResultsAsync = ref.watch(searchResultsProvider);
+    final filteredCasesAsync = ref.watch(filteredCasesProvider);
     final selectedCaseAsync = ref.watch(selectedCaseProvider);
     final relevantAsync = ref.watch(relevantSuggestionsProvider);
     final searchQuery = ref.watch(searchQueryProvider);
+    final activeCategory = ref.watch(activeCategoryProvider);
+    final categoryCounts = ref.watch(categoryCountsProvider);
+    final emptyCatalog = ref.watch(emptyCatalogProvider);
     final mapConfig = ref.watch(mapConfigProvider);
     final mapGradient = ref.watch(mapSectionGradientProvider);
 
-    ref.listen<AsyncValue<List<TrueCrimeCase>>>(searchResultsProvider, (
+    ref.listen<AsyncValue<List<TrueCrimeCase>>>(filteredCasesProvider, (
       _,
       next,
     ) {
@@ -86,15 +99,17 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
       });
     });
 
-    final suggestionCases = searchQuery.trim().isEmpty
+    final suggestionCases = emptyCatalog
+        ? const <TrueCrimeCase>[]
+        : searchQuery.trim().isEmpty
         ? (relevantAsync.value ?? const <TrueCrimeCase>[])
-        : (searchResultsAsync.value ?? const <TrueCrimeCase>[])
+        : (filteredCasesAsync.value ?? const <TrueCrimeCase>[])
               .take(6)
               .toList(growable: false);
 
     final selectedCase = selectedCaseAsync.value;
     final featuredCases = featuredAsync.value ?? const <TrueCrimeCase>[];
-    final filteredCases = searchResultsAsync.value ?? const <TrueCrimeCase>[];
+    final filteredCases = filteredCasesAsync.value ?? const <TrueCrimeCase>[];
 
     return Scaffold(
       body: Stack(
@@ -147,10 +162,7 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            _HeroIntro(totalCases: allCases.length),
-                            const SizedBox(height: 42),
                             Container(
-                              key: _featuredSectionKey,
                               padding: const EdgeInsets.all(28),
                               decoration: BoxDecoration(
                                 color: AppColors.surface.withValues(
@@ -163,10 +175,10 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   const SectionHeading(
-                                    eyebrow: 'Cartelera',
-                                    title: 'Casos que marcan el mapa editorial',
+                                    eyebrow: 'Destacados',
+                                    title: 'Casos destacados en preparación',
                                     description:
-                                        'Una selección manual de expedientes, desapariciones y homicidios que definieron épocas, territorios o coberturas mediáticas.',
+                                        'Este espacio mostrará los casos editoriales destacados cuando empecemos a cargar el catálogo.',
                                   ),
                                   const SizedBox(height: 26),
                                   FeaturedCaseRail(
@@ -180,7 +192,7 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 34),
+                            const SizedBox(height: 30),
                             Container(
                               key: _mapSectionKey,
                               padding: const EdgeInsets.all(28),
@@ -192,79 +204,60 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Row(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Expanded(
-                                        child: SectionHeading(
-                                          eyebrow: 'Mapa',
-                                          title:
-                                              'Explora los puntos calientes del true crime',
-                                          description: searchQuery.isEmpty
-                                              ? 'El mapa reúne una primera capa de casos reales curados, con acceso rápido a contexto, investigaciones y escucha relacionada.'
-                                              : 'Búsqueda activa: "$searchQuery". Los marcadores y resultados se filtran en tiempo real por nombre, lugar o tags.',
-                                        ),
-                                      ),
-                                      const SizedBox(width: 24),
-                                      if (!isMobile)
-                                        _MapMetaPanel(
-                                          totalVisible: filteredCases.length,
-                                          hasFilter: searchQuery.isNotEmpty,
-                                        ),
-                                    ],
+                                  SectionHeading(
+                                    eyebrow: 'Mapa',
+                                    title:
+                                        'Mapa mundial listo para recibir casos',
+                                    description: _buildMapDescription(
+                                      totalCases: allCases.length,
+                                      searchQuery: searchQuery,
+                                      activeCategory: activeCategory,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 26),
+                                  CaseTypeFilterBar(
+                                    counts: categoryCounts,
+                                    activeCategory: activeCategory,
+                                    onCategorySelected: _handleCategorySelected,
                                   ),
                                   const SizedBox(height: 24),
                                   if (isDesktop)
-                                    SizedBox(
-                                      height: 680,
-                                      child: Row(
-                                        children: [
-                                          Expanded(
-                                            flex: 7,
-                                            child: CaseWorldMap(
-                                              mapController: _mapController,
-                                              mapConfig: mapConfig,
-                                              cases: filteredCases,
-                                              selectedCaseId: selectedCase?.id,
-                                              hoveredCaseId: _hoveredCaseId,
-                                              onCaseTap: _focusCase,
-                                              onHoverChanged: (value) {
-                                                setState(() {
-                                                  _hoveredCaseId = value;
-                                                });
-                                              },
-                                              onBackgroundTap: () {
-                                                ref
-                                                        .read(
-                                                          selectedCaseIdProvider
-                                                              .notifier,
-                                                        )
-                                                        .state =
-                                                    null;
-                                              },
-                                            ),
-                                          ),
-                                          const SizedBox(width: 22),
-                                          SizedBox(
-                                            width: 360,
-                                            child: selectedCase == null
-                                                ? const _EmptyCasePanel()
-                                                : CaseDetailPanel(
-                                                    crimeCase: selectedCase,
-                                                    onClose: () {
-                                                      ref
-                                                              .read(
-                                                                selectedCaseIdProvider
-                                                                    .notifier,
-                                                              )
-                                                              .state =
-                                                          null;
-                                                    },
-                                                  ),
-                                          ),
-                                        ],
+                                    _DesktopMapLayout(
+                                      selectedCase: selectedCase,
+                                      filteredCases: filteredCases,
+                                      hoveredCaseId: _hoveredCaseId,
+                                      mapController: _mapController,
+                                      mapConfig: mapConfig,
+                                      onCaseTap: _focusCase,
+                                      onHoverChanged: (value) {
+                                        setState(() {
+                                          _hoveredCaseId = value;
+                                        });
+                                      },
+                                      onBackgroundTap: () {
+                                        ref
+                                                .read(
+                                                  selectedCaseIdProvider
+                                                      .notifier,
+                                                )
+                                                .state =
+                                            null;
+                                      },
+                                      metaPanel: _MapMetaPanel(
+                                        totalVisible: filteredCases.length,
+                                        totalCases: allCases.length,
+                                        activeCategory: activeCategory,
+                                        hasFilter: searchQuery.isNotEmpty,
                                       ),
+                                      onClose: () {
+                                        ref
+                                                .read(
+                                                  selectedCaseIdProvider
+                                                      .notifier,
+                                                )
+                                                .state =
+                                            null;
+                                      },
                                     )
                                   else
                                     Stack(
@@ -299,6 +292,8 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
                                           right: 16,
                                           child: _MapMetaPanel(
                                             totalVisible: filteredCases.length,
+                                            totalCases: allCases.length,
+                                            activeCategory: activeCategory,
                                             hasFilter: searchQuery.isNotEmpty,
                                           ),
                                         ),
@@ -322,7 +317,8 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
             right: 0,
             child: HomeHeader(
               suggestions: suggestionCases,
-              onCarteleraTap: () => _scrollToKey(_featuredSectionKey),
+              catalogIsEmpty: emptyCatalog,
+              onMapTap: () => _scrollToKey(_mapSectionKey),
               onCaseSelected: (crimeCase) =>
                   _focusCase(crimeCase, scrollToMap: true),
             ),
@@ -346,6 +342,30 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
         ],
       ),
     );
+  }
+
+  String _buildMapDescription({
+    required int totalCases,
+    required String searchQuery,
+    required CaseCategory? activeCategory,
+  }) {
+    if (totalCases == 0) {
+      return 'La navegación por tipo, color y ubicación ya está preparada para cuando publiquemos la primera selección de expedientes.';
+    }
+
+    if (searchQuery.isNotEmpty && activeCategory != null) {
+      return 'Vista filtrada por "${activeCategory.presentation.label}" y búsqueda activa: "$searchQuery".';
+    }
+
+    if (searchQuery.isNotEmpty) {
+      return 'Búsqueda activa: "$searchQuery". El mapa y la selección editorial se ajustan en tiempo real.';
+    }
+
+    if (activeCategory != null) {
+      return 'Mostrando la categoría "${activeCategory.presentation.label}" en el mapa y en la navegación editorial.';
+    }
+
+    return 'Explora los casos publicados por ubicación y filtra por tipología editorial.';
   }
 
   Widget _buildLoadingState() {
@@ -379,56 +399,82 @@ class _TrueCrimeHomePageState extends ConsumerState<TrueCrimeHomePage> {
   }
 }
 
-class _HeroIntro extends StatelessWidget {
-  const _HeroIntro({required this.totalCases});
+class _DesktopMapLayout extends StatelessWidget {
+  const _DesktopMapLayout({
+    required this.selectedCase,
+    required this.filteredCases,
+    required this.hoveredCaseId,
+    required this.mapController,
+    required this.mapConfig,
+    required this.onCaseTap,
+    required this.onHoverChanged,
+    required this.onBackgroundTap,
+    required this.metaPanel,
+    required this.onClose,
+  });
 
-  final int totalCases;
+  final TrueCrimeCase? selectedCase;
+  final List<TrueCrimeCase> filteredCases;
+  final String? hoveredCaseId;
+  final MapController mapController;
+  final MapConfig mapConfig;
+  final ValueChanged<TrueCrimeCase> onCaseTap;
+  final ValueChanged<String?> onHoverChanged;
+  final VoidCallback onBackgroundTap;
+  final Widget metaPanel;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      padding: const EdgeInsets.all(28),
-      decoration: BoxDecoration(
-        color: AppColors.surface.withValues(alpha: 0.84),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    if (selectedCase == null) {
+      return Stack(
         children: [
-          Text(
-            'TRUE APP',
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: AppColors.gold,
-              letterSpacing: 3,
-              fontWeight: FontWeight.w600,
+          SizedBox(
+            height: 680,
+            child: CaseWorldMap(
+              mapController: mapController,
+              mapConfig: mapConfig,
+              cases: filteredCases,
+              selectedCaseId: null,
+              hoveredCaseId: hoveredCaseId,
+              onCaseTap: onCaseTap,
+              onHoverChanged: onHoverChanged,
+              onBackgroundTap: onBackgroundTap,
             ),
           ),
-          const SizedBox(height: 14),
-          Text(
-            'Una biblioteca cartografiada del crimen real.',
-            style: theme.textTheme.displayMedium,
-          ),
-          const SizedBox(height: 14),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 820),
-            child: Text(
-              'Una experiencia web centrada en descubrir casos históricos y contemporáneos desde el mapa, con cartelera editorial, búsqueda contextual y fuentes visibles para seguir cada investigación.',
-              style: theme.textTheme.bodyLarge,
+          Positioned(top: 16, right: 16, child: metaPanel),
+        ],
+      );
+    }
+
+    return SizedBox(
+      height: 680,
+      child: Row(
+        children: [
+          Expanded(
+            flex: 7,
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: CaseWorldMap(
+                    mapController: mapController,
+                    mapConfig: mapConfig,
+                    cases: filteredCases,
+                    selectedCaseId: selectedCase?.id,
+                    hoveredCaseId: hoveredCaseId,
+                    onCaseTap: onCaseTap,
+                    onHoverChanged: onHoverChanged,
+                    onBackgroundTap: onBackgroundTap,
+                  ),
+                ),
+                Positioned(top: 16, right: 16, child: metaPanel),
+              ],
             ),
           ),
-          const SizedBox(height: 22),
-          Wrap(
-            spacing: 12,
-            runSpacing: 12,
-            children: [
-              _StatChip(label: '$totalCases casos curados'),
-              const _StatChip(label: 'Fuentes visibles'),
-              const _StatChip(label: 'Podcasts enlazados'),
-              const _StatChip(label: 'Escalable a CMS'),
-            ],
+          const SizedBox(width: 22),
+          SizedBox(
+            width: 360,
+            child: CaseDetailPanel(crimeCase: selectedCase!, onClose: onClose),
           ),
         ],
       ),
@@ -473,33 +519,28 @@ class _AmbientGlow extends StatelessWidget {
   }
 }
 
-class _StatChip extends StatelessWidget {
-  const _StatChip({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: AppColors.panelMuted,
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Text(label, style: Theme.of(context).textTheme.labelLarge),
-    );
-  }
-}
-
 class _MapMetaPanel extends StatelessWidget {
-  const _MapMetaPanel({required this.totalVisible, required this.hasFilter});
+  const _MapMetaPanel({
+    required this.totalVisible,
+    required this.totalCases,
+    required this.activeCategory,
+    required this.hasFilter,
+  });
 
   final int totalVisible;
+  final int totalCases;
+  final CaseCategory? activeCategory;
   final bool hasFilter;
 
   @override
   Widget build(BuildContext context) {
+    final status = switch ((totalCases == 0, activeCategory, hasFilter)) {
+      (true, _, _) => 'Catálogo en preparación',
+      (false, CaseCategory category, _) => category.presentation.shortLabel,
+      (false, null, true) => 'Filtro activo',
+      _ => 'Vista global',
+    };
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
@@ -511,7 +552,7 @@ class _MapMetaPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            hasFilter ? 'Filtro activo' : 'Vista global',
+            status,
             style: Theme.of(
               context,
             ).textTheme.labelLarge?.copyWith(color: AppColors.gold),
@@ -520,45 +561,6 @@ class _MapMetaPanel extends StatelessWidget {
           Text(
             '$totalVisible marcadores visibles',
             style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EmptyCasePanel extends StatelessWidget {
-  const _EmptyCasePanel();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Container(
-      decoration: BoxDecoration(
-        color: AppColors.panel,
-        borderRadius: BorderRadius.circular(30),
-        border: Border.all(color: AppColors.border),
-      ),
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: AppColors.accent.withValues(alpha: 0.16),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: const Icon(Icons.public_rounded, color: AppColors.gold),
-          ),
-          const SizedBox(height: 18),
-          Text('Selecciona un caso', style: theme.textTheme.headlineMedium),
-          const SizedBox(height: 12),
-          Text(
-            'Pulsa un marcador del mapa o una tarjeta de la cartelera para abrir la ficha editorial con contexto, fuentes y enlaces de escucha.',
-            style: theme.textTheme.bodyLarge,
           ),
         ],
       ),
