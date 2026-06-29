@@ -21,28 +21,28 @@ extension CaseCategoryPresentationMapper on CaseCategory {
   CaseCategoryPresentation get presentation {
     return switch (this) {
       CaseCategory.isolatedMurder => const CaseCategoryPresentation(
-        label: 'Asesinatos aislados',
-        shortLabel: 'Aislados',
+        label: 'Asesinato aislado',
+        shortLabel: 'Aislado',
         description: 'Homicidios puntuales con gran impacto editorial.',
-        color: Color(0xFF7A1F26),
+        color: AppColors.catIsolated,
       ),
       CaseCategory.serialKiller => const CaseCategoryPresentation(
         label: 'Asesinos en serie',
         shortLabel: 'Serie',
         description: 'Patrones repetidos y cobertura criminal prolongada.',
-        color: AppColors.accent,
+        color: AppColors.catSerie,
       ),
       CaseCategory.kidnapping => const CaseCategoryPresentation(
-        label: 'Secuestros',
-        shortLabel: 'Secuestros',
+        label: 'Secuestro',
+        shortLabel: 'Secuestro',
         description: 'Desapariciones y retenciones con investigación activa.',
-        color: Color(0xFF8D6B2E),
+        color: AppColors.catKidnapping,
       ),
       CaseCategory.unsolved => const CaseCategoryPresentation(
-        label: 'Casos sin resolver',
+        label: 'Caso sin resolver',
         shortLabel: 'Sin resolver',
         description: 'Casos emblemáticos sin cierre judicial definitivo.',
-        color: Color(0xFF50657C),
+        color: AppColors.catUnsolved,
       ),
     };
   }

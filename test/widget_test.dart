@@ -31,41 +31,53 @@ void main() {
         child: const TrueCrimeApp(),
       ),
     );
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 450));
   }
 
-  testWidgets('renders empty home with filters and empty states', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('renders the situation room shell with search and status filters',
+      (WidgetTester tester) async {
     await pumpApp(tester, const Size(1440, 1200));
 
     expect(find.byKey(const Key('case-search-field')), findsOneWidget);
-    expect(find.text('Mapa'), findsOneWidget);
-    expect(find.byKey(const Key('catalog-empty-message')), findsOneWidget);
-    expect(find.byKey(const Key('featured-rail-empty-state')), findsOneWidget);
-    expect(find.byKey(const Key('case-world-map-empty-state')), findsOneWidget);
-    expect(find.byKey(const Key('category-chip-all')), findsOneWidget);
-    expect(
-      find.byKey(const Key('category-chip-isolatedMurder')),
-      findsOneWidget,
-    );
-    expect(find.byKey(const Key('category-chip-serialKiller')), findsOneWidget);
-    expect(find.byKey(const Key('category-chip-kidnapping')), findsOneWidget);
-    expect(find.byKey(const Key('category-chip-unsolved')), findsOneWidget);
-
-    await tester.tap(find.byKey(const Key('case-search-field')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Zodiac Killer'), findsNothing);
+    expect(find.byKey(const Key('status-chip-all')), findsOneWidget);
+    expect(find.byKey(const Key('status-chip-open')), findsOneWidget);
+    expect(find.byKey(const Key('status-chip-solved')), findsOneWidget);
+    expect(find.byKey(const Key('status-chip-progress')), findsOneWidget);
+    expect(find.text('ACTUALIZACIONES RECIENTES'), findsOneWidget);
   });
 
-  testWidgets('opens desktop detail panel from featured card', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('shows the featured focus panel when nothing is selected',
+      (WidgetTester tester) async {
     await pumpApp(tester, const Size(1440, 1200), cases: sampleCases);
 
-    await tester.tap(find.byKey(const Key('featured-case-card-zodiac-killer')));
-    await tester.pumpAndSettle();
+    expect(find.text('EN EL FOCO'), findsOneWidget);
+    expect(find.text('Abrir expediente'), findsOneWidget);
+  });
+
+  testWidgets('filters map markers by search query',
+      (WidgetTester tester) async {
+    await pumpApp(tester, const Size(1440, 1200), cases: sampleCases);
+
+    expect(find.byKey(const Key('marker-zodiac-killer')), findsOneWidget);
+    expect(find.byKey(const Key('marker-madeleine-mccann')), findsOneWidget);
+
+    await tester.enterText(
+      find.byKey(const Key('case-search-field')),
+      'mccann',
+    );
+    await tester.pump(const Duration(milliseconds: 450));
+
+    expect(find.byKey(const Key('marker-madeleine-mccann')), findsOneWidget);
+    expect(find.byKey(const Key('marker-zodiac-killer')), findsNothing);
+    expect(find.byKey(const Key('marker-black-dahlia')), findsNothing);
+  });
+
+  testWidgets('opens the dossier from the featured "Abrir expediente" button',
+      (WidgetTester tester) async {
+    await pumpApp(tester, const Size(1440, 1200), cases: sampleCases);
+
+    await tester.tap(find.text('Abrir expediente'));
+    await tester.pump(const Duration(milliseconds: 450));
 
     expect(find.byKey(const Key('detail-panel')), findsOneWidget);
     expect(
@@ -75,38 +87,37 @@ void main() {
       ),
       findsOneWidget,
     );
-    expect(find.text('Asesinos en serie'), findsWidgets);
-    expect(find.text('Investigación'), findsOneWidget);
-    expect(find.text('Podcast'), findsOneWidget);
   });
 
-  testWidgets('filters map markers by category', (WidgetTester tester) async {
+  testWidgets('opens the dossier by selecting a case',
+      (WidgetTester tester) async {
     await pumpApp(tester, const Size(1440, 1200), cases: sampleCases);
 
-    expect(find.byKey(const Key('marker-zodiac-killer')), findsOneWidget);
-    expect(find.byKey(const Key('marker-madeleine-mccann')), findsOneWidget);
-    expect(find.byKey(const Key('marker-black-dahlia')), findsOneWidget);
-    expect(find.byKey(const Key('marker-meredith-kercher')), findsOneWidget);
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(TrueCrimeApp)),
+    );
+    container.read(selectedCaseIdProvider.notifier).state = 'black-dahlia';
+    await tester.pump(const Duration(milliseconds: 450));
 
-    await tester.tap(find.byKey(const Key('category-chip-kidnapping')));
-    await tester.pumpAndSettle();
-
-    expect(find.byKey(const Key('marker-madeleine-mccann')), findsOneWidget);
-    expect(find.byKey(const Key('marker-zodiac-killer')), findsNothing);
-    expect(find.byKey(const Key('marker-black-dahlia')), findsNothing);
-    expect(find.byKey(const Key('marker-meredith-kercher')), findsNothing);
+    expect(find.byKey(const Key('detail-panel')), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('detail-panel')),
+        matching: find.text('Black Dahlia'),
+      ),
+      findsOneWidget,
+    );
   });
 
-  testWidgets('opens mobile bottom sheet for selected case', (
-    WidgetTester tester,
-  ) async {
+  testWidgets('shows a mobile bottom sheet for the selected case',
+      (WidgetTester tester) async {
     await pumpApp(tester, const Size(430, 932), cases: sampleCases);
 
     final container = ProviderScope.containerOf(
       tester.element(find.byType(TrueCrimeApp)),
     );
     container.read(selectedCaseIdProvider.notifier).state = 'zodiac-killer';
-    await tester.pumpAndSettle();
+    await tester.pump(const Duration(milliseconds: 450));
 
     expect(find.byKey(const Key('mobile-case-sheet')), findsOneWidget);
     expect(find.text('Zodiac Killer'), findsAtLeastNWidgets(1));

@@ -1,1 +1,744 @@
-[]
+[
+  {
+    "id": "zodiac",
+    "slug": "zodiac",
+    "title": "Zodiac",
+    "category": "serialKiller",
+    "country": "EE. UU.",
+    "countryCode": "US",
+    "regionOrCity": "San Francisco",
+    "year": 1968,
+    "latitude": 37.77,
+    "longitude": -122.42,
+    "summary": "Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.",
+    "tags": [
+      "1960s",
+      "ee. uu."
+    ],
+    "featuredRank": 2,
+    "relevanceRank": 1,
+    "status": "open",
+    "statusLabel": "Sin resolver",
+    "victim": "Al menos 5 víctimas confirmadas",
+    "timeline": [
+      {
+        "title": "Primeros ataques confirmados",
+        "date": "1968–69",
+        "kind": "initial"
+      },
+      {
+        "title": "Cartas cifradas a la prensa",
+        "date": "1969",
+        "kind": "process"
+      },
+      {
+        "title": "Investigación aún abierta",
+        "date": "Hoy",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "zodiac-src-1",
+        "title": "Wikipedia — Zodiac Killer",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "zodiac-src-2",
+        "title": "Archivo de prensa",
+        "url": "https://sfchronicle.com",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "blackdahlia",
+    "slug": "blackdahlia",
+    "title": "Black Dahlia",
+    "category": "unsolved",
+    "country": "EE. UU.",
+    "countryCode": "US",
+    "regionOrCity": "Los Ángeles",
+    "year": 1947,
+    "latitude": 34.05,
+    "longitude": -118.24,
+    "summary": "Uno de los homicidios sin resolver más conocidos de Estados Unidos. El caso marcó la historia criminal de Los Ángeles.",
+    "tags": [
+      "1940s",
+      "ee. uu."
+    ],
+    "featuredRank": null,
+    "relevanceRank": 3,
+    "status": "open",
+    "statusLabel": "Sin resolver",
+    "victim": "Elizabeth Short, 22 años",
+    "timeline": [
+      {
+        "title": "Hallazgo del cuerpo",
+        "date": "Ene 1947",
+        "kind": "initial"
+      },
+      {
+        "title": "Investigación sin imputación",
+        "date": "1947–50",
+        "kind": "process"
+      },
+      {
+        "title": "Caso abierto",
+        "date": "Hoy",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "blackdahlia-src-1",
+        "title": "Wikipedia — Black Dahlia",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "blackdahlia-src-2",
+        "title": "Pódcast documental",
+        "url": "https://spotify.com",
+        "kind": "podcast"
+      }
+    ]
+  },
+  {
+    "id": "jonbenet",
+    "slug": "jonbenet",
+    "title": "JonBenét Ramsey",
+    "category": "unsolved",
+    "country": "EE. UU.",
+    "countryCode": "US",
+    "regionOrCity": "Boulder",
+    "year": 1996,
+    "latitude": 40.02,
+    "longitude": -105.27,
+    "summary": "La muerte de una niña en Colorado que derivó en una de las investigaciones más mediáticas y aún sin resolver del país.",
+    "tags": [
+      "1990s",
+      "ee. uu."
+    ],
+    "featuredRank": null,
+    "relevanceRank": 10,
+    "status": "open",
+    "statusLabel": "Sin resolver",
+    "victim": "JonBenét Ramsey, 6 años",
+    "timeline": [
+      {
+        "title": "Suceso",
+        "date": "Dic 1996",
+        "kind": "initial"
+      },
+      {
+        "title": "Investigación",
+        "date": "1997",
+        "kind": "process"
+      },
+      {
+        "title": "Reexamen de ADN",
+        "date": "2016",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "jonbenet-src-1",
+        "title": "Wikipedia — JonBenét Ramsey",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "jonbenet-src-2",
+        "title": "Archivo de prensa",
+        "url": "https://cbsnews.com",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "tylenol",
+    "slug": "tylenol",
+    "title": "Envenenamientos de Tylenol",
+    "category": "serialKiller",
+    "country": "EE. UU.",
+    "countryCode": "US",
+    "regionOrCity": "Chicago",
+    "year": 1982,
+    "latitude": 41.88,
+    "longitude": -87.63,
+    "summary": "Cápsulas adulteradas que cambiaron las normas de seguridad de los medicamentos. Nunca se identificó al responsable.",
+    "tags": [
+      "1980s",
+      "ee. uu."
+    ],
+    "featuredRank": null,
+    "relevanceRank": 12,
+    "status": "open",
+    "statusLabel": "Sin resolver",
+    "victim": "7 víctimas, área de Chicago",
+    "timeline": [
+      {
+        "title": "Primeras muertes",
+        "date": "Sep 1982",
+        "kind": "initial"
+      },
+      {
+        "title": "Retirada nacional",
+        "date": "1982",
+        "kind": "process"
+      },
+      {
+        "title": "Caso sin resolver",
+        "date": "Hoy",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "tylenol-src-1",
+        "title": "Wikipedia — Chicago Tylenol murders",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "tylenol-src-2",
+        "title": "Archivo de prensa",
+        "url": "https://chicagotribune.com",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "lizzie",
+    "slug": "lizzie",
+    "title": "Caso Borden",
+    "category": "isolatedMurder",
+    "country": "EE. UU.",
+    "countryCode": "US",
+    "regionOrCity": "Fall River",
+    "year": 1892,
+    "latitude": 41.7,
+    "longitude": -71.15,
+    "summary": "Un doble homicidio en Massachusetts cuyo juicio terminó en absolución. El caso sigue debatiéndose más de un siglo después.",
+    "tags": [
+      "1890s",
+      "ee. uu."
+    ],
+    "featuredRank": null,
+    "relevanceRank": 14,
+    "status": "open",
+    "statusLabel": "Sin condena",
+    "victim": "Andrew y Abby Borden",
+    "timeline": [
+      {
+        "title": "Los homicidios",
+        "date": "Ago 1892",
+        "kind": "initial"
+      },
+      {
+        "title": "Juicio y absolución",
+        "date": "1893",
+        "kind": "process"
+      },
+      {
+        "title": "Sin nuevos cargos",
+        "date": "Hoy",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "lizzie-src-1",
+        "title": "Wikipedia — Lizzie Borden",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "lizzie-src-2",
+        "title": "Archivo histórico",
+        "url": "https://loc.gov",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "btk",
+    "slug": "btk",
+    "title": "BTK",
+    "category": "serialKiller",
+    "country": "EE. UU.",
+    "countryCode": "US",
+    "regionOrCity": "Wichita",
+    "year": 1974,
+    "latitude": 37.69,
+    "longitude": -97.34,
+    "summary": "Un asesino en serie que enviaba mensajes a la prensa durante décadas, identificado y condenado en 2005.",
+    "tags": [
+      "1970s",
+      "ee. uu."
+    ],
+    "featuredRank": null,
+    "relevanceRank": 8,
+    "status": "solved",
+    "statusLabel": "Resuelto (2005)",
+    "victim": "10 víctimas (1974–1991)",
+    "timeline": [
+      {
+        "title": "Primeros crímenes",
+        "date": "1974",
+        "kind": "initial"
+      },
+      {
+        "title": "Reaparición de mensajes",
+        "date": "2004",
+        "kind": "process"
+      },
+      {
+        "title": "Detención y condena",
+        "date": "2005",
+        "kind": "solved"
+      }
+    ],
+    "sources": [
+      {
+        "id": "btk-src-1",
+        "title": "Wikipedia — Dennis Rader (BTK)",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "btk-src-2",
+        "title": "Cobertura judicial",
+        "url": "https://apnews.com",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "goldenstate",
+    "slug": "goldenstate",
+    "title": "Golden State Killer",
+    "category": "serialKiller",
+    "country": "EE. UU.",
+    "countryCode": "US",
+    "regionOrCity": "California",
+    "year": 1976,
+    "latitude": 38.58,
+    "longitude": -121.49,
+    "summary": "Una larga serie de crímenes en California resuelta gracias a la genealogía genética, una técnica que abrió una nueva era forense.",
+    "tags": [
+      "1970s",
+      "ee. uu."
+    ],
+    "featuredRank": 3,
+    "relevanceRank": 2,
+    "status": "solved",
+    "statusLabel": "Resuelto (2018)",
+    "victim": "13 asesinatos · decenas de agresiones",
+    "timeline": [
+      {
+        "title": "Serie de crímenes",
+        "date": "1974–86",
+        "kind": "initial"
+      },
+      {
+        "title": "Caso inactivo",
+        "date": "décadas",
+        "kind": "process"
+      },
+      {
+        "title": "Identificación por ADN",
+        "date": "2018",
+        "kind": "solved"
+      }
+    ],
+    "sources": [
+      {
+        "id": "goldenstate-src-1",
+        "title": "Wikipedia — Golden State Killer",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "goldenstate-src-2",
+        "title": "Reportaje de investigación",
+        "url": "https://latimes.com",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "mccann",
+    "slug": "mccann",
+    "title": "Madeleine McCann",
+    "category": "kidnapping",
+    "country": "Portugal",
+    "countryCode": "PT",
+    "regionOrCity": "Praia da Luz",
+    "year": 2007,
+    "latitude": 37.09,
+    "longitude": -8.93,
+    "summary": "La desaparición de una niña británica durante unas vacaciones familiares en Portugal, aún en investigación activa.",
+    "tags": [
+      "2000s",
+      "portugal"
+    ],
+    "featuredRank": 4,
+    "relevanceRank": 5,
+    "status": "inProgress",
+    "statusLabel": "En investigación",
+    "victim": "Madeleine McCann, 3 años",
+    "timeline": [
+      {
+        "title": "Desaparición",
+        "date": "May 2007",
+        "kind": "initial"
+      },
+      {
+        "title": "Búsqueda internacional",
+        "date": "2007",
+        "kind": "process"
+      },
+      {
+        "title": "Investigación activa",
+        "date": "Hoy",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "mccann-src-1",
+        "title": "Wikipedia — Madeleine McCann",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "mccann-src-2",
+        "title": "Cobertura de prensa",
+        "url": "https://bbc.com",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "ripper",
+    "slug": "ripper",
+    "title": "Jack el Destripador",
+    "category": "serialKiller",
+    "country": "Reino Unido",
+    "countryCode": "GB",
+    "regionOrCity": "Londres",
+    "year": 1888,
+    "latitude": 51.52,
+    "longitude": -0.07,
+    "summary": "Una serie de homicidios en el este de Londres atribuidos a un agresor sin identificar que se comunicaba con la prensa.",
+    "tags": [
+      "1880s",
+      "reino unido"
+    ],
+    "featuredRank": null,
+    "relevanceRank": 4,
+    "status": "open",
+    "statusLabel": "Sin resolver",
+    "victim": "5 víctimas canónicas, Whitechapel",
+    "timeline": [
+      {
+        "title": "Crímenes de Whitechapel",
+        "date": "1888",
+        "kind": "initial"
+      },
+      {
+        "title": "Investigación policial",
+        "date": "1888–91",
+        "kind": "process"
+      },
+      {
+        "title": "Sin identificar",
+        "date": "Hoy",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "ripper-src-1",
+        "title": "Wikipedia — Jack the Ripper",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "ripper-src-2",
+        "title": "Archivo histórico",
+        "url": "https://nationalarchives.gov.uk",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "isdal",
+    "slug": "isdal",
+    "title": "La mujer de Isdal",
+    "category": "unsolved",
+    "country": "Noruega",
+    "countryCode": "NO",
+    "regionOrCity": "Bergen",
+    "year": 1970,
+    "latitude": 60.39,
+    "longitude": 5.32,
+    "summary": "El cuerpo de una mujer hallado en el Valle de Isdalen, con su identidad aún sin confirmar décadas después.",
+    "tags": [
+      "1970s",
+      "noruega"
+    ],
+    "featuredRank": 1,
+    "relevanceRank": 7,
+    "status": "open",
+    "statusLabel": "Sin resolver",
+    "victim": "Mujer sin identificar",
+    "timeline": [
+      {
+        "title": "Hallazgo",
+        "date": "Nov 1970",
+        "kind": "initial"
+      },
+      {
+        "title": "Investigación",
+        "date": "1970–71",
+        "kind": "process"
+      },
+      {
+        "title": "Reapertura forense",
+        "date": "2016",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "isdal-src-1",
+        "title": "Wikipedia — Isdal Woman",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "isdal-src-2",
+        "title": "Documental NRK",
+        "url": "https://nrk.no",
+        "kind": "podcast"
+      }
+    ]
+  },
+  {
+    "id": "hinterkaifeck",
+    "slug": "hinterkaifeck",
+    "title": "Hinterkaifeck",
+    "category": "isolatedMurder",
+    "country": "Alemania",
+    "countryCode": "DE",
+    "regionOrCity": "Baviera",
+    "year": 1922,
+    "latitude": 48.59,
+    "longitude": 11.21,
+    "summary": "El homicidio de una familia entera en una granja bávara, uno de los casos sin resolver más antiguos de Alemania.",
+    "tags": [
+      "1920s",
+      "alemania"
+    ],
+    "featuredRank": null,
+    "relevanceRank": 13,
+    "status": "open",
+    "statusLabel": "Sin resolver",
+    "victim": "6 miembros de la familia Gruber",
+    "timeline": [
+      {
+        "title": "Los homicidios",
+        "date": "Mar 1922",
+        "kind": "initial"
+      },
+      {
+        "title": "Investigación",
+        "date": "1922",
+        "kind": "process"
+      },
+      {
+        "title": "Reexámenes posteriores",
+        "date": "2007",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "hinterkaifeck-src-1",
+        "title": "Wikipedia — Hinterkaifeck",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "hinterkaifeck-src-2",
+        "title": "Archivo policial",
+        "url": "https://polizei.bayern.de",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "kercher",
+    "slug": "kercher",
+    "title": "Caso Meredith Kercher",
+    "category": "isolatedMurder",
+    "country": "Italia",
+    "countryCode": "IT",
+    "regionOrCity": "Perugia",
+    "year": 2007,
+    "latitude": 43.11,
+    "longitude": 12.39,
+    "summary": "El homicidio de una estudiante británica en Italia que tuvo un largo recorrido judicial y una intensa cobertura mediática.",
+    "tags": [
+      "2000s",
+      "italia"
+    ],
+    "featuredRank": null,
+    "relevanceRank": 9,
+    "status": "solved",
+    "statusLabel": "Caso cerrado",
+    "victim": "Meredith Kercher, 21 años",
+    "timeline": [
+      {
+        "title": "El homicidio",
+        "date": "Nov 2007",
+        "kind": "initial"
+      },
+      {
+        "title": "Proceso judicial",
+        "date": "2008–15",
+        "kind": "process"
+      },
+      {
+        "title": "Resolución definitiva",
+        "date": "2015",
+        "kind": "solved"
+      }
+    ],
+    "sources": [
+      {
+        "id": "kercher-src-1",
+        "title": "Wikipedia — Meredith Kercher",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "kercher-src-2",
+        "title": "Cobertura judicial",
+        "url": "https://theguardian.com",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "dyatlov",
+    "slug": "dyatlov",
+    "title": "Paso Diátlov",
+    "category": "unsolved",
+    "country": "Rusia",
+    "countryCode": "RU",
+    "regionOrCity": "Montes Urales",
+    "year": 1959,
+    "latitude": 61.76,
+    "longitude": 59.45,
+    "summary": "La muerte de nueve montañeros en circunstancias poco claras en los Urales soviéticos, reexaminada oficialmente en 2019.",
+    "tags": [
+      "1950s",
+      "rusia"
+    ],
+    "featuredRank": 5,
+    "relevanceRank": 6,
+    "status": "open",
+    "statusLabel": "Reabierto (2019)",
+    "victim": "9 excursionistas",
+    "timeline": [
+      {
+        "title": "El suceso",
+        "date": "Feb 1959",
+        "kind": "initial"
+      },
+      {
+        "title": "Investigación soviética",
+        "date": "1959",
+        "kind": "process"
+      },
+      {
+        "title": "Reapertura del caso",
+        "date": "2019",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "dyatlov-src-1",
+        "title": "Wikipedia — Dyatlov Pass",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "dyatlov-src-2",
+        "title": "Estudio científico",
+        "url": "https://nature.com",
+        "kind": "investigation"
+      }
+    ]
+  },
+  {
+    "id": "somerton",
+    "slug": "somerton",
+    "title": "El hombre de Somerton",
+    "category": "unsolved",
+    "country": "Australia",
+    "countryCode": "AU",
+    "regionOrCity": "Adelaida",
+    "year": 1948,
+    "latitude": -34.93,
+    "longitude": 138.5,
+    "summary": "Un hombre sin identificar hallado en una playa australiana; su identidad se confirmó por ADN en 2022, 74 años después.",
+    "tags": [
+      "1940s",
+      "australia"
+    ],
+    "featuredRank": 6,
+    "relevanceRank": 11,
+    "status": "solved",
+    "statusLabel": "Identidad confirmada (2022)",
+    "victim": "Identificado como Carl Webb",
+    "timeline": [
+      {
+        "title": "Hallazgo",
+        "date": "Dic 1948",
+        "kind": "initial"
+      },
+      {
+        "title": "Investigación",
+        "date": "1948–49",
+        "kind": "process"
+      },
+      {
+        "title": "Identificación por ADN",
+        "date": "2022",
+        "kind": "solved"
+      }
+    ],
+    "sources": [
+      {
+        "id": "somerton-src-1",
+        "title": "Wikipedia — Somerton Man",
+        "url": "https://wikipedia.org",
+        "kind": "investigation"
+      },
+      {
+        "id": "somerton-src-2",
+        "title": "Investigación universitaria",
+        "url": "https://adelaide.edu.au",
+        "kind": "investigation"
+      }
+    ]
+  }
+]

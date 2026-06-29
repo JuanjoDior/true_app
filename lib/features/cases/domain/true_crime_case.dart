@@ -2,6 +2,8 @@ import 'package:latlong2/latlong.dart';
 
 import 'case_category.dart';
 import 'case_source.dart';
+import 'case_status.dart';
+import 'case_timeline_event.dart';
 
 class TrueCrimeCase {
   const TrueCrimeCase({
@@ -20,6 +22,10 @@ class TrueCrimeCase {
     this.featuredRank,
     this.relevanceRank,
     required this.sources,
+    this.status = CaseStatus.open,
+    this.statusLabel,
+    this.victim,
+    this.timeline = const <CaseTimelineEvent>[],
   });
 
   final String id;
@@ -38,9 +44,30 @@ class TrueCrimeCase {
   final int? relevanceRank;
   final List<CaseSource> sources;
 
+  /// Estado de investigación (abierto, resuelto, en curso).
+  final CaseStatus status;
+
+  /// Texto editorial del estado, p. ej. "Resuelto (2018)" o "Reabierto (2019)".
+  final String? statusLabel;
+
+  /// Descripción de la víctima o víctimas, nombrada con respeto.
+  final String? victim;
+
+  /// Cronología verificada del caso.
+  final List<CaseTimelineEvent> timeline;
+
   LatLng get location => LatLng(latitude, longitude);
 
   String get locationLabel => '$regionOrCity, $country';
+
+  /// Coordenadas con el formato editorial del archivo: "37.77° N · 122.42° O".
+  String get coordsLabel {
+    final lat = latitude.abs().toStringAsFixed(2);
+    final lng = longitude.abs().toStringAsFixed(2);
+    final latHemisphere = latitude >= 0 ? 'N' : 'S';
+    final lngHemisphere = longitude >= 0 ? 'E' : 'O';
+    return '$lat° $latHemisphere · $lng° $lngHemisphere';
+  }
 
   List<CaseSource> get investigationSources {
     return sources
@@ -72,6 +99,15 @@ class TrueCrimeCase {
       relevanceRank: json['relevanceRank'] as int?,
       sources: (json['sources'] as List<dynamic>)
           .map((source) => CaseSource.fromJson(source as Map<String, dynamic>))
+          .toList(growable: false),
+      status: json['status'] == null
+          ? CaseStatus.open
+          : CaseStatus.fromJson(json['status'] as String),
+      statusLabel: json['statusLabel'] as String?,
+      victim: json['victim'] as String?,
+      timeline: (json['timeline'] as List<dynamic>? ?? const [])
+          .map((event) =>
+              CaseTimelineEvent.fromJson(event as Map<String, dynamic>))
           .toList(growable: false),
     );
   }
