@@ -43,7 +43,11 @@ void main() {
       year: 2001,
       status: CaseStatus.open,
       links: [
-        DraftLink(title: 'Nota', url: 'no es una url', kind: 'investigation'),
+        DraftLink(
+          title: 'Nota',
+          url: 'no es una url',
+          kind: DraftLinkKind.document,
+        ),
       ],
     );
 
@@ -65,7 +69,7 @@ void main() {
         DraftLink(
           title: 'Fuente',
           url: 'https://example.com',
-          kind: 'investigation',
+          kind: DraftLinkKind.document,
         ),
       ],
     );

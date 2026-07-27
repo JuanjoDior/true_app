@@ -142,4 +142,63 @@ void main() {
       );
     },
   );
+
+  testWidgets(
+    'the link kind dropdown offers the typed kinds and persists the selection',
+    (tester) async {
+      final store = _FakeCaseDraftsStore();
+      final container = ProviderContainer(
+        overrides: [
+          caseDraftsStoreProvider.overrideWithValue(store),
+          casesRepositoryProvider
+              .overrideWithValue(const FakeCasesRepository([])),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(caseDraftsProvider.future);
+      final draftId =
+          await container.read(caseDraftsProvider.notifier).createDraft();
+      await container.read(caseDraftsProvider.notifier).updateDraft(
+            CaseDraft(draftId: draftId, links: const [DraftLink()]),
+          );
+      container.read(editingDraftIdProvider.notifier).state = draftId;
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    for (final section in kCaseFormSections)
+                      Builder(builder: section.builder),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      await tester.tap(find.byKey(const Key('intake-field-link-kind-0')));
+      await tester.pumpAndSettle();
+
+      // El desplegable sólo ofrece los tipos tipados, sin texto libre.
+      for (final kind in DraftLinkKind.values) {
+        expect(find.text(kind.label), findsWidgets);
+      }
+
+      await tester.tap(find.text(DraftLinkKind.podcast.label).last);
+      await tester.pumpAndSettle();
+
+      expect(
+        container.read(editingDraftProvider)!.links.single.kind,
+        DraftLinkKind.podcast,
+      );
+      expect(store.saved.single.links.single.kind, DraftLinkKind.podcast);
+    },
+  );
 }

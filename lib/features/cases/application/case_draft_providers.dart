@@ -111,7 +111,7 @@ final draftPreviewCaseProvider = Provider<TrueCrimeCase?>((ref) {
             id: link.url!,
             title: link.title?.isNotEmpty == true ? link.title! : link.url!,
             url: link.url!,
-            kind: link.kind == CaseSourceKind.podcast.name
+            kind: link.kind == DraftLinkKind.podcast
                 ? CaseSourceKind.podcast
                 : CaseSourceKind.investigation,
           ),

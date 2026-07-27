@@ -74,19 +74,53 @@ class CaseDraft {
   }
 }
 
+/// Tipo de enlace externo del borrador. Tolerante con los borradores de la
+/// fase 2, que guardaban `kind` como texto libre: cualquier valor
+/// desconocido o ausente se degrada a [DraftLinkKind.other] sin romper la carga.
+enum DraftLinkKind {
+  podcast,
+  video,
+  document,
+  publication,
+  other;
+
+  factory DraftLinkKind.fromJson(String value) {
+    return switch (value) {
+      'podcast' => DraftLinkKind.podcast,
+      'video' => DraftLinkKind.video,
+      'document' => DraftLinkKind.document,
+      'publication' => DraftLinkKind.publication,
+      _ => DraftLinkKind.other,
+    };
+  }
+
+  String get label {
+    return switch (this) {
+      DraftLinkKind.podcast => 'Podcast',
+      DraftLinkKind.video => 'Vídeo',
+      DraftLinkKind.document => 'Documento',
+      DraftLinkKind.publication => 'Publicación',
+      DraftLinkKind.other => 'Otro',
+    };
+  }
+}
+
 /// Enlace externo capturado en el borrador (fuente, podcast, artículo…).
 class DraftLink {
   const DraftLink({this.title, this.url, this.kind});
 
   final String? title;
   final String? url;
-  final String? kind;
+  final DraftLinkKind? kind;
 
   factory DraftLink.fromJson(Map<String, dynamic> json) {
+    final kind = json['kind'];
     return DraftLink(
       title: json['title'] as String?,
       url: json['url'] as String?,
-      kind: json['kind'] as String?,
+      kind: kind is String
+          ? DraftLinkKind.fromJson(kind)
+          : DraftLinkKind.other,
     );
   }
 
@@ -94,7 +128,7 @@ class DraftLink {
     return {
       if (title != null) 'title': title,
       if (url != null) 'url': url,
-      if (kind != null) 'kind': kind,
+      if (kind != null) 'kind': kind!.name,
     };
   }
 }

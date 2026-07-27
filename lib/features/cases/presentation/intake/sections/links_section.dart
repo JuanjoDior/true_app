@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/case_draft_providers.dart';
 import '../../../application/draft_validator.dart';
 import '../../../domain/case_draft.dart';
-import '../../../domain/case_source.dart';
 
 /// Sección "Enlaces": fuentes externas (investigación, podcast…), opcional
 /// en v1. Los enlaces mal formados se marcan pero no bloquean el guardado
@@ -65,28 +64,33 @@ class LinksSection extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(width: 10),
-                DropdownButton<String>(
-                  key: Key('intake-field-link-kind-$i'),
-                  value: draft.links[i].kind ?? CaseSourceKind.investigation.name,
-                  items: [
-                    for (final kind in CaseSourceKind.values)
-                      DropdownMenuItem(
-                        value: kind.name,
-                        child: Text(kind.label),
-                      ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      replaceLink(
-                        i,
-                        (link) => DraftLink(
-                          title: link.title,
-                          url: link.url,
-                          kind: value,
+                SizedBox(
+                  width: 170,
+                  child: DropdownButtonFormField<DraftLinkKind>(
+                    key: Key('intake-field-link-kind-$i'),
+                    initialValue: draft.links[i].kind ?? DraftLinkKind.other,
+                    isExpanded: true,
+                    decoration: const InputDecoration(labelText: 'Tipo'),
+                    items: [
+                      for (final kind in DraftLinkKind.values)
+                        DropdownMenuItem(
+                          value: kind,
+                          child: Text(kind.label),
                         ),
-                      );
-                    }
-                  },
+                    ],
+                    onChanged: (value) {
+                      if (value != null) {
+                        replaceLink(
+                          i,
+                          (link) => DraftLink(
+                            title: link.title,
+                            url: link.url,
+                            kind: value,
+                          ),
+                        );
+                      }
+                    },
+                  ),
                 ),
                 IconButton(
                   key: Key('intake-field-link-remove-$i'),
