@@ -77,6 +77,34 @@ void main() {
     expect(restored.links.single.kind, DraftLinkKind.other);
   });
 
+  test('round-trips draft photos with their captions', () {
+    const draft = CaseDraft(
+      draftId: 'draft-photos',
+      photos: [
+        DraftPhoto(
+          url: 'https://example.com/foto.jpg',
+          caption: 'Fachada del edificio',
+        ),
+        DraftPhoto(url: 'https://example.com/plano.png'),
+      ],
+    );
+
+    final restored = CaseDraft.fromJson(draft.toJson());
+
+    expect(restored.photos, hasLength(2));
+    expect(restored.photos.first.url, 'https://example.com/foto.jpg');
+    expect(restored.photos.first.caption, 'Fachada del edificio');
+    expect(restored.photos.last.url, 'https://example.com/plano.png');
+    // El pie de foto es opcional.
+    expect(restored.photos.last.caption, isNull);
+  });
+
+  test('defaults photos to an empty list when absent from the payload', () {
+    final restored = CaseDraft.fromJson({'draftId': 'draft-sin-fotos'});
+
+    expect(restored.photos, isEmpty);
+  });
+
   test('applies tolerant defaults when fields are missing from the payload', () {
     final restored = CaseDraft.fromJson({'draftId': 'draft-2'});
 

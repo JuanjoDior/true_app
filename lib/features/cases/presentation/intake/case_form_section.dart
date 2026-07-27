@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'sections/basic_data_section.dart';
 import 'sections/links_section.dart';
+import 'sections/photos_section.dart';
 import 'sections/summary_section.dart';
 
 /// Sección independiente del formulario de intake: título editorial + un
@@ -28,5 +29,9 @@ final List<CaseFormSection> kCaseFormSections = <CaseFormSection>[
   CaseFormSection(
     title: 'Enlaces',
     builder: (context) => const LinksSection(),
+  ),
+  CaseFormSection(
+    title: 'Fotografías',
+    builder: (context) => const PhotosSection(),
   ),
 ];

@@ -23,8 +23,9 @@ class _FakeCaseDraftsStore implements CaseDraftsStore {
 
 Future<ProviderContainer> _pumpPreview(
   WidgetTester tester,
-  List<DraftLink> links,
-) async {
+  List<DraftLink> links, {
+  List<DraftPhoto> photos = const <DraftPhoto>[],
+}) async {
   final store = _FakeCaseDraftsStore();
   final container = ProviderContainer(
     overrides: [
@@ -37,7 +38,12 @@ Future<ProviderContainer> _pumpPreview(
   await container.read(caseDraftsProvider.future);
   final draftId = await container.read(caseDraftsProvider.notifier).createDraft();
   await container.read(caseDraftsProvider.notifier).updateDraft(
-        CaseDraft(draftId: draftId, title: 'Caso agrupado', links: links),
+        CaseDraft(
+          draftId: draftId,
+          title: 'Caso agrupado',
+          links: links,
+          photos: photos,
+        ),
       );
   container.read(editingDraftIdProvider.notifier).state = draftId;
 
@@ -139,5 +145,41 @@ void main() {
         findsNothing,
       );
     }
+  });
+
+  testWidgets('renders each draft photo with its caption', (tester) async {
+    await _pumpPreview(
+      tester,
+      const [],
+      photos: const [
+        DraftPhoto(
+          url: 'https://example.com/foto.jpg',
+          caption: 'Fachada del edificio',
+        ),
+        DraftPhoto(url: 'https://example.com/plano.png'),
+      ],
+    );
+
+    expect(find.byKey(const Key('intake-preview-photos')), findsOneWidget);
+    expect(find.byKey(const Key('intake-preview-photo-0')), findsOneWidget);
+    expect(find.byKey(const Key('intake-preview-photo-1')), findsOneWidget);
+    expect(find.text('Fachada del edificio'), findsOneWidget);
+  });
+
+  testWidgets('omits the photo section when the draft has no photos',
+      (tester) async {
+    await _pumpPreview(tester, const []);
+
+    expect(find.byKey(const Key('intake-preview-photos')), findsNothing);
+  });
+
+  testWidgets('skips photos without a URL instead of failing', (tester) async {
+    await _pumpPreview(
+      tester,
+      const [],
+      photos: const [DraftPhoto(caption: 'Pie sin imagen')],
+    );
+
+    expect(find.byKey(const Key('intake-preview-photos')), findsNothing);
   });
 }

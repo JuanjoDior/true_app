@@ -11,6 +11,7 @@ class DraftValidationResult {
     required this.yearError,
     required this.statusError,
     required this.linkErrors,
+    required this.photoErrors,
   });
 
   final String? titleError;
@@ -21,16 +22,22 @@ class DraftValidationResult {
   /// Un elemento por enlace del borrador; `null` si ese enlace es válido.
   final List<String?> linkErrors;
 
+  /// Un elemento por foto del borrador; `null` si esa URL es válida.
+  final List<String?> photoErrors;
+
   bool get hasRequiredFieldErrors =>
       titleError != null ||
       categoryError != null ||
       yearError != null ||
       statusError != null;
 
-  /// Válido para guardar/exportar: los enlaces mal formados NO bloquean.
+  /// Válido para guardar/exportar: los enlaces y fotos mal formados NO
+  /// bloquean, sólo se avisan.
   bool get isValid => !hasRequiredFieldErrors;
 
   bool get hasLinkWarnings => linkErrors.any((error) => error != null);
+
+  bool get hasPhotoWarnings => photoErrors.any((error) => error != null);
 }
 
 DraftValidationResult validateDraft(CaseDraft draft) {
@@ -41,6 +48,9 @@ DraftValidationResult validateDraft(CaseDraft draft) {
     statusError: validateStatus(draft.status),
     linkErrors: draft.links
         .map((link) => validateLinkUrl(link.url))
+        .toList(growable: false),
+    photoErrors: draft.photos
+        .map((photo) => validatePhotoUrl(photo.url))
         .toList(growable: false),
   );
 }
@@ -79,9 +89,21 @@ String? validateLinkUrl(String? url) {
   if (url == null || url.trim().isEmpty) {
     return null;
   }
+  return _isWellFormedUrl(url) ? null : 'El enlace no parece una URL válida';
+}
+
+/// Valida el formato de la URL de una foto. Mismo criterio que los enlaces:
+/// una URL vacía no se considera mal formada y nunca bloquea el guardado.
+String? validatePhotoUrl(String? url) {
+  if (url == null || url.trim().isEmpty) {
+    return null;
+  }
+  return _isWellFormedUrl(url) ? null : 'La foto no parece una URL válida';
+}
+
+bool _isWellFormedUrl(String url) {
   final uri = Uri.tryParse(url.trim());
-  final isValid = uri != null &&
+  return uri != null &&
       (uri.scheme == 'http' || uri.scheme == 'https') &&
       uri.host.isNotEmpty;
-  return isValid ? null : 'El enlace no parece una URL válida';
 }
