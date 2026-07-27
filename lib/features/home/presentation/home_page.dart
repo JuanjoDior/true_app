@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/theme/app_theme.dart';
 import '../../cases/application/cases_providers.dart';
+import '../../cases/presentation/intake/intake_workspace_screen.dart';
 import 'widgets/situation/case_dossier_panel.dart';
 import 'widgets/situation/situation_map_stage.dart';
 import 'widgets/situation/situation_nav_rail.dart';
@@ -11,12 +12,18 @@ import 'widgets/situation/situation_top_bar.dart';
 import 'widgets/situation/updates_ticker.dart';
 
 /// Sala de Situación: shell a pantalla completa con cabecera, ticker, rail,
-/// mapa central y panel lateral de expediente/destacado.
+/// mapa central y panel lateral de expediente/destacado. Alterna con el
+/// workspace de intake de Iván según `workspaceProvider`.
 class TrueCrimeHomePage extends ConsumerWidget {
   const TrueCrimeHomePage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final workspace = ref.watch(workspaceProvider);
+    if (workspace == Workspace.intake) {
+      return const IntakeWorkspaceScreen();
+    }
+
     final width = MediaQuery.sizeOf(context).width;
     final showRail = width >= 1100;
     final showSidePanel = width >= 880;

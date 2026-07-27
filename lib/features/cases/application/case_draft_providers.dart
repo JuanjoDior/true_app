@@ -1,0 +1,121 @@
+import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_riverpod/legacy.dart' show StateProvider;
+
+import '../data/case_drafts_store.dart';
+import '../domain/case_category.dart';
+import '../domain/case_draft.dart';
+import '../domain/case_source.dart';
+import '../domain/case_status.dart';
+import '../domain/true_crime_case.dart';
+
+/// Store de borradores, sobreescribible en tests (mismo patrón que
+/// `casesRepositoryProvider`).
+final caseDraftsStoreProvider = Provider<CaseDraftsStore>((ref) {
+  return SharedPreferencesCaseDraftsStore();
+});
+
+/// CRUD de borradores de Iván: crear, editar (autosave), reanudar y borrar.
+class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
+  @override
+  FutureOr<List<CaseDraft>> build() async {
+    final store = ref.watch(caseDraftsStoreProvider);
+    return store.loadDrafts();
+  }
+
+  CaseDraftsStore get _store => ref.read(caseDraftsStoreProvider);
+
+  /// Crea un borrador vacío y lo persiste de inmediato.
+  Future<String> createDraft() async {
+    final drafts = state.value ?? const <CaseDraft>[];
+    final draftId = 'draft-${DateTime.now().millisecondsSinceEpoch}';
+    final updated = [...drafts, CaseDraft(draftId: draftId)];
+    state = AsyncData(updated);
+    await _store.saveDrafts(updated);
+    return draftId;
+  }
+
+  /// Reemplaza un borrador existente y autoguarda el cambio.
+  Future<void> updateDraft(CaseDraft draft) async {
+    final drafts = state.value ?? const <CaseDraft>[];
+    final updated = [
+      for (final existing in drafts)
+        if (existing.draftId == draft.draftId) draft else existing,
+    ];
+    state = AsyncData(updated);
+    await _store.saveDrafts(updated);
+  }
+
+  /// Elimina un borrador y lo quita del almacenamiento local.
+  Future<void> deleteDraft(String draftId) async {
+    final drafts = state.value ?? const <CaseDraft>[];
+    final updated = drafts
+        .where((draft) => draft.draftId != draftId)
+        .toList(growable: false);
+    state = AsyncData(updated);
+    await _store.saveDrafts(updated);
+  }
+}
+
+final caseDraftsProvider =
+    AsyncNotifierProvider<CaseDraftsNotifier, List<CaseDraft>>(
+  CaseDraftsNotifier.new,
+);
+
+/// Borrador que se está editando en el workspace de intake (null = ninguno).
+final editingDraftIdProvider = StateProvider<String?>((ref) => null);
+
+/// Borrador actualmente en edición, resuelto a partir de
+/// [editingDraftIdProvider] (mismo patrón que `selectedCaseProvider`).
+final editingDraftProvider = Provider<CaseDraft?>((ref) {
+  final draftId = ref.watch(editingDraftIdProvider);
+  if (draftId == null) {
+    return null;
+  }
+  final drafts = ref.watch(caseDraftsProvider).value ?? const <CaseDraft>[];
+  for (final draft in drafts) {
+    if (draft.draftId == draftId) {
+      return draft;
+    }
+  }
+  return null;
+});
+
+/// Convierte el borrador en edición en un `TrueCrimeCase` de solo
+/// previsualización, para reutilizar `CaseDossierPanel` sin tocar el catálogo
+/// publicado (diseño #5). Campos sin geolocalización usan placeholders.
+final draftPreviewCaseProvider = Provider<TrueCrimeCase?>((ref) {
+  final draft = ref.watch(editingDraftProvider);
+  if (draft == null) {
+    return null;
+  }
+
+  return TrueCrimeCase(
+    id: draft.draftId,
+    slug: draft.draftId,
+    title: draft.title ?? 'Sin título',
+    category: draft.category ?? CaseCategory.unsolved,
+    country: 'Por confirmar',
+    countryCode: '--',
+    regionOrCity: 'Por confirmar',
+    year: draft.year ?? 0,
+    latitude: 0,
+    longitude: 0,
+    summary: draft.summary ?? '',
+    tags: const <String>[],
+    sources: [
+      for (final link in draft.links)
+        if (link.url != null && link.url!.trim().isNotEmpty)
+          CaseSource(
+            id: link.url!,
+            title: link.title?.isNotEmpty == true ? link.title! : link.url!,
+            url: link.url!,
+            kind: link.kind == CaseSourceKind.podcast.name
+                ? CaseSourceKind.podcast
+                : CaseSourceKind.investigation,
+          ),
+    ],
+    status: draft.status ?? CaseStatus.open,
+  );
+});

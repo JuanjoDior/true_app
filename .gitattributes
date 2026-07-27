@@ -1,0 +1,17 @@
+# Normaliza line endings: LF en el repo, evita ruido CRLF en Windows
+* text=auto eol=lf
+
+# Binarios comunes
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.ttf binary
+*.otf binary
+*.jar binary
+
+# Scripts de Windows sí necesitan CRLF
+*.bat text eol=crlf
+*.ps1 text eol=crlf

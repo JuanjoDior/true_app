@@ -5,6 +5,8 @@
 *.swp
 .DS_Store
 .atom/
+.atl/
+.engram/
 .build/
 .buildlog/
 .history

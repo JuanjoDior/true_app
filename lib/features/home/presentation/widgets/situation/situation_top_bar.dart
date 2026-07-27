@@ -47,6 +47,8 @@ class _SituationTopBarState extends ConsumerState<SituationTopBar> {
           const _Wordmark(),
           const SizedBox(width: 16),
           Expanded(child: Center(child: _SearchField(controller: _controller))),
+          const SizedBox(width: 12),
+          const _IntakeEntryButton(),
           const SizedBox(width: 16),
           if (!widget.compact) ...[
             _Stat(value: '${stats.documented}', label: 'DOCUMENTADOS'),
@@ -178,6 +180,39 @@ class _SearchField extends ConsumerWidget {
               child: Text('⌘K', style: SituationStyles.mono(size: 10)),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Entrada al workspace de intake de Iván, visible también en móvil (donde
+/// el rail lateral desaparece por falta de espacio).
+class _IntakeEntryButton extends ConsumerWidget {
+  const _IntakeEntryButton();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        key: const Key('top-bar-intake-entry'),
+        onTap: () =>
+            ref.read(workspaceProvider.notifier).state = Workspace.intake,
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: AppColors.inputFill,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.add_box_outlined,
+            size: 17,
+            color: AppColors.textSoft,
+          ),
         ),
       ),
     );
