@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../../../../core/config/map_config.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../cases/application/cases_providers.dart';
+import '../../../../cases/domain/case_photo.dart';
 import '../../../../cases/domain/case_source.dart';
 import '../../../../cases/domain/case_timeline_event.dart';
 import '../../../../cases/domain/true_crime_case.dart';
@@ -43,6 +44,12 @@ class CaseDossierPanel extends ConsumerWidget {
                     height: 1.65,
                   ),
                 ),
+                if (crimeCase.photos.isNotEmpty) ...[
+                  const SizedBox(height: 22),
+                  const SituationSectionLabel('Fotografías'),
+                  const SizedBox(height: 12),
+                  _PhotoStrip(photos: crimeCase.photos),
+                ],
                 if (crimeCase.timeline.isNotEmpty) ...[
                   const SizedBox(height: 22),
                   const SituationSectionLabel('Cronología verificada'),
@@ -294,6 +301,81 @@ class _StatCell extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Tira horizontal de fotografías del caso. Una URL rota muestra un marcador
+/// de posición en lugar de romper la ficha.
+class _PhotoStrip extends StatelessWidget {
+  const _PhotoStrip({required this.photos});
+
+  final List<CasePhoto> photos;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      key: const Key('case-photos'),
+      height: 130,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: photos.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 10),
+        itemBuilder: (context, index) {
+          final photo = photos[index];
+          return SizedBox(
+            key: Key('case-photo-$index'),
+            width: 165,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(7),
+                    child: Image.network(
+                      photo.url,
+                      width: 165,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const _PhotoPlaceholder(),
+                    ),
+                  ),
+                ),
+                if (photo.caption != null) ...[
+                  const SizedBox(height: 5),
+                  Text(
+                    photo.caption!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: SituationStyles.sans(
+                      size: 11,
+                      color: AppColors.textSub,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _PhotoPlaceholder extends StatelessWidget {
+  const _PhotoPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 165,
+      color: AppColors.card,
+      alignment: Alignment.center,
+      child: const Icon(
+        Icons.image_not_supported_outlined,
+        size: 18,
+        color: AppColors.textSub,
       ),
     );
   }

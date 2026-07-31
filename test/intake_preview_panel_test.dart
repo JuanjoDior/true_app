@@ -160,9 +160,11 @@ void main() {
       ],
     );
 
-    expect(find.byKey(const Key('intake-preview-photos')), findsOneWidget);
-    expect(find.byKey(const Key('intake-preview-photo-0')), findsOneWidget);
-    expect(find.byKey(const Key('intake-preview-photo-1')), findsOneWidget);
+    // Las fotos se pintan con el mismo widget que un caso publicado, no con
+    // una tira propia de la previsualización [Spec: Expediente Preview Parity].
+    expect(find.byKey(const Key('case-photos')), findsOneWidget);
+    expect(find.byKey(const Key('case-photo-0')), findsOneWidget);
+    expect(find.byKey(const Key('case-photo-1')), findsOneWidget);
     expect(find.text('Fachada del edificio'), findsOneWidget);
   });
 
@@ -170,7 +172,7 @@ void main() {
       (tester) async {
     await _pumpPreview(tester, const []);
 
-    expect(find.byKey(const Key('intake-preview-photos')), findsNothing);
+    expect(find.byKey(const Key('case-photos')), findsNothing);
   });
 
   testWidgets('skips photos without a URL instead of failing', (tester) async {
@@ -180,6 +182,6 @@ void main() {
       photos: const [DraftPhoto(caption: 'Pie sin imagen')],
     );
 
-    expect(find.byKey(const Key('intake-preview-photos')), findsNothing);
+    expect(find.byKey(const Key('case-photos')), findsNothing);
   });
 }

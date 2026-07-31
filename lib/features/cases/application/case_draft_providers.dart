@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import '../data/case_drafts_store.dart';
 import '../domain/case_category.dart';
 import '../domain/case_draft.dart';
+import '../domain/case_photo.dart';
 import '../domain/case_source.dart';
 import '../domain/case_status.dart';
 import '../domain/true_crime_case.dart';
@@ -147,5 +148,17 @@ final draftPreviewCaseProvider = Provider<TrueCrimeCase?>((ref) {
           ),
     ],
     status: draft.status ?? CaseStatus.open,
+    // Sólo se previsualizan las fotos que ya tienen URL; el resto todavía no
+    // se puede pintar.
+    photos: [
+      for (final photo in draft.photos)
+        if (photo.url?.trim().isNotEmpty ?? false)
+          CasePhoto(
+            url: photo.url!.trim(),
+            caption: photo.caption?.trim().isNotEmpty ?? false
+                ? photo.caption!.trim()
+                : null,
+          ),
+    ],
   );
 });

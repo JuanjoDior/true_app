@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 
 import 'case_category.dart';
+import 'case_photo.dart';
 import 'case_source.dart';
 import 'case_status.dart';
 import 'case_timeline_event.dart';
@@ -26,6 +27,7 @@ class TrueCrimeCase {
     this.statusLabel,
     this.victim,
     this.timeline = const <CaseTimelineEvent>[],
+    this.photos = const <CasePhoto>[],
   });
 
   final String id;
@@ -55,6 +57,9 @@ class TrueCrimeCase {
 
   /// Cronología verificada del caso.
   final List<CaseTimelineEvent> timeline;
+
+  /// Fotografías del caso, alojadas fuera y referenciadas por URL.
+  final List<CasePhoto> photos;
 
   LatLng get location => LatLng(latitude, longitude);
 
@@ -108,6 +113,10 @@ class TrueCrimeCase {
       timeline: (json['timeline'] as List<dynamic>? ?? const [])
           .map((event) =>
               CaseTimelineEvent.fromJson(event as Map<String, dynamic>))
+          .toList(growable: false),
+      photos: (json['photos'] as List<dynamic>? ?? const [])
+          .map((photo) => CasePhoto.tryFromJson(photo as Map<String, dynamic>))
+          .nonNulls
           .toList(growable: false),
     );
   }

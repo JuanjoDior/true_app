@@ -27,16 +27,14 @@ class IntakePreviewPanel extends ConsumerWidget {
 
     final draft = ref.watch(editingDraftProvider);
     final groups = _groupLinksByKind(draft?.links ?? const <DraftLink>[]);
-    // Sólo se previsualizan las fotos que ya tienen URL.
-    final photos = (draft?.photos ?? const <DraftPhoto>[])
-        .where((photo) => photo.url?.trim().isNotEmpty == true)
-        .toList(growable: false);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Las fotografías las pinta el propio expediente, igual que en un caso
+        // publicado; aquí sólo se añaden los enlaces agrupados por tipo.
         Expanded(child: CaseDossierPanel(crimeCase: previewCase)),
-        if (groups.isNotEmpty || photos.isNotEmpty)
+        if (groups.isNotEmpty)
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 260),
             child: SingleChildScrollView(
@@ -46,94 +44,11 @@ class IntakePreviewPanel extends ConsumerWidget {
                 children: [
                   for (final entry in groups.entries)
                     _LinkGroup(kind: entry.key, links: entry.value),
-                  if (photos.isNotEmpty) _PhotoStrip(photos: photos),
                 ],
               ),
             ),
           ),
       ],
-    );
-  }
-}
-
-/// Tira horizontal de fotografías del borrador. Una URL rota muestra un
-/// marcador de posición en lugar de romper la previsualización.
-class _PhotoStrip extends StatelessWidget {
-  const _PhotoStrip({required this.photos});
-
-  final List<DraftPhoto> photos;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      key: const Key('intake-preview-photos'),
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SituationSectionLabel('Fotografías'),
-        const SizedBox(height: 8),
-        SizedBox(
-          height: 120,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: photos.length,
-            separatorBuilder: (_, _) => const SizedBox(width: 10),
-            itemBuilder: (context, index) {
-              final photo = photos[index];
-              return SizedBox(
-                key: Key('intake-preview-photo-$index'),
-                width: 150,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: Image.network(
-                          photo.url!,
-                          width: 150,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const _PhotoPlaceholder(),
-                        ),
-                      ),
-                    ),
-                    if (photo.caption?.isNotEmpty == true) ...[
-                      const SizedBox(height: 4),
-                      Text(
-                        photo.caption!,
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                        style: SituationStyles.sans(
-                          size: 11,
-                          color: AppColors.textSub,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _PhotoPlaceholder extends StatelessWidget {
-  const _PhotoPlaceholder();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 150,
-      color: AppColors.textSub.withValues(alpha: 0.12),
-      alignment: Alignment.center,
-      child: Icon(
-        Icons.image_not_supported_outlined,
-        size: 18,
-        color: AppColors.textSub,
-      ),
     );
   }
 }
