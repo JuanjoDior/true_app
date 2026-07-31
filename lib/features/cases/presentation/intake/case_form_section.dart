@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 
 import 'sections/basic_data_section.dart';
 import 'sections/links_section.dart';
+import 'sections/location_section.dart';
 import 'sections/photos_section.dart';
 import 'sections/summary_section.dart';
 
@@ -21,6 +22,10 @@ final List<CaseFormSection> kCaseFormSections = <CaseFormSection>[
   CaseFormSection(
     title: 'Datos básicos',
     builder: (context) => const BasicDataSection(),
+  ),
+  CaseFormSection(
+    title: 'Ubicación',
+    builder: (context) => const LocationSection(),
   ),
   CaseFormSection(
     title: 'Resumen',

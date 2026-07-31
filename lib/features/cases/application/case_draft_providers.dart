@@ -47,6 +47,30 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
     await _store.saveDrafts(updated);
   }
 
+  /// Aplica un cambio sobre el borrador **tal y como está ahora**, en vez de
+  /// sobre una copia capturada antes.
+  ///
+  /// El formulario lee el borrador en su `build`, así que dos campos editados
+  /// antes de que Flutter reconstruya parten del mismo borrador viejo. Con
+  /// `updateDraft` el segundo pisaba lo escrito por el primero y la pérdida
+  /// era silenciosa; recibiendo la transformación, cada edición se aplica
+  /// sobre el estado vigente.
+  Future<void> editDraft(
+    String draftId,
+    CaseDraft Function(CaseDraft current) update,
+  ) async {
+    final drafts = state.value ?? const <CaseDraft>[];
+    if (!drafts.any((draft) => draft.draftId == draftId)) {
+      return;
+    }
+    final updated = [
+      for (final existing in drafts)
+        if (existing.draftId == draftId) update(existing) else existing,
+    ];
+    state = AsyncData(updated);
+    await _store.saveDrafts(updated);
+  }
+
   /// Elimina un borrador y lo quita del almacenamiento local.
   Future<void> deleteDraft(String draftId) async {
     final drafts = state.value ?? const <CaseDraft>[];
@@ -84,7 +108,7 @@ final editingDraftProvider = Provider<CaseDraft?>((ref) {
 
 /// Convierte el borrador en edición en un `TrueCrimeCase` de solo
 /// previsualización, para reutilizar `CaseDossierPanel` sin tocar el catálogo
-/// publicado (diseño #5). Campos sin geolocalización usan placeholders.
+/// publicado (diseño #5). Los campos aún sin rellenar usan placeholders.
 final draftPreviewCaseProvider = Provider<TrueCrimeCase?>((ref) {
   final draft = ref.watch(editingDraftProvider);
   if (draft == null) {
@@ -96,12 +120,18 @@ final draftPreviewCaseProvider = Provider<TrueCrimeCase?>((ref) {
     slug: draft.draftId,
     title: draft.title ?? 'Sin título',
     category: draft.category ?? CaseCategory.unsolved,
-    country: 'Por confirmar',
-    countryCode: '--',
-    regionOrCity: 'Por confirmar',
+    country: draft.country?.trim().isNotEmpty ?? false
+        ? draft.country!.trim()
+        : 'Por confirmar',
+    countryCode: draft.countryCode?.trim().isNotEmpty ?? false
+        ? draft.countryCode!.trim().toUpperCase()
+        : '--',
+    regionOrCity: draft.regionOrCity?.trim().isNotEmpty ?? false
+        ? draft.regionOrCity!.trim()
+        : 'Por confirmar',
     year: draft.year ?? 0,
-    latitude: 0,
-    longitude: 0,
+    latitude: draft.latitude ?? 0,
+    longitude: draft.longitude ?? 0,
     summary: draft.summary ?? '',
     tags: const <String>[],
     sources: [

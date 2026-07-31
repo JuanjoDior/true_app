@@ -10,6 +10,11 @@ class DraftValidationResult {
     required this.categoryError,
     required this.yearError,
     required this.statusError,
+    required this.countryError,
+    required this.countryCodeError,
+    required this.regionOrCityError,
+    required this.latitudeError,
+    required this.longitudeError,
     required this.linkErrors,
     required this.photoErrors,
   });
@@ -18,6 +23,11 @@ class DraftValidationResult {
   final String? categoryError;
   final String? yearError;
   final String? statusError;
+  final String? countryError;
+  final String? countryCodeError;
+  final String? regionOrCityError;
+  final String? latitudeError;
+  final String? longitudeError;
 
   /// Un elemento por enlace del borrador; `null` si ese enlace es válido.
   final List<String?> linkErrors;
@@ -29,7 +39,12 @@ class DraftValidationResult {
       titleError != null ||
       categoryError != null ||
       yearError != null ||
-      statusError != null;
+      statusError != null ||
+      countryError != null ||
+      countryCodeError != null ||
+      regionOrCityError != null ||
+      latitudeError != null ||
+      longitudeError != null;
 
   /// Válido para guardar/exportar: los enlaces y fotos mal formados NO
   /// bloquean, sólo se avisan.
@@ -46,6 +61,11 @@ DraftValidationResult validateDraft(CaseDraft draft) {
     categoryError: validateCategory(draft.category),
     yearError: validateYear(draft.year),
     statusError: validateStatus(draft.status),
+    countryError: validateCountry(draft.country),
+    countryCodeError: validateCountryCode(draft.countryCode),
+    regionOrCityError: validateRegionOrCity(draft.regionOrCity),
+    latitudeError: validateLatitude(draft.latitude),
+    longitudeError: validateLongitude(draft.longitude),
     linkErrors: draft.links
         .map((link) => validateLinkUrl(link.url))
         .toList(growable: false),
@@ -79,6 +99,53 @@ String? validateYear(int? year) {
 String? validateStatus(CaseStatus? status) {
   if (status == null) {
     return 'El estado es obligatorio';
+  }
+  return null;
+}
+
+String? validateCountry(String? country) {
+  if (country == null || country.trim().isEmpty) {
+    return 'El país es obligatorio';
+  }
+  return null;
+}
+
+/// El código de país debe ser ISO de dos letras. Se admite en minúsculas
+/// porque el exportador lo normaliza a mayúsculas.
+String? validateCountryCode(String? countryCode) {
+  final value = countryCode?.trim() ?? '';
+  if (value.isEmpty) {
+    return 'El código de país es obligatorio';
+  }
+  if (!RegExp(r'^[A-Za-z]{2}$').hasMatch(value)) {
+    return 'Usa el código ISO de dos letras (ES, US, GB…)';
+  }
+  return null;
+}
+
+String? validateRegionOrCity(String? regionOrCity) {
+  if (regionOrCity == null || regionOrCity.trim().isEmpty) {
+    return 'La región o ciudad es obligatoria';
+  }
+  return null;
+}
+
+String? validateLatitude(double? latitude) {
+  if (latitude == null) {
+    return 'La latitud es obligatoria';
+  }
+  if (latitude < -90 || latitude > 90) {
+    return 'La latitud va de -90 a 90';
+  }
+  return null;
+}
+
+String? validateLongitude(double? longitude) {
+  if (longitude == null) {
+    return 'La longitud es obligatoria';
+  }
+  if (longitude < -180 || longitude > 180) {
+    return 'La longitud va de -180 a 180';
   }
   return null;
 }

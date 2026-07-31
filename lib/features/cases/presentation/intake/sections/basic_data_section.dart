@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/case_draft_providers.dart';
 import '../../../application/draft_validator.dart';
 import '../../../domain/case_category.dart';
+import '../../../domain/case_draft.dart';
 import '../../../domain/case_status.dart';
 
 /// Sección "Datos básicos": título, categoría, año y estado — los cuatro
@@ -19,6 +20,12 @@ class BasicDataSection extends ConsumerWidget {
     }
     final notifier = ref.read(caseDraftsProvider.notifier);
 
+    // Se edita sobre el borrador vigente, no sobre el capturado en este
+    // `build`: escribir en dos campos seguidos no debe perder el primero.
+    void edit(CaseDraft Function(CaseDraft current) update) {
+      notifier.editDraft(draft.draftId, update);
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -30,7 +37,7 @@ class BasicDataSection extends ConsumerWidget {
             errorText: validateTitle(draft.title),
           ),
           onChanged: (value) =>
-              notifier.updateDraft(draft.copyWith(title: value)),
+              edit((current) => current.copyWith(title: value)),
         ),
         const SizedBox(height: 12),
         DropdownButtonFormField<CaseCategory>(
@@ -46,7 +53,7 @@ class BasicDataSection extends ConsumerWidget {
           ],
           onChanged: (value) {
             if (value != null) {
-              notifier.updateDraft(draft.copyWith(category: value));
+              edit((current) => current.copyWith(category: value));
             }
           },
         ),
@@ -62,7 +69,7 @@ class BasicDataSection extends ConsumerWidget {
           onChanged: (value) {
             final parsed = int.tryParse(value);
             if (parsed != null) {
-              notifier.updateDraft(draft.copyWith(year: parsed));
+              edit((current) => current.copyWith(year: parsed));
             }
           },
         ),
@@ -80,7 +87,7 @@ class BasicDataSection extends ConsumerWidget {
           ],
           onChanged: (value) {
             if (value != null) {
-              notifier.updateDraft(draft.copyWith(status: value));
+              edit((current) => current.copyWith(status: value));
             }
           },
         ),

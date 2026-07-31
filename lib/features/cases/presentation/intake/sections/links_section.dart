@@ -19,10 +19,17 @@ class LinksSection extends ConsumerWidget {
     }
     final notifier = ref.read(caseDraftsProvider.notifier);
 
+    // Todas las mutaciones parten de la lista vigente, no de la capturada en
+    // este `build`: editar dos campos seguidos no debe perder el primero.
     void replaceLink(int index, DraftLink Function(DraftLink current) update) {
-      final links = [...draft.links];
-      links[index] = update(links[index]);
-      notifier.updateDraft(draft.copyWith(links: links));
+      notifier.editDraft(draft.draftId, (current) {
+        if (index >= current.links.length) {
+          return current;
+        }
+        final links = [...current.links];
+        links[index] = update(links[index]);
+        return current.copyWith(links: links);
+      });
     }
 
     return Column(
@@ -95,20 +102,26 @@ class LinksSection extends ConsumerWidget {
                 IconButton(
                   key: Key('intake-field-link-remove-$i'),
                   icon: const Icon(Icons.close, size: 16),
-                  onPressed: () {
-                    final links = [...draft.links]..removeAt(i);
-                    notifier.updateDraft(draft.copyWith(links: links));
-                  },
+                  onPressed: () => notifier.editDraft(draft.draftId, (current) {
+                    if (i >= current.links.length) {
+                      return current;
+                    }
+                    return current.copyWith(
+                      links: [...current.links]..removeAt(i),
+                    );
+                  }),
                 ),
               ],
             ),
           ),
         TextButton.icon(
           key: const Key('intake-add-link-button'),
-          onPressed: () {
-            final links = [...draft.links, const DraftLink()];
-            notifier.updateDraft(draft.copyWith(links: links));
-          },
+          onPressed: () => notifier.editDraft(
+            draft.draftId,
+            (current) => current.copyWith(
+              links: [...current.links, const DraftLink()],
+            ),
+          ),
           icon: const Icon(Icons.add, size: 16),
           label: const Text('Añadir enlace'),
         ),

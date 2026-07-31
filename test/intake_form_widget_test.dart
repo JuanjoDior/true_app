@@ -183,6 +183,13 @@ void main() {
       );
       await tester.pump();
 
+      // El formulario ya no cabe en el viewport de test: hay que traer el
+      // desplegable a pantalla antes de tocarlo.
+      await tester.ensureVisible(
+        find.byKey(const Key('intake-field-link-kind-0')),
+      );
+      await tester.pumpAndSettle();
+
       await tester.tap(find.byKey(const Key('intake-field-link-kind-0')));
       await tester.pumpAndSettle();
 

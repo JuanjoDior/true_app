@@ -59,6 +59,73 @@ void main() {
     expect(store.saved.first.title, 'Nuevo título');
   });
 
+  test('applies an edit on top of the draft as it is right now', () async {
+    final store = _FakeCaseDraftsStore();
+    final container = ProviderContainer(
+      overrides: [caseDraftsStoreProvider.overrideWithValue(store)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(caseDraftsProvider.future);
+    final draftId =
+        await container.read(caseDraftsProvider.notifier).createDraft();
+    final notifier = container.read(caseDraftsProvider.notifier);
+
+    await notifier.editDraft(draftId, (draft) => draft.copyWith(title: 'Faro'));
+    await notifier.editDraft(draftId, (draft) => draft.copyWith(year: 1974));
+
+    final drafts = container.read(caseDraftsProvider).value!;
+    expect(drafts.single.title, 'Faro');
+    expect(drafts.single.year, 1974);
+  });
+
+  test('two edits derived from the same stale snapshot both survive', () async {
+    // El formulario captura el borrador en su `build`. Si dos campos se
+    // editan antes de que Flutter reconstruya, ambos parten del MISMO
+    // borrador viejo — y el segundo no debe borrar lo que escribió el
+    // primero.
+    final store = _FakeCaseDraftsStore();
+    final container = ProviderContainer(
+      overrides: [caseDraftsStoreProvider.overrideWithValue(store)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(caseDraftsProvider.future);
+    final draftId =
+        await container.read(caseDraftsProvider.notifier).createDraft();
+    final notifier = container.read(caseDraftsProvider.notifier);
+
+    final futures = [
+      notifier.editDraft(draftId, (draft) => draft.copyWith(title: 'Faro')),
+      notifier.editDraft(draftId, (draft) => draft.copyWith(latitude: 43.39)),
+    ];
+    await Future.wait(futures);
+
+    final drafts = container.read(caseDraftsProvider).value!;
+    expect(drafts.single.title, 'Faro');
+    expect(drafts.single.latitude, 43.39);
+    expect(store.saved.single.title, 'Faro');
+    expect(store.saved.single.latitude, 43.39);
+  });
+
+  test('ignores an edit aimed at a draft that no longer exists', () async {
+    final store = _FakeCaseDraftsStore();
+    final container = ProviderContainer(
+      overrides: [caseDraftsStoreProvider.overrideWithValue(store)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(caseDraftsProvider.future);
+    final draftId =
+        await container.read(caseDraftsProvider.notifier).createDraft();
+    final notifier = container.read(caseDraftsProvider.notifier);
+    await notifier.deleteDraft(draftId);
+
+    await notifier.editDraft(draftId, (draft) => draft.copyWith(title: 'Faro'));
+
+    expect(container.read(caseDraftsProvider).value, isEmpty);
+  });
+
   test('resumes drafts from a prior session on reload', () async {
     final store = _FakeCaseDraftsStore();
     final firstContainer = ProviderContainer(

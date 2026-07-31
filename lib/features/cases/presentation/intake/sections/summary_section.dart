@@ -20,8 +20,12 @@ class SummarySection extends ConsumerWidget {
       initialValue: draft.summary,
       maxLines: 6,
       decoration: const InputDecoration(labelText: 'Resumen del caso'),
-      onChanged: (value) =>
-          notifier.updateDraft(draft.copyWith(summary: value)),
+      // Se edita sobre el borrador vigente, no sobre el capturado en este
+      // `build`: escribir en dos campos seguidos no debe perder el primero.
+      onChanged: (value) => notifier.editDraft(
+        draft.draftId,
+        (current) => current.copyWith(summary: value),
+      ),
     );
   }
 }

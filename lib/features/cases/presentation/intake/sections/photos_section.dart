@@ -19,10 +19,17 @@ class PhotosSection extends ConsumerWidget {
     }
     final notifier = ref.read(caseDraftsProvider.notifier);
 
+    // Todas las mutaciones parten de la lista vigente, no de la capturada en
+    // este `build`: editar dos campos seguidos no debe perder el primero.
     void replacePhoto(int index, DraftPhoto Function(DraftPhoto current) update) {
-      final photos = [...draft.photos];
-      photos[index] = update(photos[index]);
-      notifier.updateDraft(draft.copyWith(photos: photos));
+      notifier.editDraft(draft.draftId, (current) {
+        if (index >= current.photos.length) {
+          return current;
+        }
+        final photos = [...current.photos];
+        photos[index] = update(photos[index]);
+        return current.copyWith(photos: photos);
+      });
     }
 
     return Column(
@@ -66,20 +73,26 @@ class PhotosSection extends ConsumerWidget {
                 IconButton(
                   key: Key('intake-field-photo-remove-$i'),
                   icon: const Icon(Icons.close, size: 16),
-                  onPressed: () {
-                    final photos = [...draft.photos]..removeAt(i);
-                    notifier.updateDraft(draft.copyWith(photos: photos));
-                  },
+                  onPressed: () => notifier.editDraft(draft.draftId, (current) {
+                    if (i >= current.photos.length) {
+                      return current;
+                    }
+                    return current.copyWith(
+                      photos: [...current.photos]..removeAt(i),
+                    );
+                  }),
                 ),
               ],
             ),
           ),
         TextButton.icon(
           key: const Key('intake-add-photo-button'),
-          onPressed: () {
-            final photos = [...draft.photos, const DraftPhoto()];
-            notifier.updateDraft(draft.copyWith(photos: photos));
-          },
+          onPressed: () => notifier.editDraft(
+            draft.draftId,
+            (current) => current.copyWith(
+              photos: [...current.photos, const DraftPhoto()],
+            ),
+          ),
           icon: const Icon(Icons.add, size: 16),
           label: const Text('Añadir fotografía'),
         ),

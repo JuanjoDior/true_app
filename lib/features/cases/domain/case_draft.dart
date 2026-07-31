@@ -12,6 +12,11 @@ class CaseDraft {
     this.year,
     this.status,
     this.summary,
+    this.country,
+    this.countryCode,
+    this.regionOrCity,
+    this.latitude,
+    this.longitude,
     this.links = const <DraftLink>[],
     this.photos = const <DraftPhoto>[],
   });
@@ -23,6 +28,16 @@ class CaseDraft {
   final int? year;
   final CaseStatus? status;
   final String? summary;
+
+  /// Ubicación del caso. Es obligatoria para publicar: sin coordenadas el
+  /// caso no puede pintarse en el mapa, que es el núcleo del producto.
+  final String? country;
+
+  /// Código ISO de dos letras del país, p. ej. `ES`.
+  final String? countryCode;
+  final String? regionOrCity;
+  final double? latitude;
+  final double? longitude;
   final List<DraftLink> links;
 
   /// Fotografías del caso: sólo URLs ya alojadas, sin subida de archivos
@@ -35,6 +50,11 @@ class CaseDraft {
     int? year,
     CaseStatus? status,
     String? summary,
+    String? country,
+    String? countryCode,
+    String? regionOrCity,
+    double? latitude,
+    double? longitude,
     List<DraftLink>? links,
     List<DraftPhoto>? photos,
   }) {
@@ -45,6 +65,11 @@ class CaseDraft {
       year: year ?? this.year,
       status: status ?? this.status,
       summary: summary ?? this.summary,
+      country: country ?? this.country,
+      countryCode: countryCode ?? this.countryCode,
+      regionOrCity: regionOrCity ?? this.regionOrCity,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
       links: links ?? this.links,
       photos: photos ?? this.photos,
     );
@@ -62,6 +87,13 @@ class CaseDraft {
           ? null
           : CaseStatus.fromJson(json['status'] as String),
       summary: json['summary'] as String?,
+      country: json['country'] as String?,
+      countryCode: json['countryCode'] as String?,
+      regionOrCity: json['regionOrCity'] as String?,
+      // `num` y no `double`: jsonDecode devuelve int para una coordenada
+      // entera como 40.
+      latitude: (json['latitude'] as num?)?.toDouble(),
+      longitude: (json['longitude'] as num?)?.toDouble(),
       links: (json['links'] as List<dynamic>? ?? const [])
           .map((link) => DraftLink.fromJson(link as Map<String, dynamic>))
           .toList(growable: false),
@@ -79,6 +111,11 @@ class CaseDraft {
       if (year != null) 'year': year,
       if (status != null) 'status': status!.name,
       if (summary != null) 'summary': summary,
+      if (country != null) 'country': country,
+      if (countryCode != null) 'countryCode': countryCode,
+      if (regionOrCity != null) 'regionOrCity': regionOrCity,
+      if (latitude != null) 'latitude': latitude,
+      if (longitude != null) 'longitude': longitude,
       'links': links.map((link) => link.toJson()).toList(),
       'photos': photos.map((photo) => photo.toJson()).toList(),
     };

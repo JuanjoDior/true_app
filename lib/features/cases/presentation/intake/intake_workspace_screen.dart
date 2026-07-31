@@ -8,6 +8,7 @@ import '../../application/cases_providers.dart';
 import '../../application/draft_validator.dart';
 import '../../domain/case_draft.dart';
 import 'case_form_section.dart';
+import 'export_case_button.dart';
 import 'intake_gate_screen.dart';
 import 'intake_preview_panel.dart';
 
@@ -99,6 +100,8 @@ class _WorkspaceTopBar extends ConsumerWidget {
           ),
           Text('Formulario de casos', style: SituationStyles.serif(size: 16)),
           const Spacer(),
+          const ExportCaseButton(),
+          const SizedBox(width: 8),
           TextButton.icon(
             key: const Key('intake-new-draft-button'),
             onPressed: () async {

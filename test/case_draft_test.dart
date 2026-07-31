@@ -105,6 +105,53 @@ void main() {
     expect(restored.photos, isEmpty);
   });
 
+  test('round-trips the location fields of a draft', () {
+    const draft = CaseDraft(
+      draftId: 'draft-ubicacion',
+      country: 'España',
+      countryCode: 'ES',
+      regionOrCity: 'Cuenca',
+      latitude: 40.07,
+      longitude: -2.13,
+    );
+
+    final restored = CaseDraft.fromJson(draft.toJson());
+
+    expect(restored.country, 'España');
+    expect(restored.countryCode, 'ES');
+    expect(restored.regionOrCity, 'Cuenca');
+    expect(restored.latitude, 40.07);
+    expect(restored.longitude, -2.13);
+  });
+
+  test('loads a draft saved before the location fields existed', () {
+    // Los borradores de las fases 1-3 no guardaban ubicación: deben seguir
+    // abriéndose, sólo que incompletos.
+    final restored = CaseDraft.fromJson({
+      'draftId': 'draft-sin-ubicacion',
+      'title': 'Caso antiguo',
+    });
+
+    expect(restored.title, 'Caso antiguo');
+    expect(restored.country, isNull);
+    expect(restored.countryCode, isNull);
+    expect(restored.regionOrCity, isNull);
+    expect(restored.latitude, isNull);
+    expect(restored.longitude, isNull);
+  });
+
+  test('reads integer coordinates stored as whole numbers', () {
+    // `jsonDecode` devuelve `int` para 40 y `double` para 40.07.
+    final restored = CaseDraft.fromJson({
+      'draftId': 'draft-coords-enteras',
+      'latitude': 40,
+      'longitude': -2,
+    });
+
+    expect(restored.latitude, 40.0);
+    expect(restored.longitude, -2.0);
+  });
+
   test('applies tolerant defaults when fields are missing from the payload', () {
     final restored = CaseDraft.fromJson({'draftId': 'draft-2'});
 
