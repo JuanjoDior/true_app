@@ -1,33 +1,66 @@
 # true_app
 
-Web app Flutter orientada a descubrir casos reales de true crime mediante un mapa mundial, una cartelera editorial y fichas con fuentes e ideas de escucha relacionadas.
+Archivo de casos reales de true crime, en Flutter web. El mapa es el centro:
+cada caso es un punto, y desde ahí se abre su expediente con cronología, fuentes
+y fotografías.
 
-## Primeros pasos
+Publicado en **https://juanjodior.github.io/true_app/**
+
+## Arrancar
 
 ```bash
 flutter pub get
-flutter run
+flutter run -d chrome
 ```
 
-## Estructura principal
+Para pasar la suite: `flutter test` (19 archivos, 124 tests).
 
-- `lib/app/`: shell principal de la aplicacion.
-- `lib/core/`: tema, tokens y configuracion del mapa.
-- `lib/features/cases/`: dominio, datos JSON locales y servicios de busqueda.
-- `lib/features/home/`: home, header, cartelera, mapa y ficha responsive.
-- `assets/data/cases.json`: catalogo curado inicial de casos reales.
-- `test/`: parseo de datos, busqueda, layout y responsive.
+## Las dos mitades
 
-## Fase 1 implementada
+| Pantalla | Para quién | Qué hace |
+|----------|------------|----------|
+| **Sala de Situación** | Cualquiera | Mapa mundial con los casos, filtros por estado, línea de tiempo y expediente de cada caso |
+| **Formulario de alta** | El equipo editorial | Redactar casos nuevos y exportarlos al catálogo. Detrás de una clave compartida |
 
-- Header fijo con buscador y acceso a cartelera.
-- Cartelera editorial de casos destacados.
-- Mapa mundial interactivo con marcadores.
-- Panel lateral en desktop y sheet inferior en movil.
-- Fuentes visibles separadas en investigacion y podcast.
+Al formulario se entra por el `+` del rail izquierdo.
 
-## GitHub Pages
+## Cómo se publica un caso
 
-- Repositorio: `https://github.com/JuanjoDior/true_app`
-- URL esperada de despliegue: `https://JuanjoDior.github.io/true_app/`
-- El workflow de despliegue está en `.github/workflows/deploy-pages.yml`
+No hay backend ni CMS: el catálogo es un archivo JSON versionado. El circuito es
+manual a propósito, para que nada entre sin pasar por una revisión.
+
+1. En el formulario, rellenar el caso. La ubicación se marca **tocando el mapa**:
+   país y municipio se rellenan solos.
+2. Pulsar **Copiar JSON**. Sólo se activa cuando el borrador está completo.
+3. Pegar el objeto en `assets/data/cases.json`.
+4. Commit y push. El despliegue es automático.
+
+Los borradores viven en el navegador de quien los escribe (`localStorage`), no en
+el repositorio.
+
+## Estructura
+
+```
+lib/
+├── app/                    shell de la aplicación
+├── core/                   tema, tokens y configuración del mapa
+└── features/
+    ├── cases/
+    │   ├── domain/         el caso, el borrador y sus piezas
+    │   ├── data/           catálogo JSON, borradores y geocodificación
+    │   ├── application/    providers, validación y exportador
+    │   └── presentation/   formulario de alta
+    └── home/               Sala de Situación
+```
+
+`assets/data/cases.json` es el catálogo publicado: **14 casos** curados.
+
+## Despliegue
+
+`.github/workflows/deploy-pages.yml` pasa los tests, compila y publica en GitHub
+Pages en cada push a `main`. Si los tests fallan, no se despliega.
+
+## Más contexto
+
+`PROJECT_CONTEXT.md` recoge las decisiones de producto, por qué el catálogo es un
+JSON y qué queda pendiente.
