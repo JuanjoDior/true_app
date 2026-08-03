@@ -62,7 +62,12 @@ class _IntakeFormBody extends ConsumerWidget {
                               ),
                             ),
                           )
-                        : const _FormAndPreview(),
+                        // La clave por borrador es lo que mantiene honesto al
+                        // formulario: los campos de texto guardan su propio
+                        // texto y sólo leen `initialValue` al construirse, así
+                        // que sin esto al cambiar de borrador seguirían
+                        // enseñando los valores del anterior.
+                        : _FormAndPreview(key: ValueKey(editingDraftId)),
                   ),
                 ],
               ),
@@ -165,7 +170,7 @@ class _DraftList extends ConsumerWidget {
 }
 
 class _FormAndPreview extends StatelessWidget {
-  const _FormAndPreview();
+  const _FormAndPreview({super.key});
 
   @override
   Widget build(BuildContext context) {
