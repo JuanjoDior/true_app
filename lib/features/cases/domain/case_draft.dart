@@ -1,5 +1,6 @@
 import 'case_category.dart';
 import 'case_status.dart';
+import 'resolved_place.dart';
 
 /// Borrador de caso de Iván: v1 solo campos base, todos opcionales salvo el
 /// identificador local. Tolerante a campos ausentes para permitir crecimiento
@@ -72,6 +73,28 @@ class CaseDraft {
       longitude: longitude ?? this.longitude,
       links: links ?? this.links,
       photos: photos ?? this.photos,
+    );
+  }
+
+  /// Asienta la ubicación resuelta a partir del punto marcado en el mapa.
+  ///
+  /// A diferencia de [copyWith], un lugar sin municipio BORRA el anterior:
+  /// conservarlo dejaría la ciudad de un punto junto al país de otro.
+  CaseDraft withResolvedPlace(ResolvedPlace place) {
+    return CaseDraft(
+      draftId: draftId,
+      title: title,
+      category: category,
+      year: year,
+      status: status,
+      summary: summary,
+      country: place.country,
+      countryCode: place.countryCode,
+      regionOrCity: place.regionOrCity,
+      latitude: latitude,
+      longitude: longitude,
+      links: links,
+      photos: photos,
     );
   }
 

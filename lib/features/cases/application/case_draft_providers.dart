@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 
 import '../data/case_drafts_store.dart';
+import '../data/reverse_geocoder.dart';
 import '../domain/case_category.dart';
 import '../domain/case_draft.dart';
 import '../domain/case_photo.dart';
@@ -15,6 +16,12 @@ import '../domain/true_crime_case.dart';
 /// `casesRepositoryProvider`).
 final caseDraftsStoreProvider = Provider<CaseDraftsStore>((ref) {
   return SharedPreferencesCaseDraftsStore();
+});
+
+/// Traductor de coordenadas a lugar, sobreescribible en tests para no salir
+/// a la red (mismo patrón que `caseDraftsStoreProvider`).
+final reverseGeocoderProvider = Provider<ReverseGeocoder>((ref) {
+  return const NominatimReverseGeocoder();
 });
 
 /// CRUD de borradores de Iván: crear, editar (autosave), reanudar y borrar.

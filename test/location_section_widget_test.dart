@@ -1,9 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:true_app/core/config/map_config.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
+import 'package:true_app/features/cases/data/reverse_geocoder.dart';
 import 'package:true_app/features/cases/domain/case_draft.dart';
+import 'package:true_app/features/cases/domain/resolved_place.dart';
 import 'package:true_app/features/cases/presentation/intake/sections/location_section.dart';
 
 class _FakeCaseDraftsStore implements CaseDraftsStore {
@@ -18,13 +23,49 @@ class _FakeCaseDraftsStore implements CaseDraftsStore {
   }
 }
 
+/// Geocodificador de mentira: responde lo que le digan, sin salir a la red.
+class _FakeReverseGeocoder implements ReverseGeocoder {
+  _FakeReverseGeocoder({this.place, this.gate, List<ResolvedPlace?>? places})
+      : _places = places;
+
+  final ResolvedPlace? place;
+
+  /// Respuestas en orden, para encadenar varias marcas de punto.
+  final List<ResolvedPlace?>? _places;
+
+  /// Permite dejar la respuesta en el aire para observar el estado "buscando".
+  final Completer<void>? gate;
+
+  final calls = <(double, double)>[];
+
+  @override
+  Future<ResolvedPlace?> resolve(double latitude, double longitude) async {
+    calls.add((latitude, longitude));
+    if (gate != null) {
+      await gate!.future;
+    }
+    final queued = _places;
+    if (queued == null) {
+      return place;
+    }
+    return queued[(calls.length - 1).clamp(0, queued.length - 1)];
+  }
+}
+
 Future<(ProviderContainer, _FakeCaseDraftsStore)> _pumpSection(
   WidgetTester tester, {
   CaseDraft Function(String draftId)? draft,
+  ReverseGeocoder? geocoder,
 }) async {
   final store = _FakeCaseDraftsStore();
   final container = ProviderContainer(
-    overrides: [caseDraftsStoreProvider.overrideWithValue(store)],
+    overrides: [
+      caseDraftsStoreProvider.overrideWithValue(store),
+      // Sin teselas: el mapa no sale a la red en los tests.
+      mapConfigProvider.overrideWithValue(MapConfig.testing()),
+      if (geocoder != null)
+        reverseGeocoderProvider.overrideWithValue(geocoder),
+    ],
   );
   addTearDown(container.dispose);
 
@@ -49,115 +90,231 @@ Future<(ProviderContainer, _FakeCaseDraftsStore)> _pumpSection(
   return (container, store);
 }
 
+/// Toca el centro del mapa, que es como Iván sitúa el caso.
+///
+/// `pumpAndSettle` no vale aquí: el reconocedor de gestos de flutter_map
+/// espera para distinguir el tap del doble tap, así que hay que dejar correr
+/// el reloj explícitamente.
+Future<void> _tapMap(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('intake-location-map')));
+  await tester.pump(const Duration(milliseconds: 400));
+}
+
+/// Deja resolver la búsqueda del lugar, que es asíncrona.
+Future<void> _settleLookup(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 400));
+  await tester.pump();
+}
+
+/// Abre el bloque de ajuste manual, plegado por defecto.
+Future<void> _openFineTuning(WidgetTester tester) async {
+  await tester.tap(find.byKey(const Key('intake-location-fine-tuning')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
-  testWidgets('captures the full location and autosaves it', (tester) async {
-    final (container, store) = await _pumpSection(tester);
+  testWidgets('marking a point on the map stores the coordinates',
+      (tester) async {
+    final (container, store) = await _pumpSection(
+      tester,
+      geocoder: _FakeReverseGeocoder(),
+    );
 
-    await tester.enterText(
-      find.byKey(const Key('intake-field-country')),
-      'España',
+    await _tapMap(tester);
+    await _settleLookup(tester);
+
+    final saved = container.read(editingDraftProvider)!;
+    expect(saved.latitude, isNotNull);
+    expect(saved.longitude, isNotNull);
+    // El autoguardado persiste el punto.
+    expect(store.saved.single.latitude, saved.latitude);
+  });
+
+  testWidgets('the marked point fills in country, city and ISO code',
+      (tester) async {
+    final geocoder = _FakeReverseGeocoder(
+      place: const ResolvedPlace(
+        country: 'España',
+        countryCode: 'ES',
+        regionOrCity: 'A Coruña',
+      ),
     );
-    await tester.enterText(
-      find.byKey(const Key('intake-field-country-code')),
-      'ES',
-    );
-    await tester.enterText(
-      find.byKey(const Key('intake-field-region-or-city')),
-      'Cuenca',
-    );
-    await tester.enterText(
-      find.byKey(const Key('intake-field-latitude')),
-      '40.07',
-    );
-    await tester.enterText(
-      find.byKey(const Key('intake-field-longitude')),
-      '-2.13',
-    );
-    await tester.pump();
+    final (container, _) = await _pumpSection(tester, geocoder: geocoder);
+
+    await _tapMap(tester);
+    await _settleLookup(tester);
 
     final saved = container.read(editingDraftProvider)!;
     expect(saved.country, 'España');
+    expect(saved.regionOrCity, 'A Coruña');
     expect(saved.countryCode, 'ES');
-    expect(saved.regionOrCity, 'Cuenca');
-    expect(saved.latitude, 40.07);
-    expect(saved.longitude, -2.13);
-    expect(store.saved.single.latitude, 40.07);
+    // Se consultó el punto que se marcó.
+    expect(geocoder.calls, hasLength(1));
   });
 
-  testWidgets('keeps every field when they are typed without a rebuild between',
+  testWidgets('a new point without a town clears the previous one',
       (tester) async {
-    // Reproduce lo observado en el navegador: al escribir de corrido, cada
-    // campo partía del borrador capturado en el `build` anterior y borraba
-    // en silencio lo que había escrito el campo previo.
-    final (container, _) = await _pumpSection(tester);
+    // Marcar A Coruña y luego un punto remoto que sólo resuelve país no debe
+    // dejar la ciudad de un sitio junto al país de otro.
+    final (container, _) = await _pumpSection(
+      tester,
+      geocoder: _FakeReverseGeocoder(places: const [
+        ResolvedPlace(
+          country: 'España',
+          countryCode: 'ES',
+          regionOrCity: 'A Coruña',
+        ),
+        ResolvedPlace(country: 'Chad', countryCode: 'TD'),
+      ]),
+    );
 
-    await tester.enterText(
-      find.byKey(const Key('intake-field-country')),
-      'España',
-    );
-    await tester.enterText(
-      find.byKey(const Key('intake-field-country-code')),
-      'ES',
-    );
-    await tester.enterText(
-      find.byKey(const Key('intake-field-latitude')),
-      '43.39',
-    );
-    await tester.pump();
+    await _tapMap(tester);
+    await _settleLookup(tester);
+    expect(container.read(editingDraftProvider)!.regionOrCity, 'A Coruña');
+
+    await _tapMap(tester);
+    await _settleLookup(tester);
 
     final saved = container.read(editingDraftProvider)!;
-    expect(saved.country, 'España');
-    expect(saved.countryCode, 'ES');
-    expect(saved.latitude, 43.39);
+    expect(saved.country, 'Chad');
+    expect(saved.countryCode, 'TD');
+    expect(saved.regionOrCity, isNull);
   });
 
-  testWidgets('shows the required-field errors on an empty location',
+  testWidgets('the filled-in place is shown in the fields, not just stored',
       (tester) async {
-    await _pumpSection(tester);
-
-    expect(find.text('El país es obligatorio'), findsOneWidget);
-    expect(find.text('El código de país es obligatorio'), findsOneWidget);
-    expect(find.text('La región o ciudad es obligatoria'), findsOneWidget);
-    expect(find.text('La latitud es obligatoria'), findsOneWidget);
-    expect(find.text('La longitud es obligatoria'), findsOneWidget);
-  });
-
-  testWidgets('rejects a country code that is not two letters', (tester) async {
     await _pumpSection(
       tester,
-      draft: (draftId) => CaseDraft(draftId: draftId, countryCode: 'ESP'),
+      geocoder: _FakeReverseGeocoder(
+        place: const ResolvedPlace(
+          country: 'España',
+          countryCode: 'ES',
+          regionOrCity: 'A Coruña',
+        ),
+      ),
     );
 
-    expect(find.text('Usa el código ISO de dos letras (ES, US, GB…)'),
-        findsOneWidget);
+    await _tapMap(tester);
+    await _settleLookup(tester);
+
+    expect(find.text('España'), findsOneWidget);
+    expect(find.text('A Coruña'), findsOneWidget);
   });
 
-  testWidgets('warns when a coordinate falls outside its range',
+  testWidgets('keeps the coordinates when the place cannot be resolved',
       (tester) async {
+    // Servicio caído o punto en mitad del mar: no debe perderse el punto ni
+    // bloquearse el formulario.
+    final (container, _) = await _pumpSection(
+      tester,
+      geocoder: _FakeReverseGeocoder(place: null),
+    );
+
+    await _tapMap(tester);
+    await _settleLookup(tester);
+
+    final saved = container.read(editingDraftProvider)!;
+    expect(saved.latitude, isNotNull);
+    expect(saved.country, isNull);
+    expect(find.text('El país es obligatorio'), findsOneWidget);
+  });
+
+  testWidgets('shows that it is looking the place up while it waits',
+      (tester) async {
+    final gate = Completer<void>();
+    await _pumpSection(
+      tester,
+      geocoder: _FakeReverseGeocoder(
+        gate: gate,
+        place: const ResolvedPlace(country: 'España', countryCode: 'ES'),
+      ),
+    );
+
+    await _tapMap(tester);
+    await tester.pump();
+
+    expect(find.byKey(const Key('intake-geocoding-status')), findsOneWidget);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('intake-geocoding-status')), findsNothing);
+  });
+
+  testWidgets('shows the coordinates of the marked point', (tester) async {
     await _pumpSection(
       tester,
       draft: (draftId) => CaseDraft(
         draftId: draftId,
-        latitude: 120,
-        longitude: -2.13,
+        latitude: 43.39,
+        longitude: -8.41,
       ),
+      geocoder: _FakeReverseGeocoder(),
     );
 
-    expect(find.text('La latitud va de -90 a 90'), findsOneWidget);
+    expect(find.text('43.39° N · 8.41° O'), findsOneWidget);
   });
 
-  testWidgets('keeps an unparsable coordinate out of the draft',
-      (tester) async {
-    final (container, _) = await _pumpSection(tester);
+  testWidgets('says when no point has been marked yet', (tester) async {
+    await _pumpSection(tester, geocoder: _FakeReverseGeocoder());
+
+    expect(find.text('Sin punto marcado'), findsOneWidget);
+  });
+
+  testWidgets('still allows correcting the place by hand', (tester) async {
+    final (container, _) = await _pumpSection(
+      tester,
+      geocoder: _FakeReverseGeocoder(),
+    );
 
     await tester.enterText(
-      find.byKey(const Key('intake-field-latitude')),
-      'cuarenta',
+      find.byKey(const Key('intake-field-country-0')),
+      'España',
+    );
+    await tester.enterText(
+      find.byKey(const Key('intake-field-region-or-city-0')),
+      'Cuenca',
     );
     await tester.pump();
 
-    // Texto que no es un número no debe corromper el borrador.
-    expect(container.read(editingDraftProvider)!.latitude, isNull);
+    final saved = container.read(editingDraftProvider)!;
+    expect(saved.country, 'España');
+    expect(saved.regionOrCity, 'Cuenca');
+  });
+
+  testWidgets('keeps coordinates editable by hand under fine tuning',
+      (tester) async {
+    final (container, _) = await _pumpSection(
+      tester,
+      geocoder: _FakeReverseGeocoder(),
+    );
+
+    await _openFineTuning(tester);
+    await tester.enterText(
+      find.byKey(const Key('intake-field-latitude-0')),
+      '43.39',
+    );
+    await tester.enterText(
+      find.byKey(const Key('intake-field-country-code-0')),
+      'ES',
+    );
+    await tester.pump();
+
+    final saved = container.read(editingDraftProvider)!;
+    expect(saved.latitude, 43.39);
+    expect(saved.countryCode, 'ES');
+  });
+
+  testWidgets('reports the required-field errors on an empty location',
+      (tester) async {
+    await _pumpSection(tester, geocoder: _FakeReverseGeocoder());
+
+    expect(find.text('El país es obligatorio'), findsOneWidget);
+    expect(find.text('La región o ciudad es obligatoria'), findsOneWidget);
+
+    await _openFineTuning(tester);
+    expect(find.text('El código de país es obligatorio'), findsOneWidget);
     expect(find.text('La latitud es obligatoria'), findsOneWidget);
+    expect(find.text('La longitud es obligatoria'), findsOneWidget);
   });
 }

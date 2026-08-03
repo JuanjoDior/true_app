@@ -2,6 +2,7 @@ import 'package:latlong2/latlong.dart';
 
 import 'case_category.dart';
 import 'case_photo.dart';
+import 'coordinates_label.dart';
 import 'case_source.dart';
 import 'case_status.dart';
 import 'case_timeline_event.dart';
@@ -66,13 +67,7 @@ class TrueCrimeCase {
   String get locationLabel => '$regionOrCity, $country';
 
   /// Coordenadas con el formato editorial del archivo: "37.77° N · 122.42° O".
-  String get coordsLabel {
-    final lat = latitude.abs().toStringAsFixed(2);
-    final lng = longitude.abs().toStringAsFixed(2);
-    final latHemisphere = latitude >= 0 ? 'N' : 'S';
-    final lngHemisphere = longitude >= 0 ? 'E' : 'O';
-    return '$lat° $latHemisphere · $lng° $lngHemisphere';
-  }
+  String get coordsLabel => formatCoordinates(latitude, longitude);
 
   List<CaseSource> get investigationSources {
     return sources
