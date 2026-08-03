@@ -58,18 +58,6 @@ final workspaceProvider = StateProvider<Workspace>((ref) => Workspace.situationR
 /// Desbloqueo del workspace de intake, por sesión (no persiste al recargar).
 final intakeUnlockedProvider = StateProvider<bool>((ref) => false);
 
-final featuredCasesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
-  final search = ref.watch(caseSearchServiceProvider);
-  final cases = await ref.watch(casesProvider.future);
-  final activeCategory = ref.watch(activeCategoryProvider);
-  final filteredCases = activeCategory == null
-      ? cases
-      : cases
-            .where((crimeCase) => crimeCase.category == activeCategory)
-            .toList(growable: false);
-  return search.topFeatured(filteredCases);
-});
-
 final filteredCasesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
   final search = ref.watch(caseSearchServiceProvider);
   final cases = await ref.watch(casesProvider.future);
@@ -92,36 +80,6 @@ final filteredCasesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
   }).toList(growable: false);
 
   return search.search(preFiltered, query);
-});
-
-final relevantSuggestionsProvider = FutureProvider<List<TrueCrimeCase>>((
-  ref,
-) async {
-  final search = ref.watch(caseSearchServiceProvider);
-  final cases = await ref.watch(casesProvider.future);
-  final activeCategory = ref.watch(activeCategoryProvider);
-  final filteredCases = activeCategory == null
-      ? cases
-      : cases
-            .where((crimeCase) => crimeCase.category == activeCategory)
-            .toList(growable: false);
-  return search.topRelevant(filteredCases);
-});
-
-final categoryCountsProvider = Provider<Map<CaseCategory, int>>((ref) {
-  final search = ref.watch(caseSearchServiceProvider);
-  final cases = ref.watch(casesProvider).value ?? const <TrueCrimeCase>[];
-  return search.countByCategory(cases);
-});
-
-final emptyCatalogProvider = Provider<bool>((ref) {
-  return ref
-      .watch(casesProvider)
-      .when(
-        data: (cases) => cases.isEmpty,
-        loading: () => false,
-        error: (_, stackTrace) => false,
-      );
 });
 
 final selectedCaseProvider = Provider<AsyncValue<TrueCrimeCase?>>((ref) {

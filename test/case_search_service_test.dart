@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/features/cases/application/case_search_service.dart';
-import 'package:true_app/features/cases/domain/case_category.dart';
 
 import 'test_support/sample_cases.dart';
 
@@ -17,30 +16,15 @@ void main() {
     );
   });
 
-  test('orders featured and relevant cases by rank', () {
-    final featured = service.topFeatured(sampleCases);
-    final relevant = service.topRelevant(sampleCases);
+  test('orders by relevance rank when there is no query', () {
+    // Sin búsqueda, el archivo se ordena por relevancia editorial.
+    final ordered = service.search(sampleCases, '');
 
-    expect(featured.map((crimeCase) => crimeCase.id), [
-      'zodiac-killer',
-      'meredith-kercher',
-      'madeleine-mccann',
-      'black-dahlia',
-    ]);
-    expect(relevant.map((crimeCase) => crimeCase.id), [
+    expect(ordered.map((crimeCase) => crimeCase.id), [
       'madeleine-mccann',
       'zodiac-killer',
       'black-dahlia',
       'meredith-kercher',
     ]);
-  });
-
-  test('counts cases by category', () {
-    final counts = service.countByCategory(sampleCases);
-
-    expect(counts[CaseCategory.isolatedMurder], 1);
-    expect(counts[CaseCategory.serialKiller], 1);
-    expect(counts[CaseCategory.kidnapping], 1);
-    expect(counts[CaseCategory.unsolved], 1);
   });
 }

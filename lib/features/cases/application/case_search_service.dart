@@ -1,30 +1,7 @@
-import '../domain/case_category.dart';
 import '../domain/true_crime_case.dart';
 
 class CaseSearchService {
   const CaseSearchService();
-
-  List<TrueCrimeCase> topFeatured(List<TrueCrimeCase> cases, {int limit = 8}) {
-    final sorted =
-        cases
-            .where((crimeCase) => crimeCase.featuredRank != null)
-            .toList(growable: false)
-          ..sort((left, right) {
-            final rankComparison = left.featuredRank!.compareTo(
-              right.featuredRank!,
-            );
-            if (rankComparison != 0) {
-              return rankComparison;
-            }
-            return left.title.compareTo(right.title);
-          });
-    return sorted.take(limit).toList(growable: false);
-  }
-
-  List<TrueCrimeCase> topRelevant(List<TrueCrimeCase> cases, {int limit = 6}) {
-    final sorted = [...cases]..sort(_compareByRelevance);
-    return sorted.take(limit).toList(growable: false);
-  }
 
   List<TrueCrimeCase> search(List<TrueCrimeCase> cases, String query) {
     final normalizedQuery = _normalize(query);
@@ -90,16 +67,6 @@ class CaseSearchService {
       return 1;
     }
     return 0;
-  }
-
-  Map<CaseCategory, int> countByCategory(List<TrueCrimeCase> cases) {
-    final counts = {for (final category in CaseCategory.values) category: 0};
-
-    for (final crimeCase in cases) {
-      counts.update(crimeCase.category, (value) => value + 1);
-    }
-
-    return counts;
   }
 
   int _compareByRelevance(TrueCrimeCase left, TrueCrimeCase right) {
