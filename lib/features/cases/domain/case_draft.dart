@@ -1,5 +1,6 @@
 import 'case_category.dart';
 import 'case_status.dart';
+import 'case_timeline_event.dart';
 import 'resolved_place.dart';
 
 /// Borrador de caso de Iván: v1 solo campos base, todos opcionales salvo el
@@ -18,6 +19,9 @@ class CaseDraft {
     this.regionOrCity,
     this.latitude,
     this.longitude,
+    this.victim,
+    this.tags = const <String>[],
+    this.timeline = const <DraftTimelineEvent>[],
     this.links = const <DraftLink>[],
     this.photos = const <DraftPhoto>[],
   });
@@ -39,6 +43,16 @@ class CaseDraft {
   final String? regionOrCity;
   final double? latitude;
   final double? longitude;
+
+  /// Descripción de la víctima o víctimas, nombradas con respeto. Es un texto
+  /// editorial ("Al menos 5 víctimas confirmadas"), no un nombre suelto.
+  final String? victim;
+
+  /// Etiquetas del caso, en minúsculas como el resto del catálogo.
+  final List<String> tags;
+
+  /// Cronología verificada del caso.
+  final List<DraftTimelineEvent> timeline;
   final List<DraftLink> links;
 
   /// Fotografías del caso: sólo URLs ya alojadas, sin subida de archivos
@@ -56,6 +70,9 @@ class CaseDraft {
     String? regionOrCity,
     double? latitude,
     double? longitude,
+    String? victim,
+    List<String>? tags,
+    List<DraftTimelineEvent>? timeline,
     List<DraftLink>? links,
     List<DraftPhoto>? photos,
   }) {
@@ -71,6 +88,9 @@ class CaseDraft {
       regionOrCity: regionOrCity ?? this.regionOrCity,
       latitude: latitude ?? this.latitude,
       longitude: longitude ?? this.longitude,
+      victim: victim ?? this.victim,
+      tags: tags ?? this.tags,
+      timeline: timeline ?? this.timeline,
       links: links ?? this.links,
       photos: photos ?? this.photos,
     );
@@ -93,6 +113,9 @@ class CaseDraft {
       regionOrCity: place.regionOrCity,
       latitude: latitude,
       longitude: longitude,
+      victim: victim,
+      tags: tags,
+      timeline: timeline,
       links: links,
       photos: photos,
     );
@@ -117,6 +140,12 @@ class CaseDraft {
       // entera como 40.
       latitude: (json['latitude'] as num?)?.toDouble(),
       longitude: (json['longitude'] as num?)?.toDouble(),
+      victim: json['victim'] as String?,
+      tags: (json['tags'] as List<dynamic>? ?? const []).cast<String>(),
+      timeline: (json['timeline'] as List<dynamic>? ?? const [])
+          .map((event) =>
+              DraftTimelineEvent.fromJson(event as Map<String, dynamic>))
+          .toList(growable: false),
       links: (json['links'] as List<dynamic>? ?? const [])
           .map((link) => DraftLink.fromJson(link as Map<String, dynamic>))
           .toList(growable: false),
@@ -139,8 +168,59 @@ class CaseDraft {
       if (regionOrCity != null) 'regionOrCity': regionOrCity,
       if (latitude != null) 'latitude': latitude,
       if (longitude != null) 'longitude': longitude,
+      if (victim != null) 'victim': victim,
+      'tags': tags,
+      'timeline': timeline.map((event) => event.toJson()).toList(),
       'links': links.map((link) => link.toJson()).toList(),
       'photos': photos.map((photo) => photo.toJson()).toList(),
+    };
+  }
+}
+
+/// Convierte la línea que se escribe en el formulario en la lista de tags.
+///
+/// Los normaliza a minúsculas y sin repetidos para que casen con el catálogo
+/// publicado, donde los tags son cortos y en minúscula ("1960s", "ee. uu.").
+List<String> parseTags(String line) {
+  final tags = <String>[];
+  for (final piece in line.split(',')) {
+    final tag = piece.trim().toLowerCase();
+    if (tag.isNotEmpty && !tags.contains(tag)) {
+      tags.add(tag);
+    }
+  }
+  return List.unmodifiable(tags);
+}
+
+/// Devuelve los tags a la línea editable del formulario.
+String formatTags(List<String> tags) => tags.join(', ');
+
+/// Hito de la cronología del borrador.
+///
+/// Reutiliza [CaseTimelineKind] del caso publicado porque los tipos son los
+/// mismos; el tipo queda opcional mientras el hito se está redactando.
+class DraftTimelineEvent {
+  const DraftTimelineEvent({this.date, this.title, this.kind});
+
+  final String? date;
+  final String? title;
+  final CaseTimelineKind? kind;
+
+  factory DraftTimelineEvent.fromJson(Map<String, dynamic> json) {
+    final kind = json['kind'];
+    return DraftTimelineEvent(
+      date: json['date'] as String?,
+      title: json['title'] as String?,
+      // Tolerante: un tipo desconocido no debe dejar el borrador inaccesible.
+      kind: kind is String ? CaseTimelineKind.tryFromJson(kind) : null,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      if (date != null) 'date': date,
+      if (title != null) 'title': title,
+      if (kind != null) 'kind': kind!.name,
     };
   }
 }

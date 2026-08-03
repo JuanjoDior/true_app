@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import '../domain/case_draft.dart';
 import '../domain/case_source.dart';
+import '../domain/case_timeline_event.dart';
 
 /// Convierte un borrador en el JSON que consume `assets/data/cases.json`.
 ///
@@ -66,6 +67,19 @@ Map<String, dynamic> draftToCaseJson(CaseDraft draft) {
         },
   ];
 
+  final timeline = <Map<String, dynamic>>[
+    for (final event in draft.timeline)
+      if ((event.title?.trim().isNotEmpty ?? false) ||
+          (event.date?.trim().isNotEmpty ?? false))
+        {
+          'title': event.title?.trim() ?? '',
+          'date': event.date?.trim() ?? '',
+          // `CaseTimelineEvent.fromJson` exige el tipo; un hito sin clasificar
+          // se publica como parte de la investigación.
+          'kind': (event.kind ?? CaseTimelineKind.process).name,
+        },
+  ];
+
   final photos = <Map<String, dynamic>>[
     for (final photo in draft.photos)
       if (photo.url?.trim().isNotEmpty ?? false)
@@ -89,9 +103,12 @@ Map<String, dynamic> draftToCaseJson(CaseDraft draft) {
     'longitude': draft.longitude,
     // `TrueCrimeCase.summary` no admite null.
     'summary': draft.summary?.trim() ?? '',
-    'tags': const <String>[],
+    'tags': draft.tags,
     'sources': sources,
     'status': draft.status?.name,
+    if (draft.victim?.trim().isNotEmpty ?? false)
+      'victim': draft.victim!.trim(),
+    if (timeline.isNotEmpty) 'timeline': timeline,
     // Las fotos aún no se pintan en el expediente publicado, pero viajan en
     // el export para no perder el trabajo ya hecho en el borrador.
     if (photos.isNotEmpty) 'photos': photos,

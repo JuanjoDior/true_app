@@ -5,6 +5,7 @@ import 'sections/links_section.dart';
 import 'sections/location_section.dart';
 import 'sections/photos_section.dart';
 import 'sections/summary_section.dart';
+import 'sections/timeline_section.dart';
 
 /// Sección independiente del formulario de intake: título editorial + un
 /// builder de widget. Añadir secciones futuras (cronología, personas,
@@ -28,8 +29,12 @@ final List<CaseFormSection> kCaseFormSections = <CaseFormSection>[
     builder: (context) => const LocationSection(),
   ),
   CaseFormSection(
-    title: 'Resumen',
+    title: 'Resumen y ficha',
     builder: (context) => const SummarySection(),
+  ),
+  CaseFormSection(
+    title: 'Cronología',
+    builder: (context) => const TimelineSection(),
   ),
   CaseFormSection(
     title: 'Enlaces',

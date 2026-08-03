@@ -5,6 +5,7 @@ import 'package:true_app/features/cases/application/case_exporter.dart';
 import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/domain/case_draft.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
+import 'package:true_app/features/cases/domain/case_timeline_event.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
 
 CaseDraft publishableDraft({
@@ -70,6 +71,8 @@ void main() {
       expect(json['status'], CaseStatus.open.name);
       expect(json['tags'], isEmpty);
       expect(json['sources'], isEmpty);
+      // Sin víctima descrita no se emite la clave.
+      expect(json.containsKey('victim'), isFalse);
     });
 
     test('normalises the country code to upper case', () {
@@ -169,6 +172,63 @@ void main() {
       expect((photos.first as Map)['caption'], 'Fachada del faro');
       // El pie es opcional: no se emite una clave vacía.
       expect((photos.last as Map).containsKey('caption'), isFalse);
+    });
+
+    test('carries the victim, tags and timeline of the draft', () {
+      final draft = publishableDraft().copyWith(
+        victim: 'Al menos 5 víctimas confirmadas',
+        tags: const ['1960s', 'ee. uu.'],
+        timeline: const [
+          DraftTimelineEvent(
+            date: '1968–69',
+            title: 'Primeros ataques confirmados',
+            kind: CaseTimelineKind.initial,
+          ),
+        ],
+      );
+
+      final restored = TrueCrimeCase.fromJson(draftToCaseJson(draft));
+
+      expect(restored.victim, 'Al menos 5 víctimas confirmadas');
+      expect(restored.tags, ['1960s', 'ee. uu.']);
+      expect(restored.timeline, hasLength(1));
+      expect(restored.timeline.single.title, 'Primeros ataques confirmados');
+      expect(restored.timeline.single.date, '1968–69');
+      expect(restored.timeline.single.kind, CaseTimelineKind.initial);
+    });
+
+    test('drops timeline entries that have no title or date', () {
+      // Una fila a medio rellenar no debe llegar al catálogo.
+      final draft = publishableDraft().copyWith(
+        timeline: const [
+          DraftTimelineEvent(kind: CaseTimelineKind.initial),
+          DraftTimelineEvent(date: '  ', title: '  '),
+          DraftTimelineEvent(date: '1969', title: 'Hito real'),
+        ],
+      );
+
+      final timeline = draftToCaseJson(draft)['timeline'] as List<dynamic>;
+
+      expect(timeline, hasLength(1));
+      expect((timeline.single as Map)['title'], 'Hito real');
+    });
+
+    test('gives an untyped timeline entry a usable kind', () {
+      // `CaseTimelineEvent.fromJson` exige el tipo, así que el export no
+      // puede emitirlo vacío.
+      final draft = publishableDraft().copyWith(
+        timeline: const [DraftTimelineEvent(date: '1969', title: 'Hito')],
+      );
+
+      final restored = TrueCrimeCase.fromJson(draftToCaseJson(draft));
+
+      expect(restored.timeline.single.kind, CaseTimelineKind.process);
+    });
+
+    test('omits the timeline key entirely when there are none', () {
+      final json = draftToCaseJson(publishableDraft());
+
+      expect(json.containsKey('timeline'), isFalse);
     });
 
     test('omits the photos key entirely when there are none', () {

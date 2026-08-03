@@ -9,12 +9,31 @@ enum CaseTimelineKind {
   solved;
 
   factory CaseTimelineKind.fromJson(String value) {
+    final kind = CaseTimelineKind.tryFromJson(value);
+    if (kind == null) {
+      throw ArgumentError.value(value, 'value', 'Unknown timeline kind');
+    }
+    return kind;
+  }
+
+  /// Variante tolerante para el borrador, donde un valor desconocido no debe
+  /// dejar el caso inaccesible: se trata como "sin clasificar".
+  static CaseTimelineKind? tryFromJson(String value) {
     return switch (value) {
       'red' || 'initial' => CaseTimelineKind.initial,
       'mid' || 'process' => CaseTimelineKind.process,
       'open' => CaseTimelineKind.open,
       'solved' => CaseTimelineKind.solved,
-      _ => throw ArgumentError.value(value, 'value', 'Unknown timeline kind'),
+      _ => null,
+    };
+  }
+
+  String get label {
+    return switch (this) {
+      CaseTimelineKind.initial => 'Hecho inicial',
+      CaseTimelineKind.process => 'Investigación',
+      CaseTimelineKind.open => 'Sigue abierto',
+      CaseTimelineKind.solved => 'Resolución',
     };
   }
 }

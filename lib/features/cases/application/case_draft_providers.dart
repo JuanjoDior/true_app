@@ -10,6 +10,7 @@ import '../domain/case_draft.dart';
 import '../domain/case_photo.dart';
 import '../domain/case_source.dart';
 import '../domain/case_status.dart';
+import '../domain/case_timeline_event.dart';
 import '../domain/true_crime_case.dart';
 
 /// Store de borradores, sobreescribible en tests (mismo patrón que
@@ -141,7 +142,19 @@ final draftPreviewCaseProvider = Provider<TrueCrimeCase?>((ref) {
     latitude: draft.latitude ?? 0,
     longitude: draft.longitude ?? 0,
     summary: draft.summary ?? '',
-    tags: const <String>[],
+    tags: draft.tags,
+    victim: draft.victim?.trim().isNotEmpty ?? false ? draft.victim!.trim() : null,
+    // Sólo se previsualizan los hitos que ya dicen algo.
+    timeline: [
+      for (final event in draft.timeline)
+        if ((event.title?.trim().isNotEmpty ?? false) ||
+            (event.date?.trim().isNotEmpty ?? false))
+          CaseTimelineEvent(
+            title: event.title?.trim() ?? '',
+            date: event.date?.trim() ?? '',
+            kind: event.kind ?? CaseTimelineKind.process,
+          ),
+    ],
     sources: [
       for (final link in draft.links)
         if (link.url != null && link.url!.trim().isNotEmpty)
