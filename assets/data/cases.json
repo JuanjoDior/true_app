@@ -740,5 +740,50 @@
         "kind": "investigation"
       }
     ]
+  },
+  {
+    "id": "caso-asunta",
+    "slug": "caso-asunta",
+    "title": "Caso Asunta",
+    "category": "isolatedMurder",
+    "country": "España",
+    "countryCode": "ES",
+    "regionOrCity": "Santiago de Compostela",
+    "year": 2013,
+    "latitude": 42.88064,
+    "longitude": -8.54761,
+    "summary": "La desaparición de una niña de 12 años en Santiago de Compostela terminó con la condena de sus padres adoptivos, en un proceso con amplia cobertura mediática.",
+    "tags": [
+      "2010s",
+      "españa",
+      "galicia"
+    ],
+    "sources": [
+      {
+        "id": "https://es.wikipedia.org/wiki/Caso_Asunta",
+        "title": "Wikipedia — Caso Asunta",
+        "url": "https://es.wikipedia.org/wiki/Caso_Asunta",
+        "kind": "investigation"
+      }
+    ],
+    "status": "solved",
+    "victim": "Asunta Basterra Porto, 12 años",
+    "timeline": [
+      {
+        "title": "Desaparición en Santiago de Compostela",
+        "date": "21 sep 2013",
+        "kind": "initial"
+      },
+      {
+        "title": "Detención de los padres adoptivos",
+        "date": "24–25 sep 2013",
+        "kind": "process"
+      },
+      {
+        "title": "Condena a 18 años, ratificada por el Supremo",
+        "date": "2015–16",
+        "kind": "solved"
+      }
+    ]
   }
 ]

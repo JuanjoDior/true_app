@@ -75,6 +75,28 @@ void main() {
       expect(json.containsKey('victim'), isFalse);
     });
 
+    test('rounds the coordinates to a sane precision', () {
+      // Marcar un punto en el mapa da quince decimales de precisión falsa, y
+      // el catálogo se lee a mano. Cinco decimales ya es aproximadamente un
+      // metro.
+      final draft = publishableDraft().copyWith(
+        latitude: 42.880641407613595,
+        longitude: -8.54761356221817,
+      );
+
+      final json = draftToCaseJson(draft);
+
+      expect(json['latitude'], 42.88064);
+      expect(json['longitude'], -8.54761);
+    });
+
+    test('leaves already short coordinates untouched', () {
+      final json = draftToCaseJson(publishableDraft());
+
+      expect(json['latitude'], 40.07);
+      expect(json['longitude'], -2.13);
+    });
+
     test('normalises the country code to upper case', () {
       final json = draftToCaseJson(publishableDraft());
 

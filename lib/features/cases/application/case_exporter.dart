@@ -22,6 +22,18 @@ const Map<String, String> _diacritics = {
   'ñ': 'n', 'ç': 'c', 'ß': 'ss', 'æ': 'ae',
 };
 
+/// Recorta la precisión de una coordenada a cinco decimales, algo más de un
+/// metro.
+///
+/// Marcar un punto en el mapa produce quince decimales de precisión que nadie
+/// tiene, y el catálogo es un archivo que se lee y se edita a mano.
+double? _roundCoordinate(double? value) {
+  if (value == null) {
+    return null;
+  }
+  return double.parse(value.toStringAsFixed(5));
+}
+
 /// Slug estable a partir del título editorial: minúsculas, sin acentos y con
 /// guiones. Es la identidad pública del caso (`id` y `slug`).
 String caseSlug(String title) {
@@ -99,8 +111,8 @@ Map<String, dynamic> draftToCaseJson(CaseDraft draft) {
     'countryCode': draft.countryCode?.trim().toUpperCase(),
     'regionOrCity': draft.regionOrCity?.trim(),
     'year': draft.year,
-    'latitude': draft.latitude,
-    'longitude': draft.longitude,
+    'latitude': _roundCoordinate(draft.latitude),
+    'longitude': _roundCoordinate(draft.longitude),
     // `TrueCrimeCase.summary` no admite null.
     'summary': draft.summary?.trim() ?? '',
     'tags': draft.tags,
