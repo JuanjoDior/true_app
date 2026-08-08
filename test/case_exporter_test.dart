@@ -54,7 +54,89 @@ void main() {
     });
   });
 
+  group('uniqueCaseSlug', () {
+    test('leaves the slug alone when nothing else uses it', () {
+      expect(uniqueCaseSlug('caso-asunta', const {}), 'caso-asunta');
+      expect(
+        uniqueCaseSlug('caso-asunta', const {'otro-caso'}),
+        'caso-asunta',
+      );
+    });
+
+    test('suffixes the second case that slugifies the same way', () {
+      expect(
+        uniqueCaseSlug('caso-asunta', const {'caso-asunta'}),
+        'caso-asunta-2',
+      );
+    });
+
+    test('keeps counting while the suffixed slug is also taken', () {
+      expect(
+        uniqueCaseSlug('caso-asunta', const {'caso-asunta', 'caso-asunta-2'}),
+        'caso-asunta-3',
+      );
+      expect(
+        uniqueCaseSlug(
+          'caso-asunta',
+          const {'caso-asunta', 'caso-asunta-2', 'caso-asunta-3'},
+        ),
+        'caso-asunta-4',
+      );
+    });
+
+    test('does not skip a number that is free', () {
+      // Si el -2 se borró del catálogo, el hueco se reutiliza.
+      expect(
+        uniqueCaseSlug('caso-asunta', const {'caso-asunta', 'caso-asunta-3'}),
+        'caso-asunta-2',
+      );
+    });
+  });
+
   group('draftToCaseJson', () {
+    test('gives a colliding title a distinct id and slug', () {
+      // Dos casos con el mismo id romperían la selección en el mapa y los
+      // casos relacionados, que se resuelven por id [Design #4, Task 3.1].
+      final json = draftToCaseJson(
+        publishableDraft(title: 'Caso Asunta'),
+        takenSlugs: const {'caso-asunta'},
+      );
+
+      expect(json['slug'], 'caso-asunta-2');
+      expect(json['id'], 'caso-asunta-2');
+    });
+
+    test('keeps id and slug identical after suffixing', () {
+      final json = draftToCaseJson(
+        publishableDraft(title: 'Caso Asunta'),
+        takenSlugs: const {'caso-asunta', 'caso-asunta-2'},
+      );
+
+      expect(json['id'], json['slug']);
+      expect(json['slug'], 'caso-asunta-3');
+    });
+
+    test('does not suffix when the catalogue has no such slug', () {
+      final json = draftToCaseJson(
+        publishableDraft(title: 'Caso Asunta'),
+        takenSlugs: const {'zodiac', 'black-dahlia'},
+      );
+
+      expect(json['slug'], 'caso-asunta');
+    });
+
+    test('catches titles that differ only in accents or punctuation', () {
+      // "El Caso Asunta" y "el caso, asunta" producen el mismo slug base.
+      final first = draftToCaseJson(publishableDraft(title: 'El Caso Asunta'));
+      final second = draftToCaseJson(
+        publishableDraft(title: 'el caso, asuntá'),
+        takenSlugs: {first['slug'] as String},
+      );
+
+      expect(first['slug'], 'el-caso-asunta');
+      expect(second['slug'], 'el-caso-asunta-2');
+    });
+
     test('maps every published field from the draft', () {
       final json = draftToCaseJson(publishableDraft());
 
@@ -284,6 +366,15 @@ void main() {
   });
 
   group('encodeDraftAsCaseJson', () {
+    test('carries the collision guard through to the copied text', () {
+      final text = encodeDraftAsCaseJson(
+        publishableDraft(title: 'Caso Asunta'),
+        takenSlugs: const {'caso-asunta'},
+      );
+
+      expect(jsonDecode(text)['slug'], 'caso-asunta-2');
+    });
+
     test('produces indented JSON ready to paste into cases.json', () {
       final text = encodeDraftAsCaseJson(publishableDraft());
 

@@ -53,14 +53,38 @@ String caseSlug(String title) {
   return slug.isEmpty ? 'caso-sin-titulo' : slug;
 }
 
+/// Devuelve un slug libre a partir de [base], añadiendo `-2`, `-3`… si ya está
+/// ocupado.
+///
+/// Dos casos con el mismo `id` romperían la selección en el mapa y los casos
+/// relacionados, que se resuelven por identidad [Diseño #4]. Y títulos que sólo
+/// se diferencian en acentos o puntuación producen el mismo slug base, así que
+/// la colisión no es rara.
+String uniqueCaseSlug(String base, Set<String> taken) {
+  if (!taken.contains(base)) {
+    return base;
+  }
+  var suffix = 2;
+  while (taken.contains('$base-$suffix')) {
+    suffix++;
+  }
+  return '$base-$suffix';
+}
+
 /// Mapea el borrador al esquema publicado de `TrueCrimeCase`.
 ///
-/// Los campos que el borrador todavía no captura (tags, víctima, cronología,
-/// destacados) se omiten: `fromJson` los trata como opcionales y se editan a
+/// [takenSlugs] son los slugs que ya existen —los del catálogo publicado y los
+/// de los demás borradores—, para no emitir una identidad repetida.
+///
+/// Los campos que el borrador todavía no captura (destacados, orden de
+/// relevancia) se omiten: `fromJson` los trata como opcionales y se editan a
 /// mano en el asset si hacen falta.
-Map<String, dynamic> draftToCaseJson(CaseDraft draft) {
+Map<String, dynamic> draftToCaseJson(
+  CaseDraft draft, {
+  Set<String> takenSlugs = const {},
+}) {
   final title = draft.title?.trim() ?? '';
-  final slug = caseSlug(title);
+  final slug = uniqueCaseSlug(caseSlug(title), takenSlugs);
 
   final sources = <Map<String, dynamic>>[
     for (final link in draft.links)
@@ -129,6 +153,10 @@ Map<String, dynamic> draftToCaseJson(CaseDraft draft) {
 
 /// Texto listo para pegar en `assets/data/cases.json`: indentado a dos
 /// espacios y sin escapar los acentos, para que el asset siga siendo legible.
-String encodeDraftAsCaseJson(CaseDraft draft) {
-  return const JsonEncoder.withIndent('  ').convert(draftToCaseJson(draft));
+String encodeDraftAsCaseJson(
+  CaseDraft draft, {
+  Set<String> takenSlugs = const {},
+}) {
+  return const JsonEncoder.withIndent('  ')
+      .convert(draftToCaseJson(draft, takenSlugs: takenSlugs));
 }

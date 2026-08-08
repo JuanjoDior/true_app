@@ -4,7 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/case_draft_providers.dart';
 import '../../application/case_exporter.dart';
+import '../../application/cases_providers.dart';
 import '../../application/draft_validator.dart';
+import '../../domain/case_draft.dart';
+import '../../domain/true_crime_case.dart';
 
 /// Copia el borrador en edición al portapapeles con el esquema del catálogo.
 ///
@@ -24,6 +27,19 @@ class ExportCaseButton extends ConsumerWidget {
 
     final isPublishable = validateDraft(draft).isValid;
 
+    // Identidades ya ocupadas: las de los casos publicados y las que
+    // producirían los demás borradores. Sin esto, dos títulos que se
+    // escriben casi igual exportarían el mismo `id` [Diseño #4].
+    final published = ref.watch(casesProvider).value ?? const <TrueCrimeCase>[];
+    final drafts = ref.watch(caseDraftsProvider).value ?? const <CaseDraft>[];
+    final takenSlugs = <String>{
+      for (final crimeCase in published) crimeCase.slug,
+      for (final other in drafts)
+        if (other.draftId != draft.draftId &&
+            (other.title?.trim().isNotEmpty ?? false))
+          caseSlug(other.title!.trim()),
+    };
+
     return Tooltip(
       message: isPublishable
           ? 'Copia el caso en formato JSON'
@@ -34,7 +50,9 @@ class ExportCaseButton extends ConsumerWidget {
             ? () async {
                 final messenger = ScaffoldMessenger.of(context);
                 await Clipboard.setData(
-                  ClipboardData(text: encodeDraftAsCaseJson(draft)),
+                  ClipboardData(
+                    text: encodeDraftAsCaseJson(draft, takenSlugs: takenSlugs),
+                  ),
                 );
                 messenger.showSnackBar(
                   const SnackBar(
