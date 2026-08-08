@@ -1,0 +1,51 @@
+schema: spec-driven
+
+# Artifact store: files in the repository (not Engram).
+# Rationale: this project used Engram-backed SDD artifacts previously and switched
+# to file-based artifacts deliberately. Engram artifacts leave no repository trace,
+# and an in-flight cycle stayed invisible for three weeks after the project
+# directory was moved. Artifacts now travel with the repo.
+
+context: |
+  Tech stack: Flutter (Dart), Riverpod, flutter_map 8.2.2, Nominatim geocoding.
+  No backend: the catalog is a versioned JSON asset (assets/data/cases.json);
+  publishing is form -> clipboard -> commit -> GitHub Pages.
+  Architecture: layered per feature — domain/ (models + rules, Flutter-free),
+  data/ (asset JSON, localStorage, Nominatim), application/ (Riverpod providers,
+  validation, exporter), presentation/ (widgets).
+  Two faces: the public "Sala de Situación" (lib/features/home) and the internal
+  intake form (lib/features/cases/presentation/intake).
+  Testing: `flutter test` + `flutter analyze`. 140 tests, all green.
+  Style: UI copy, code comments and commit messages in Spanish (conventional
+  commits, no AI attribution). SDD artifacts and specs in English.
+  Tests describe behavior, not implementation.
+
+rules:
+  proposal:
+    - Include an explicit rollback plan; delivery is direct commits to main.
+    - State non-goals explicitly, including nearby-but-deferred work.
+  specs:
+    - Use Given/When/Then for scenarios.
+    - Use RFC 2119 keywords (MUST, SHALL, SHOULD, MAY).
+  design:
+    - Document architecture decisions with rationale and rejected alternatives.
+  tasks:
+    - Group by phase, use hierarchical numbering.
+    - Keep tasks completable in one session.
+  apply:
+    guidelines:
+      - Follow existing code patterns; reuse the width-gated body swap idiom
+        already used by lib/features/home/presentation/home_page.dart.
+      - Never use `pumpAndSettle` with flutter_map or animated widgets; use
+        `await tester.pump(const Duration(milliseconds: 400))`.
+      - `copyWith` does not clear fields (`value ?? this.value`); use explicit
+        methods such as `withResolvedPlace`.
+      - Widget tests must not force oversized viewports to dodge overflow.
+    tdd: true
+    test_command: "flutter test"
+  verify:
+    test_command: "flutter test"
+    build_command: "flutter analyze"
+    coverage_threshold: 0
+  archive:
+    - Warn before merging destructive deltas.
