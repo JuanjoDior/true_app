@@ -99,6 +99,14 @@ final caseDraftsProvider =
 /// Borrador que se está editando en el workspace de intake (null = ninguno).
 final editingDraftIdProvider = StateProvider<String?>((ref) => null);
 
+/// Narrow-workspace affordance: whether the draft-list overlay is open
+/// (Diseño D3, `intake-responsive`).
+final intakeDraftListOpenProvider = StateProvider<bool>((ref) => false);
+
+/// Narrow-workspace affordance: whether the preview sheet is open
+/// (Diseño D3, `intake-responsive`).
+final intakePreviewOpenProvider = StateProvider<bool>((ref) => false);
+
 /// Borrador actualmente en edición, resuelto a partir de
 /// [editingDraftIdProvider] (mismo patrón que `selectedCaseProvider`).
 final editingDraftProvider = Provider<CaseDraft?>((ref) {

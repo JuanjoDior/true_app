@@ -43,6 +43,10 @@ class BasicDataSection extends ConsumerWidget {
         DropdownButtonFormField<CaseCategory>(
           key: const Key('intake-field-category'),
           initialValue: draft.category,
+          // A pantalla completa en el workspace estrecho el campo mide menos
+          // que en las tres columnas de escritorio: sin esto, la fila
+          // interna del desplegable desborda con las etiquetas más largas.
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: 'Categoría',
             errorText: validateCategory(draft.category),
@@ -77,6 +81,7 @@ class BasicDataSection extends ConsumerWidget {
         DropdownButtonFormField<CaseStatus>(
           key: const Key('intake-field-status'),
           initialValue: draft.status,
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: 'Estado',
             errorText: validateStatus(draft.status),

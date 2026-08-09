@@ -16,7 +16,13 @@ import '../../domain/true_crime_case.dart';
 /// [Diseño #7]. Sólo se habilita cuando el borrador está completo, porque un
 /// caso sin ubicación no puede entrar en el catálogo.
 class ExportCaseButton extends ConsumerWidget {
-  const ExportCaseButton({super.key});
+  const ExportCaseButton({super.key, this.compact = false});
+
+  /// A partir del workspace estrecho, el botón se reduce a un icono en la
+  /// barra superior compacta [Diseño D7]. Misma `Key`, mismo `Tooltip`,
+  /// mismas condiciones de habilitado y la misma acción de portapapeles: no
+  /// se duplica lógica de exportación, sólo la presentación.
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -40,30 +46,36 @@ class ExportCaseButton extends ConsumerWidget {
           caseSlug(other.title!.trim()),
     };
 
+    Future<void> copyToClipboard() async {
+      final messenger = ScaffoldMessenger.of(context);
+      await Clipboard.setData(
+        ClipboardData(
+          text: encodeDraftAsCaseJson(draft, takenSlugs: takenSlugs),
+        ),
+      );
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('JSON copiado. Pégalo en assets/data/cases.json'),
+        ),
+      );
+    }
+
     return Tooltip(
       message: isPublishable
           ? 'Copia el caso en formato JSON'
           : 'Completa los campos obligatorios para poder exportar',
-      child: TextButton.icon(
-        key: const Key('intake-export-button'),
-        onPressed: isPublishable
-            ? () async {
-                final messenger = ScaffoldMessenger.of(context);
-                await Clipboard.setData(
-                  ClipboardData(
-                    text: encodeDraftAsCaseJson(draft, takenSlugs: takenSlugs),
-                  ),
-                );
-                messenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('JSON copiado. Pégalo en assets/data/cases.json'),
-                  ),
-                );
-              }
-            : null,
-        icon: const Icon(Icons.copy_all, size: 16),
-        label: const Text('Copiar JSON'),
-      ),
+      child: compact
+          ? IconButton(
+              key: const Key('intake-export-button'),
+              onPressed: isPublishable ? copyToClipboard : null,
+              icon: const Icon(Icons.copy_all, size: 18),
+            )
+          : TextButton.icon(
+              key: const Key('intake-export-button'),
+              onPressed: isPublishable ? copyToClipboard : null,
+              icon: const Icon(Icons.copy_all, size: 16),
+              label: const Text('Copiar JSON'),
+            ),
     );
   }
 }
