@@ -57,12 +57,9 @@ void main() {
     // Los campos guardan su texto internamente: al cambiar de borrador hay
     // que forzar que vuelvan a leer el valor, o enseñan el del anterior y lo
     // que se ve deja de ser lo que se guarda.
-    // El workspace es de escritorio: en el viewport por defecto de 800x600
-    // desborda, y ese es otro asunto. Aquí se prueba el cambio de borrador.
-    tester.view.physicalSize = const Size(1600, 1200);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
+    // Sin viewport forzado: en el de 800x600 por defecto el workspace entra
+    // por la rama estrecha, así que este test cubre el cambio de borrador
+    // justo donde antes ni se renderizaba.
     final container = ProviderContainer(
       overrides: [
         caseDraftsStoreProvider
@@ -108,12 +105,7 @@ void main() {
 
   testWidgets('coming back to a draft shows its own values again',
       (tester) async {
-    // El workspace es de escritorio: en el viewport por defecto de 800x600
-    // desborda, y ese es otro asunto. Aquí se prueba el cambio de borrador.
-    tester.view.physicalSize = const Size(1600, 1200);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
-
+    // Sin viewport forzado: ver la nota del primer test.
     final container = ProviderContainer(
       overrides: [
         caseDraftsStoreProvider
