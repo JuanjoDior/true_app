@@ -75,3 +75,31 @@ Note: this repo delivers via direct commits to `main` (no PR flow), so the 400-l
 - [x] 4.3 Confirm `test/intake_form_widget_test.dart`'s `tester.ensureVisible` call before dropdown taps is still present and still needed — do not silently delete it; it remains the overflow-masking regression canary per the design.
 - [x] 4.4 Run `flutter test` (full suite, expect 140 + new tests green) + `flutter analyze` — confirm green/clean, satisfying the proposal's Success Criteria checklist.
 - [x] 4.5 Commit: `test: el workspace se prueba en viewport real`.
+
+## Phase 5: Verification Remediation (Commit 5 — added after `sdd-verify` returned FAIL)
+
+Not part of the original plan. `sdd-verify` returned `fail` with 2 CRITICAL blockers, both reproduced
+independently by mutation before being accepted. Test-only remediation: no `lib/` file changed.
+
+- [x] 5.1 **CRITICAL-1 — the desktop three-pane branch had zero coverage.** Task 4.2 removed the
+  `Size(1600, 1200)` override from `test/intake_draft_switch_test.dart`, dropping it to the default
+  800x600 viewport — below `Breakpoints.intakeThreePane = 1024`, so it landed on the narrow branch.
+  The only other workspace test forces 360x780. Both doors led to the same room. Proven by forcing
+  `isNarrow = true` (desktop branch unreachable): all 161 tests still passed. This matters because
+  Phase 3 refactored that exact path by extracting `_IntakeFormColumn` from `_FormAndPreview`, and
+  task 3.12 verified it only while the override still existed.
+- [x] 5.2 Create `test/intake_desktop_layout_test.dart` at 1440x900: preview pane permanently visible
+  at 380px, form column at `width - 260 - 380`, every draft listed without opening an overlay, no
+  narrow-only affordances present, and the "crea o selecciona" placeholder shown when no draft is
+  selected (desktop must NOT auto-land, unlike design D6's narrow behavior). Geometry assertions, not
+  exception-absence. Mutation-verified: with `isNarrow = true` all 3 tests fail.
+- [x] 5.3 **CRITICAL-2 — third vacuous assertion in the same change.** `test/location_section_widget_test.dart`'s
+  fine-tuning case asserted only `expect(tester.takeException(), isNull)`. `_FineTuning` passes three
+  `IntakeFieldSlot.flexible` fields, which become `Expanded` and shrink instead of overflowing, so the
+  test passed against an unstacked row. The corrective `getSize` assertion from task 2.9 reached
+  photos, timeline and links but missed this site.
+- [x] 5.4 Add the missing width assertion to the fine-tuning case. Mutation-verified: with
+  `formRowStack = 0` it now fails, measuring 113.3px instead of 360px (previously the whole file
+  passed 13/13 under that mutation).
+- [x] 5.5 Run `flutter test` (164 green) + `flutter analyze` (clean) — confirm no `lib/` file changed.
+- [x] 5.6 Commit: `test: cubre el layout de escritorio y el ajuste fino`.

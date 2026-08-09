@@ -375,5 +375,25 @@ void main() {
     await _openFineTuning(tester);
 
     expect(tester.takeException(), isNull);
+
+    // El "sin desborde" por sí solo NO prueba nada aquí: los tres campos de
+    // ajuste fino son `IntakeFieldSlot.flexible`, así que en la rama `Row` se
+    // vuelven `Expanded` y ENCOGEN en lugar de desbordar. Sin esta medida de
+    // ancho el test pasa igual con la fila sin apilar, que es justo la
+    // regresión que debe cazar.
+    final latitudeField = find.byWidgetPredicate(
+      (widget) =>
+          widget.key is ValueKey<String> &&
+          (widget.key! as ValueKey<String>)
+              .value
+              .startsWith('intake-field-latitude-'),
+    );
+    expect(latitudeField, findsOneWidget);
+    expect(
+      tester.getSize(latitudeField).width,
+      360,
+      reason: 'Below Breakpoints.formRowStack the fine-tuning row must stack, '
+          'giving each field the full width — not merely avoid an overflow.',
+    );
   });
 }
