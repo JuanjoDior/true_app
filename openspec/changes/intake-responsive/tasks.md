@@ -29,11 +29,11 @@ Note: this repo delivers via direct commits to `main` (no PR flow), so the 400-l
 
 ## Phase 1: Shared Breakpoints (Commit 1 — characterization tests, byte-identical migration)
 
-- [ ] 1.1 **[CHARACTERIZATION — GREEN before and after, not RED-first]** Create `test/situation_breakpoints_test.dart`: lock `_DesktopBody`/`_MobileBody` and top-bar compact selection at widths 1440/1050/1000/900/800, asserting `find.byType(SituationNavRail)` presence, `tester.getSize(find.byType(SituationSidePanel)).width` (362 vs 320), `find.byKey('mobile-case-sheet')`, metrics-row/global-pill presence. Use `MapConfig.testing()` and `tester.pump(const Duration(milliseconds: 400))`, never `pumpAndSettle`. Run and confirm GREEN against current `home_page.dart` (pre-migration) — satisfies Requirement: Sala de Situación Layout Selection Is Behavior-Preserving.
-- [ ] 1.2 Create `lib/core/layout/breakpoints.dart`: `abstract final class Breakpoints` with `static const double sidePanel = 880`, `topBarFull = 980`, `widePanel = 1024`, `navRail = 1100`, `intakeThreePane = 1024`, `formRowStack = 520` — satisfies Requirement: Centralized Breakpoint Constants.
-- [ ] 1.3 Modify `lib/features/home/presentation/home_page.dart`: replace all four inline literals (880/980/1024/1100) with `Breakpoints.sidePanel`/`.topBarFull`/`.widePanel`/`.navRail`. Verify zero remaining inline width-comparison literals.
-- [ ] 1.4 Re-run `flutter test test/situation_breakpoints_test.dart` — confirm still GREEN post-migration (characterization proves byte-identical behavior; no RED cycle required per design's deliberate TDD deviation).
-- [ ] 1.5 Run `flutter analyze` — confirm clean.
+- [x] 1.1 **[CHARACTERIZATION — GREEN before and after, not RED-first]** Create `test/situation_breakpoints_test.dart`: lock `_DesktopBody`/`_MobileBody` and top-bar compact selection at widths 1440/1050/1000/900/800, asserting `find.byType(SituationNavRail)` presence, `tester.getSize(find.byType(SituationSidePanel)).width` (362 vs 320), `find.byKey('mobile-case-sheet')`, metrics-row/global-pill presence. Use `MapConfig.testing()` and `tester.pump(const Duration(milliseconds: 400))`, never `pumpAndSettle`. Run and confirm GREEN against current `home_page.dart` (pre-migration) — satisfies Requirement: Sala de Situación Layout Selection Is Behavior-Preserving.
+- [x] 1.2 Create `lib/core/layout/breakpoints.dart`: `abstract final class Breakpoints` with `static const double sidePanel = 880`, `topBarFull = 980`, `widePanel = 1024`, `navRail = 1100`, `intakeThreePane = 1024`, `formRowStack = 520` — satisfies Requirement: Centralized Breakpoint Constants.
+- [x] 1.3 Modify `lib/features/home/presentation/home_page.dart`: replace all four inline literals (880/980/1024/1100) with `Breakpoints.sidePanel`/`.topBarFull`/`.widePanel`/`.navRail`. Verify zero remaining inline width-comparison literals.
+- [x] 1.4 Re-run `flutter test test/situation_breakpoints_test.dart` — confirm still GREEN post-migration (characterization proves byte-identical behavior; no RED cycle required per design's deliberate TDD deviation).
+- [x] 1.5 Run `flutter analyze` — confirm clean.
 - [ ] 1.6 Commit as its own independently revertible unit: `test: fija el comportamiento responsive de la Sala` + `refactor: unifica los breakpoints`.
 
 ## Phase 2: Section Row Fallbacks (Commit 2)

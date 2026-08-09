@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/layout/breakpoints.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../cases/application/cases_providers.dart';
 import '../../cases/presentation/intake/intake_workspace_screen.dart';
@@ -25,14 +26,14 @@ class TrueCrimeHomePage extends ConsumerWidget {
     }
 
     final width = MediaQuery.sizeOf(context).width;
-    final showRail = width >= 1100;
-    final showSidePanel = width >= 880;
+    final showRail = width >= Breakpoints.navRail;
+    final showSidePanel = width >= Breakpoints.sidePanel;
 
     return Scaffold(
       backgroundColor: AppColors.bgDeep,
       body: Column(
         children: [
-          SituationTopBar(compact: width < 980),
+          SituationTopBar(compact: width < Breakpoints.topBarFull),
           const UpdatesTicker(),
           Expanded(
             child: showSidePanel
@@ -53,7 +54,7 @@ class _DesktopBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    final panelWidth = width < 1024 ? 320.0 : 362.0;
+    final panelWidth = width < Breakpoints.widePanel ? 320.0 : 362.0;
 
     return Row(
       children: [
