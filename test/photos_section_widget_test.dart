@@ -101,4 +101,34 @@ void main() {
     expect(container.read(editingDraftProvider)!.photos.single.url,
         'no es una url');
   });
+
+  testWidgets('does not overflow at the minimum supported width 360x640',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await _pumpSection(
+      tester,
+      photos: const [
+        DraftPhoto(
+          url: 'https://example.com/foto-larga.jpg',
+          caption: 'Un pie de foto razonablemente largo',
+        ),
+      ],
+    );
+
+    expect(tester.takeException(), isNull);
+
+    // El "sin desborde" por sí solo NO prueba nada aquí: en la rama `Row` los
+    // campos flexibles se encogen (medido: 151px cada uno a 360px de ancho) en
+    // vez de desbordar, así que la fila sin apilar también pasaría esa
+    // comprobación. El ancho es lo que separa apilado de encogido.
+    expect(
+      tester.getSize(find.byKey(const Key('intake-field-photo-url-0'))).width,
+      360,
+      reason: 'Below Breakpoints.formRowStack the row must stack, giving each '
+          'field the full width — not merely avoid an overflow.',
+    );
+  });
 }

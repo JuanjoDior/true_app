@@ -9,6 +9,7 @@ import '../../../application/draft_validator.dart';
 import '../../../domain/case_draft.dart';
 import '../../../domain/coordinates_label.dart';
 import '../location_picker_map.dart';
+import 'intake_field_row.dart';
 
 /// Sección "Ubicación": se señala el punto en el mapa y el resto se rellena
 /// solo.
@@ -162,7 +163,10 @@ class _CoordinatesLine extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasPoint = latitude != null && longitude != null;
 
-    return Row(
+    return Wrap(
+      spacing: 12,
+      runSpacing: 4,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: [
         Text(
           _label,
@@ -173,20 +177,25 @@ class _CoordinatesLine extends StatelessWidget {
             color: hasPoint ? AppColors.gold : AppColors.textFaint,
           ),
         ),
-        if (resolving) ...[
-          const SizedBox(width: 12),
-          const SizedBox(
-            width: 11,
-            height: 11,
-            child: CircularProgressIndicator(strokeWidth: 1.5),
+        if (resolving)
+          // Agrupados en una sola fila para que el spinner y el texto nunca
+          // se separen entre líneas del `Wrap`.
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(
+                width: 11,
+                height: 11,
+                child: CircularProgressIndicator(strokeWidth: 1.5),
+              ),
+              const SizedBox(width: 7),
+              Text(
+                'Buscando el lugar…',
+                key: const Key('intake-geocoding-status'),
+                style: SituationStyles.sans(size: 11, color: AppColors.textSub),
+              ),
+            ],
           ),
-          const SizedBox(width: 7),
-          Text(
-            'Buscando el lugar…',
-            key: const Key('intake-geocoding-status'),
-            style: SituationStyles.sans(size: 11, color: AppColors.textSub),
-          ),
-        ],
       ],
     );
   }
@@ -216,11 +225,10 @@ class _FineTuning extends StatelessWidget {
       tilePadding: EdgeInsets.zero,
       childrenPadding: const EdgeInsets.only(bottom: 8),
       children: [
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: TextFormField(
+        IntakeFieldRow(
+          fields: [
+            IntakeFieldSlot.flexible(
+              TextFormField(
                 key: Key('intake-field-country-code-$placeRevision'),
                 initialValue: draft.countryCode,
                 textCapitalization: TextCapitalization.characters,
@@ -233,9 +241,8 @@ class _FineTuning extends StatelessWidget {
                     onEdit((current) => current.copyWith(countryCode: value)),
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextFormField(
+            IntakeFieldSlot.flexible(
+              TextFormField(
                 key: Key('intake-field-latitude-$placeRevision'),
                 initialValue: draft.latitude?.toString(),
                 keyboardType: const TextInputType.numberWithOptions(
@@ -256,9 +263,8 @@ class _FineTuning extends StatelessWidget {
                 },
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: TextFormField(
+            IntakeFieldSlot.flexible(
+              TextFormField(
                 key: Key('intake-field-longitude-$placeRevision'),
                 initialValue: draft.longitude?.toString(),
                 keyboardType: const TextInputType.numberWithOptions(

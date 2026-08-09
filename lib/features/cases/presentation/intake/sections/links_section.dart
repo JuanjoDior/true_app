@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/case_draft_providers.dart';
 import '../../../application/draft_validator.dart';
 import '../../../domain/case_draft.dart';
+import 'intake_field_row.dart';
 
 /// Sección "Enlaces": fuentes externas (investigación, podcast…), opcional
 /// en v1. Los enlaces mal formados se marcan pero no bloquean el guardado
@@ -38,11 +39,10 @@ class LinksSection extends ConsumerWidget {
         for (var i = 0; i < draft.links.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: TextFormField(
+            child: IntakeFieldRow(
+              fields: [
+                IntakeFieldSlot.flexible(
+                  TextFormField(
                     key: Key('intake-field-link-title-$i'),
                     initialValue: draft.links[i].title,
                     decoration:
@@ -54,9 +54,8 @@ class LinksSection extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
+                IntakeFieldSlot.flexible(
+                  TextFormField(
                     key: Key('intake-field-link-url-$i'),
                     initialValue: draft.links[i].url,
                     decoration: InputDecoration(
@@ -70,10 +69,8 @@ class LinksSection extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: 170,
-                  child: DropdownButtonFormField<DraftLinkKind>(
+                IntakeFieldSlot.fixed(
+                  DropdownButtonFormField<DraftLinkKind>(
                     key: Key('intake-field-link-kind-$i'),
                     initialValue: draft.links[i].kind ?? DraftLinkKind.other,
                     isExpanded: true,
@@ -98,20 +95,21 @@ class LinksSection extends ConsumerWidget {
                       }
                     },
                   ),
-                ),
-                IconButton(
-                  key: Key('intake-field-link-remove-$i'),
-                  icon: const Icon(Icons.close, size: 16),
-                  onPressed: () => notifier.editDraft(draft.draftId, (current) {
-                    if (i >= current.links.length) {
-                      return current;
-                    }
-                    return current.copyWith(
-                      links: [...current.links]..removeAt(i),
-                    );
-                  }),
+                  width: 170,
                 ),
               ],
+              trailing: IconButton(
+                key: Key('intake-field-link-remove-$i'),
+                icon: const Icon(Icons.close, size: 16),
+                onPressed: () => notifier.editDraft(draft.draftId, (current) {
+                  if (i >= current.links.length) {
+                    return current;
+                  }
+                  return current.copyWith(
+                    links: [...current.links]..removeAt(i),
+                  );
+                }),
+              ),
             ),
           ),
         TextButton.icon(

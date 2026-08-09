@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/case_draft_providers.dart';
 import '../../../application/draft_validator.dart';
 import '../../../domain/case_draft.dart';
+import 'intake_field_row.dart';
 
 /// Sección "Fotografías": imágenes ya alojadas, referenciadas por URL. v1 no
 /// sube archivos (política "sin backend, sin CMS") [Diseño #14]. Las URLs mal
@@ -38,11 +39,10 @@ class PhotosSection extends ConsumerWidget {
         for (var i = 0; i < draft.photos.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: TextFormField(
+            child: IntakeFieldRow(
+              fields: [
+                IntakeFieldSlot.flexible(
+                  TextFormField(
                     key: Key('intake-field-photo-url-$i'),
                     initialValue: draft.photos[i].url,
                     decoration: InputDecoration(
@@ -56,9 +56,8 @@ class PhotosSection extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
+                IntakeFieldSlot.flexible(
+                  TextFormField(
                     key: Key('intake-field-photo-caption-$i'),
                     initialValue: draft.photos[i].caption,
                     decoration: const InputDecoration(
@@ -70,19 +69,19 @@ class PhotosSection extends ConsumerWidget {
                     ),
                   ),
                 ),
-                IconButton(
-                  key: Key('intake-field-photo-remove-$i'),
-                  icon: const Icon(Icons.close, size: 16),
-                  onPressed: () => notifier.editDraft(draft.draftId, (current) {
-                    if (i >= current.photos.length) {
-                      return current;
-                    }
-                    return current.copyWith(
-                      photos: [...current.photos]..removeAt(i),
-                    );
-                  }),
-                ),
               ],
+              trailing: IconButton(
+                key: Key('intake-field-photo-remove-$i'),
+                icon: const Icon(Icons.close, size: 16),
+                onPressed: () => notifier.editDraft(draft.draftId, (current) {
+                  if (i >= current.photos.length) {
+                    return current;
+                  }
+                  return current.copyWith(
+                    photos: [...current.photos]..removeAt(i),
+                  );
+                }),
+              ),
             ),
           ),
         TextButton.icon(

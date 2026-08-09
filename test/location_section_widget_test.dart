@@ -56,6 +56,7 @@ Future<(ProviderContainer, _FakeCaseDraftsStore)> _pumpSection(
   WidgetTester tester, {
   CaseDraft Function(String draftId)? draft,
   ReverseGeocoder? geocoder,
+  double? width,
 }) async {
   final store = _FakeCaseDraftsStore();
   final container = ProviderContainer(
@@ -76,12 +77,16 @@ Future<(ProviderContainer, _FakeCaseDraftsStore)> _pumpSection(
   }
   container.read(editingDraftIdProvider.notifier).state = draftId;
 
+  final section = width == null
+      ? const LocationSection()
+      : SizedBox(width: width, child: const LocationSection());
+
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: const MaterialApp(
+      child: MaterialApp(
         home: Scaffold(
-          body: SingleChildScrollView(child: LocationSection()),
+          body: SingleChildScrollView(child: section),
         ),
       ),
     ),
@@ -316,5 +321,59 @@ void main() {
     expect(find.text('El código de país es obligatorio'), findsOneWidget);
     expect(find.text('La latitud es obligatoria'), findsOneWidget);
     expect(find.text('La longitud es obligatoria'), findsOneWidget);
+  });
+
+  testWidgets(
+      'the coordinates line wraps instead of overflowing at 336px while resolving',
+      (tester) async {
+    final gate = Completer<void>();
+    await _pumpSection(
+      tester,
+      width: 336,
+      draft: (draftId) => CaseDraft(
+        draftId: draftId,
+        latitude: 43.39,
+        longitude: -8.41,
+      ),
+      geocoder: _FakeReverseGeocoder(
+        gate: gate,
+        place: const ResolvedPlace(country: 'España', countryCode: 'ES'),
+      ),
+    );
+
+    // Se dispara una búsqueda para forzar el estado "resolving: true" sin
+    // que la respuesta llegue todavía.
+    await _tapMap(tester);
+    await tester.pump();
+
+    expect(find.byKey(const Key('intake-coordinates-label')), findsOneWidget);
+    expect(find.byKey(const Key('intake-geocoding-status')), findsOneWidget);
+    expect(tester.takeException(), isNull);
+
+    gate.complete();
+    await tester.pumpAndSettle();
+  });
+
+  testWidgets(
+      'the fine-tuning fields do not overflow at the minimum supported width 360x640',
+      (tester) async {
+    tester.view.physicalSize = const Size(360, 640);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await _pumpSection(
+      tester,
+      draft: (draftId) => CaseDraft(
+        draftId: draftId,
+        latitude: 43.39,
+        longitude: -8.41,
+        countryCode: 'ES',
+      ),
+      geocoder: _FakeReverseGeocoder(),
+    );
+
+    await _openFineTuning(tester);
+
+    expect(tester.takeException(), isNull);
   });
 }

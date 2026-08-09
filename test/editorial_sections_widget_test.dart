@@ -5,6 +5,7 @@ import 'package:true_app/features/cases/application/case_draft_providers.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
 import 'package:true_app/features/cases/domain/case_draft.dart';
 import 'package:true_app/features/cases/domain/case_timeline_event.dart';
+import 'package:true_app/features/cases/presentation/intake/sections/links_section.dart';
 import 'package:true_app/features/cases/presentation/intake/sections/summary_section.dart';
 import 'package:true_app/features/cases/presentation/intake/sections/timeline_section.dart';
 
@@ -220,6 +221,76 @@ void main() {
       final timeline = container.read(editingDraftProvider)!.timeline;
       expect(timeline.first.title, 'Primero');
       expect(timeline.last.title, 'Segundo');
+    });
+
+    testWidgets('does not overflow at the minimum supported width 360x640',
+        (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await _pumpSection(
+        tester,
+        const TimelineSection(),
+        draft: (draftId) => CaseDraft(
+          draftId: draftId,
+          timeline: const [
+            DraftTimelineEvent(
+              date: '1968–69',
+              title: 'Primeros ataques confirmados',
+              kind: CaseTimelineKind.open,
+            ),
+          ],
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+
+      // El "sin desborde" por sí solo NO prueba nada aquí: en la rama `Row`
+      // los campos flexibles se encogen en vez de desbordar, así que la fila
+      // sin apilar también pasaría esa comprobación. Lo que distingue apilado
+      // de encogido es el ancho: apilado, cada campo ocupa el viewport entero.
+      expect(
+        tester.getSize(find.byKey(const Key('intake-field-timeline-title-0'))).width,
+        360,
+        reason: 'Below Breakpoints.formRowStack the row must stack, giving '
+            'each field the full width — not merely avoid an overflow.',
+      );
+    });
+  });
+
+  group('LinksSection', () {
+    testWidgets('does not overflow at the minimum supported width 360x640',
+        (tester) async {
+      tester.view.physicalSize = const Size(360, 640);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
+      await _pumpSection(
+        tester,
+        const LinksSection(),
+        draft: (draftId) => CaseDraft(
+          draftId: draftId,
+          links: const [
+            DraftLink(
+              title: 'Reportaje del archivo',
+              url: 'https://example.com/reportaje',
+              kind: DraftLinkKind.publication,
+            ),
+          ],
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+
+      // Ver la nota en TimelineSection: sin esta comprobación de ancho, el
+      // test pasaría igual con la fila sin apilar.
+      expect(
+        tester.getSize(find.byKey(const Key('intake-field-link-url-0'))).width,
+        360,
+        reason: 'Below Breakpoints.formRowStack the row must stack, giving '
+            'each field the full width — not merely avoid an overflow.',
+      );
     });
   });
 }

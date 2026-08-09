@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../application/case_draft_providers.dart';
 import '../../../domain/case_draft.dart';
 import '../../../domain/case_timeline_event.dart';
+import 'intake_field_row.dart';
 
 /// Sección "Cronología": los hitos verificados del caso, en el orden en que
 /// se añaden.
@@ -43,12 +44,10 @@ class TimelineSection extends ConsumerWidget {
         for (var i = 0; i < draft.timeline.length; i++)
           Padding(
             padding: const EdgeInsets.only(bottom: 12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 120,
-                  child: TextFormField(
+            child: IntakeFieldRow(
+              fields: [
+                IntakeFieldSlot.fixed(
+                  TextFormField(
                     key: Key('intake-field-timeline-date-$i'),
                     initialValue: draft.timeline[i].date,
                     decoration: const InputDecoration(
@@ -64,10 +63,10 @@ class TimelineSection extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  width: 120,
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: TextFormField(
+                IntakeFieldSlot.flexible(
+                  TextFormField(
                     key: Key('intake-field-timeline-title-$i'),
                     initialValue: draft.timeline[i].title,
                     decoration: const InputDecoration(labelText: 'Qué ocurrió'),
@@ -81,10 +80,8 @@ class TimelineSection extends ConsumerWidget {
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: 170,
-                  child: DropdownButtonFormField<CaseTimelineKind>(
+                IntakeFieldSlot.fixed(
+                  DropdownButtonFormField<CaseTimelineKind>(
                     key: Key('intake-field-timeline-kind-$i'),
                     initialValue:
                         draft.timeline[i].kind ?? CaseTimelineKind.process,
@@ -110,20 +107,21 @@ class TimelineSection extends ConsumerWidget {
                       }
                     },
                   ),
-                ),
-                IconButton(
-                  key: Key('intake-field-timeline-remove-$i'),
-                  icon: const Icon(Icons.close, size: 16),
-                  onPressed: () => notifier.editDraft(draft.draftId, (current) {
-                    if (i >= current.timeline.length) {
-                      return current;
-                    }
-                    return current.copyWith(
-                      timeline: [...current.timeline]..removeAt(i),
-                    );
-                  }),
+                  width: 170,
                 ),
               ],
+              trailing: IconButton(
+                key: Key('intake-field-timeline-remove-$i'),
+                icon: const Icon(Icons.close, size: 16),
+                onPressed: () => notifier.editDraft(draft.draftId, (current) {
+                  if (i >= current.timeline.length) {
+                    return current;
+                  }
+                  return current.copyWith(
+                    timeline: [...current.timeline]..removeAt(i),
+                  );
+                }),
+              ),
             ),
           ),
         TextButton.icon(

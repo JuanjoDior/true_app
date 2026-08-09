@@ -34,22 +34,22 @@ Note: this repo delivers via direct commits to `main` (no PR flow), so the 400-l
 - [x] 1.3 Modify `lib/features/home/presentation/home_page.dart`: replace all four inline literals (880/980/1024/1100) with `Breakpoints.sidePanel`/`.topBarFull`/`.widePanel`/`.navRail`. Verify zero remaining inline width-comparison literals.
 - [x] 1.4 Re-run `flutter test test/situation_breakpoints_test.dart` — confirm still GREEN post-migration (characterization proves byte-identical behavior; no RED cycle required per design's deliberate TDD deviation).
 - [x] 1.5 Run `flutter analyze` — confirm clean.
-- [ ] 1.6 Commit as its own independently revertible unit: `test: fija el comportamiento responsive de la Sala` + `refactor: unifica los breakpoints`.
+- [x] 1.6 Commit as its own independently revertible unit: `test: fija el comportamiento responsive de la Sala` + `refactor: unifica los breakpoints`.
 
 ## Phase 2: Section Row Fallbacks (Commit 2)
 
-- [ ] 2.1 RED: create `test/intake_field_row_test.dart` — pump `IntakeFieldRow` at width 800 (above `formRowStack`) expecting one `Row` with fields side by side; pump at width 360 (below `formRowStack`) expecting a stacked `Column` with each field full width and `trailing` right-aligned above the fields. Confirm RED (widget does not exist yet).
-- [ ] 2.2 GREEN: create `lib/features/cases/presentation/intake/sections/intake_field_row.dart` with `IntakeFieldRow` + `IntakeFieldSlot.fixed(width)`/`.flexible()`. `LayoutBuilder`: `maxWidth >= minRowWidth` (default `Breakpoints.formRowStack`) → `Row` (fixed→`SizedBox`, flexible→`Expanded`, 10px gaps, matching today's exact layout); below → `Column(stretch)` with `trailing` right-aligned first, fields full-width below. Confirm test 2.1 GREEN.
-- [ ] 2.3 RED: extend `test/location_section_widget_test.dart` (or a dedicated case) asserting `_CoordinatesLine` at 336px with `resolving: true` shows both `intake-coordinates-label` and `intake-geocoding-status`, wraps instead of truncating, and `tester.takeException()` is `isNull`. Confirm RED against current fixed-width `Row`.
-- [ ] 2.4 GREEN: modify `.../sections/location_section.dart` — `_CoordinatesLine` becomes `Wrap(spacing: 12, runSpacing: 4)`, spinner + "Buscando el lugar…" grouped in a single `Row(mainAxisSize: min)` child so they never split across runs. Confirm test 2.3 GREEN.
-- [ ] 2.5 GREEN (same commit, no separate RED — reuses 2.1's proven `IntakeFieldRow`): migrate `.../sections/timeline_section.dart` row to `IntakeFieldRow` (date 120 fixed / title flexible / kind dropdown 170 fixed / delete trailing).
-- [ ] 2.6 GREEN: migrate `.../sections/links_section.dart` row to `IntakeFieldRow` (title flexible / URL flexible / kind dropdown 170 fixed / delete trailing).
-- [ ] 2.7 GREEN: migrate `.../sections/photos_section.dart` row to `IntakeFieldRow` (fields flexible / delete trailing).
-- [ ] 2.8 GREEN: migrate `_FineTuning` in `.../sections/location_section.dart` (ISO code, latitude, longitude fields) to `IntakeFieldRow`.
-- [ ] 2.9 Extend `test/photos_section_widget_test.dart` (and equivalent timeline/links coverage as needed) at 360x640 asserting zero `RenderFlex overflowed` via `expect(tester.takeException(), isNull)` — satisfies spec scenarios "Timeline row does not overflow", "Links row does not overflow", "Photos row does not overflow", "Fine-tuning fields do not overflow".
-- [ ] 2.10 Regression check: run existing section tests (which pump at 800px, above `formRowStack`) — confirm unchanged `Row` behavior preserved.
-- [ ] 2.11 Run `flutter test` (full suite) + `flutter analyze` — confirm green/clean.
-- [ ] 2.12 Commit: `fix: las filas del formulario se apilan en pantallas estrechas`.
+- [x] 2.1 RED: create `test/intake_field_row_test.dart` — pump `IntakeFieldRow` at width 800 (above `formRowStack`) expecting one `Row` with fields side by side; pump at width 360 (below `formRowStack`) expecting a stacked `Column` with each field full width and `trailing` right-aligned above the fields. Confirm RED (widget does not exist yet).
+- [x] 2.2 GREEN: create `lib/features/cases/presentation/intake/sections/intake_field_row.dart` with `IntakeFieldRow` + `IntakeFieldSlot.fixed(width)`/`.flexible()`. `LayoutBuilder`: `maxWidth >= minRowWidth` (default `Breakpoints.formRowStack`) → `Row` (fixed→`SizedBox`, flexible→`Expanded`, 10px gaps, matching today's exact layout); below → `Column(stretch)` with `trailing` right-aligned first, fields full-width below. Confirm test 2.1 GREEN.
+- [x] 2.3 RED: extend `test/location_section_widget_test.dart` (or a dedicated case) asserting `_CoordinatesLine` at 336px with `resolving: true` shows both `intake-coordinates-label` and `intake-geocoding-status`, wraps instead of truncating, and `tester.takeException()` is `isNull`. Confirm RED against current fixed-width `Row`.
+- [x] 2.4 GREEN: modify `.../sections/location_section.dart` — `_CoordinatesLine` becomes `Wrap(spacing: 12, runSpacing: 4)`, spinner + "Buscando el lugar…" grouped in a single `Row(mainAxisSize: min)` child so they never split across runs. Confirm test 2.3 GREEN.
+- [x] 2.5 GREEN (same commit, no separate RED — reuses 2.1's proven `IntakeFieldRow`): migrate `.../sections/timeline_section.dart` row to `IntakeFieldRow` (date 120 fixed / title flexible / kind dropdown 170 fixed / delete trailing).
+- [x] 2.6 GREEN: migrate `.../sections/links_section.dart` row to `IntakeFieldRow` (title flexible / URL flexible / kind dropdown 170 fixed / delete trailing).
+- [x] 2.7 GREEN: migrate `.../sections/photos_section.dart` row to `IntakeFieldRow` (fields flexible / delete trailing).
+- [x] 2.8 GREEN: migrate `_FineTuning` in `.../sections/location_section.dart` (ISO code, latitude, longitude fields) to `IntakeFieldRow`.
+- [x] 2.9 Extend `test/photos_section_widget_test.dart` (and equivalent timeline/links coverage as needed) at 360x640 asserting zero `RenderFlex overflowed` via `expect(tester.takeException(), isNull)` — satisfies spec scenarios "Timeline row does not overflow", "Links row does not overflow", "Photos row does not overflow", "Fine-tuning fields do not overflow".
+- [x] 2.10 Regression check: run existing section tests (which pump at 800px, above `formRowStack`) — confirm unchanged `Row` behavior preserved.
+- [x] 2.11 Run `flutter test` (full suite) + `flutter analyze` — confirm green/clean.
+- [x] 2.12 Commit: `fix: las filas del formulario se apilan en pantallas estrechas`.
 
 ## Phase 3: Workspace Narrow Branch (Commit 3)
 
