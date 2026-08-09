@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:true_app/app/true_crime_app.dart';
 import 'package:true_app/core/config/map_config.dart';
+import 'package:true_app/core/layout/breakpoints.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
 import 'package:true_app/features/home/presentation/widgets/situation/situation_nav_rail.dart';
 import 'package:true_app/features/home/presentation/widgets/situation/situation_side_panel.dart';
@@ -113,6 +114,33 @@ void main() {
 
     return container;
   }
+
+  group('Sala threshold values are pinned, not merely bracketed', () {
+    // Los tests de abajo muestrean 1440/1050/1000/900/800, lo que ACOTA cada
+    // umbral dentro de un rango pero no lo FIJA. Medido: mover `navRail` de
+    // 1100 a 1200 dejaba los 164 tests en verde, y con ello el rail lateral
+    // desaparecía en silencio para todo el rango 1100-1199 en la pantalla
+    // pública. Mover el mismo umbral a 1000 sí fallaba, sólo porque cruzaba la
+    // muestra de 1050 — o sea que la cobertura dependía de dónde cayeran las
+    // muestras, no del valor.
+    //
+    // Estas cuatro igualdades son lo que satisface de verdad el Requisito
+    // "Existing threshold values are preserved unchanged": la migración de la
+    // fase 1 tenía que ser byte a byte, y un cambio de valor es exactamente la
+    // deriva que debía impedir.
+    //
+    // `intakeThreePane` y `formRowStack` NO se fijan aquí a propósito: son
+    // constantes nuevas de este cambio, no valores heredados que preservar, y
+    // ya están ancladas por comportamiento en `intake_desktop_layout_test.dart`
+    // y en las medidas de ancho de las secciones (ambas verificadas por
+    // mutación).
+    test('the four migrated Sala thresholds keep their original values', () {
+      expect(Breakpoints.sidePanel, 880);
+      expect(Breakpoints.topBarFull, 980);
+      expect(Breakpoints.widePanel, 1024);
+      expect(Breakpoints.navRail, 1100);
+    });
+  });
 
   group('Sala de Situación layout selection is locked at each threshold', () {
     testWidgets(

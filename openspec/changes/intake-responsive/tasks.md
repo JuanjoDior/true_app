@@ -103,3 +103,35 @@ independently by mutation before being accepted. Test-only remediation: no `lib/
   passed 13/13 under that mutation).
 - [x] 5.5 Run `flutter test` (164 green) + `flutter analyze` (clean) — confirm no `lib/` file changed.
 - [x] 5.6 Commit: `test: cubre el layout de escritorio y el ajuste fino`.
+
+## Phase 6: Threshold Pinning (Commit 6 — second `sdd-verify` FAIL)
+
+Re-verification confirmed 5.1–5.4 genuinely closed by mutation, then found a third instance of the
+same family. Test-only again: no `lib/` file changed.
+
+- [x] 6.1 **CRITICAL-3 — the four migrated thresholds were bracketed, not pinned.**
+  `situation_breakpoints_test.dart` samples 1440/1050/1000/900/800, which constrains each constant to
+  a range rather than fixing its value. Proven: `navRail` 1100→**1200** left all 164 tests green —
+  and that drift would silently remove the nav rail for every user in the 1100–1199px band on the
+  public Sala. The earlier 1100→1000 probe only failed because it happened to cross the 1050 sample,
+  so the coverage depended on where the samples landed, not on the value. Spec Requirement "Existing
+  threshold values are preserved unchanged" was therefore unsatisfied.
+- [x] 6.2 Add a direct equality group to `situation_breakpoints_test.dart` pinning `sidePanel = 880`,
+  `topBarFull = 980`, `widePanel = 1024`, `navRail = 1100`. Mutation-verified twice: `navRail`→1200
+  now fails (`Expected: <1100> Actual: <1200.0>`), and `sidePanel`/`topBarFull`/`widePanel` mutated
+  together also fail.
+- [x] 6.3 Deliberately do NOT pin `intakeThreePane` or `formRowStack`: they are new constants
+  introduced by this change, not inherited values to preserve, and both are already anchored
+  behaviorally (`intake_desktop_layout_test.dart` and the section width assertions, each
+  mutation-verified). Pinning them would make legitimate tuning fail for no safety gain.
+- [x] 6.4 Run `flutter test` (165 green) + `flutter analyze` (clean) — confirm no `lib/` file changed.
+- [x] 6.5 Commit: `test: fija los valores de los umbrales de la Sala`.
+
+### Known gaps carried forward (NOT closed by this change)
+
+- The 1024–1199px desktop band, where the form column is narrow enough that every row stacks, is
+  anticipated in `design.md:9` but absent from `proposal.md` and from the "Desktop Three-Pane Layout
+  Unchanged" requirement, and no test covers it. The new desktop test pumps at 1440 only.
+- `proposal.md`'s Success Criteria checklist is still unchecked.
+- `SituationTopBar` overflows in two width bands (Engram #447). Pre-existing, out of scope, pinned
+  as-is. Candidate for its own change.
