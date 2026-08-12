@@ -127,6 +127,35 @@ same family. Test-only again: no `lib/` file changed.
 - [x] 6.4 Run `flutter test` (165 green) + `flutter analyze` (clean) — confirm no `lib/` file changed.
 - [x] 6.5 Commit: `test: fija los valores de los umbrales de la Sala`.
 
+## Phase 7: Host Document Viewport (Commit 7 — defect reported from a real device)
+
+Not part of the original plan. Reported by the maintainer with screenshots from an iPhone on
+Chrome iOS: the intake workspace rendered the desktop three-pane branch on a 390px screen, with
+horizontal overflow. Root cause was outside `lib/` entirely.
+
+- [x] 7.1 **The whole change was unreachable on a real phone.** `web/index.html` never declared
+  `<meta name="viewport">` (single commit touching the file: 72f8d28 "Initial true_app setup"), so
+  a mobile browser fell back to a desktop-width viewport. `MediaQuery.sizeOf(context).width` at
+  `intake_workspace_screen.dart:38` therefore landed above `Breakpoints.intakeThreePane = 1024` and
+  selected the desktop `Row[_DraftList(260) | form | IntakePreviewPanel(380)]`. Confirmed from the
+  screenshots by the string "Crea o selecciona un borrador para editarlo", which exists **only** in
+  the desktop branch (`intake_workspace_screen.dart:68`), and by the draft list occupying ~66% of a
+  390px screen — the desktop `SizedBox(width: 260)` rendered at 1:1.
+- [x] 7.2 **Why 165 mutation-verified tests could not catch it.** Every responsive test sets
+  `tester.view.physicalSize` directly, which bypasses the browser's viewport negotiation. No test
+  layer touched the host HTML that `flutter build web` copies to `build/web/` and that
+  `.github/workflows/deploy-pages.yml` publishes. This is a test-pyramid gap, not a discipline gap:
+  the defect is only observable in the document, so the guard has to live there.
+- [x] 7.3 RED: create `test/web_index_viewport_test.dart` reading `web/index.html` from disk and
+  asserting a `<meta name="viewport">` exists whose `content` carries `width=device-width` and
+  `initial-scale=1`. Confirmed RED against the pre-fix file: 2 failed, exit 1.
+- [x] 7.4 GREEN: add `<meta name="viewport" content="width=device-width, initial-scale=1.0">` to
+  `web/index.html`. `maximum-scale`/`user-scalable=no` deliberately omitted despite the stock
+  Flutter template shipping them — blocking pinch-zoom is a WCAG 1.4.4 regression and buys nothing
+  here. Trade-off recorded: iOS may zoom on text-field focus; to be re-triaged on device.
+- [x] 7.5 Run `flutter test` (167 green) + `flutter analyze` (clean) — no `lib/` file changed.
+- [x] 7.6 Commit: `fix: la web adopta el ancho del dispositivo en el móvil`.
+
 ### Known gaps carried forward (NOT closed by this change)
 
 - The 1024–1199px desktop band, where the form column is narrow enough that every row stacks, is
@@ -135,3 +164,9 @@ same family. Test-only again: no `lib/` file changed.
 - `proposal.md`'s Success Criteria checklist is still unchecked.
 - `SituationTopBar` overflows in two width bands (Engram #447). Pre-existing, out of scope, pinned
   as-is. Candidate for its own change.
+- On-device re-triage after Phase 7 is still pending. The screenshots also showed a cramped
+  dropdown and truncated field chips; both are expected to be consequences of the desktop branch
+  being active on a phone, not defects of their own, but that is a hypothesis until re-checked on
+  the deployed build.
+- No test layer exercises the app in a real browser. Phase 7's guard closes the specific viewport
+  hole, not the class of defect it belongs to.
