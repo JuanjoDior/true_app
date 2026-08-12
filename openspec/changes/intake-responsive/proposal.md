@@ -76,6 +76,7 @@ Three further decisions were taken after `sdd-design` reported back:
 | flutter_map test flakiness | High | `tester.pump(Duration(milliseconds: 400))`, never `pumpAndSettle` |
 | Preview no longer always visible while typing | Med | One-tap, state-preserving toggle; verify live updates while sheet is open |
 | Unifying breakpoints inflates the diff past the 1000-line budget | Low | Sequence breakpoint migration as its own commit |
+| **Unlisted, and it fired.** Every threshold in this change is compared against a width the *browser* reports. Nothing in the plan verified that the host document asks the browser for the device width | — | Added in Phase 7 after the defect reached production: `web/index.html` carries the viewport meta, guarded by `test/web_index_viewport_test.dart`, which reads the built document rather than an injected viewport |
 
 ## Rollback Plan
 
@@ -87,9 +88,34 @@ Delivery is direct commits to `main`, no PR flow. Sequence commits so each is in
 
 ## Success Criteria
 
-- [ ] Intake workspace renders at 360x640 with zero `RenderFlex overflowed` exceptions.
-- [ ] A draft can be created, edited, previewed and exported entirely at 360px.
-- [ ] `test/intake_draft_switch_test.dart` passes without a forced oversized viewport.
-- [ ] One shared breakpoint *source*; no inline width literals left in `home_page.dart`. The four thresholds keep their distinct values — see the decision below.
-- [ ] `flutter test` green (140 existing + new narrow-viewport tests), `flutter analyze` clean.
-- [ ] Sala de Situación desktop and mobile bodies behave identically to before.
+- [x] Intake workspace renders at 360x640 with zero `RenderFlex overflowed` exceptions.
+- [x] A draft can be created, edited, previewed and exported entirely at 360px.
+- [x] `test/intake_draft_switch_test.dart` passes without a forced oversized viewport.
+- [x] One shared breakpoint *source*; no inline width literals left in `home_page.dart`. The four thresholds keep their distinct values — see the decision below. Pinned by direct equality assertions in Phase 6 after verification proved all four could drift with the suite green.
+- [x] `flutter test` green (167 passing), `flutter analyze` clean.
+- [ ] ~~Sala de Situación desktop and mobile bodies behave identically to before.~~ **Not satisfied, and deliberately left unticked.** See "Correction: the Sala did change on mobile" below.
+
+### Correction: the Sala did change on mobile
+
+This criterion is false as written, and the change delivered anyway. Recording it
+honestly rather than quietly re-wording it.
+
+`web/index.html` never declared a viewport meta, so a mobile browser laid the page
+out at roughly 980 CSS pixels. `home_page.dart:30` gates the public Sala on
+`width >= Breakpoints.sidePanel` (880), and 980 >= 880, so every mobile visitor to
+the live Sala was served `_DesktopBody` shrunk to fit. Adding the meta in Phase 7
+moved those visitors to `_MobileBody` at 1:1.
+
+That is a user-visible behavioral change to a live screen, and it is the change's
+number-one risk firing — just not through the path the risk table anticipated. The
+mitigation column reads "migrate thresholds with identical values first,
+behavior-preserving; cover `_DesktopBody`/`_MobileBody` selection with tests before
+touching". Those tests were written, they pass, and they were structurally incapable
+of catching this: they inject `tester.view.physicalSize`, which bypasses browser
+viewport negotiation entirely. The threshold values genuinely never moved. What moved
+was the width the browser reported to them.
+
+The change is believed to be a strict improvement — a phone rendering the mobile body
+at 1:1 rather than a desktop body scaled down — but "believed" is the honest word
+until on-device re-triage confirms it. That re-triage is pending and is tracked as a
+carried-forward gap in `tasks.md`.

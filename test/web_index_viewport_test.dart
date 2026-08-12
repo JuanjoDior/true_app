@@ -55,5 +55,28 @@ void main() {
             'shrink-to-fit y renderizar la app escalada.',
       );
     });
+
+    test('el meta viewport no bloquea el zoom del navegador', () {
+      final meta = RegExp(
+        r'<meta\s+name="viewport"[^>]*content="([^"]*)"',
+        caseSensitive: false,
+      ).firstMatch(html);
+
+      expect(meta, isNotNull, reason: 'el meta viewport no tiene content');
+      final content = meta!.group(1)!.replaceAll(' ', '').toLowerCase();
+
+      // La plantilla de Flutter trae ambos; se omiten a propósito. Bloquear
+      // el pinch-zoom es una regresión de accesibilidad (WCAG 1.4.4).
+      expect(
+        content,
+        isNot(contains('maximum-scale')),
+        reason: 'maximum-scale limita el zoom nativo del navegador.',
+      );
+      expect(
+        content,
+        isNot(contains('user-scalable=no')),
+        reason: 'user-scalable=no desactiva el zoom nativo del navegador.',
+      );
+    });
   });
 }

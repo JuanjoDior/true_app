@@ -53,3 +53,30 @@ The shared breakpoints module MUST treat 360px as the minimum width any consumin
 - GIVEN any screen consuming the shared breakpoints module
 - WHEN rendered at width 360
 - THEN the screen's narrow layout applies with no `RenderFlex overflowed` exception, and no guarantee is made below 360
+
+### Requirement: Host Document Viewport Precondition
+
+Every width-gated layout decision in this app reads `MediaQuery.sizeOf(context).width`, which reflects the viewport the host browser reports to the Flutter web engine, not the physical device width. The web host document (`web/index.html`) MUST declare a `<meta name="viewport">` tag whose `content` attribute includes `width=device-width`. Without it, a mobile browser falls back to a desktop-width viewport (approximately 980 CSS px), which clears every threshold in this module and selects the wide-layout branch on a phone. This precondition is shared by every screen that consumes `Breakpoints` — it is not intake-specific.
+
+The viewport meta MUST NOT include `maximum-scale` or `user-scalable=no`. Suppressing pinch-zoom is a WCAG 1.4.4 regression that this app deliberately avoids; the browser's native zoom MUST remain available at every width. Known accepted cost of this trade-off: iOS may still trigger a zoom-in when a text field receives focus; on-device confirmation of a mitigation for that residual cost is pending.
+
+Because the browser negotiates the viewport before Flutter runs, a widget test cannot observe this precondition: `tester.view.physicalSize` injects the rendered size directly, bypassing viewport negotiation entirely. A widget test can prove a layout is correct for a given reported width; it cannot prove the browser will ever report that width on a real device. Verification of this requirement MUST read the host document (or its built output) directly, not exercise a widget tree.
+
+#### Scenario: Host document declares a device-width viewport
+
+- GIVEN the built web host document (`web/index.html`)
+- WHEN its `<head>` is inspected
+- THEN it contains a `<meta name="viewport">` tag whose `content` attribute contains `width=device-width`
+
+#### Scenario: Zoom remains available
+
+- GIVEN the built web host document (`web/index.html`)
+- WHEN its viewport meta `content` attribute is inspected
+- THEN it contains neither `maximum-scale` nor `user-scalable=no`
+
+#### Scenario: The precondition governs every width-gated screen, not only intake
+
+- GIVEN a mobile browser lacking the device-width viewport declaration
+- WHEN any screen reading `Breakpoints` thresholds renders, including the public Sala de Situación (`home_page.dart`)
+- THEN its fallback desktop-width viewport (approximately 980 CSS px) clears breakpoints below it, selecting that screen's wide-layout branch on a phone
+- AND declaring the viewport correctly moves every such screen to its narrow-width branch on real devices, not only the intake workspace

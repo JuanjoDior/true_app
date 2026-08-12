@@ -156,6 +156,44 @@ horizontal overflow. Root cause was outside `lib/` entirely.
 - [x] 7.5 Run `flutter test` (167 green) + `flutter analyze` (clean) — no `lib/` file changed.
 - [x] 7.6 Commit: `fix: la web adopta el ancho del dispositivo en el móvil`.
 
+## Phase 8: Spec Remediation (Commit 8 — third `sdd-verify` FAIL, 2 blockers)
+
+Verification of phases 6 and 7 (evidence revision `sha256:ce69dde1...`) confirmed CRITICAL-3 closed
+and Phase 7's guard non-vacuous, then returned FAIL on two blockers. **Neither is a product defect.**
+The code is correct; the specification was incomplete. No `lib/` or `web/` file changed in this phase.
+
+- [x] 8.1 **CRITICAL-1 — the host document was load-bearing and unspecified.** `web/index.html:28` now
+  decides which layout branch every width-gated screen takes, is guarded by two non-vacuous tests, and
+  was described by no requirement anywhere. `openspec/specs/` is empty and this change bootstraps it,
+  so the omission would have been permanent. Sharper still: the scenario "GIVEN any screen consuming
+  the shared breakpoints module WHEN rendered at width 360 THEN the narrow layout applies" was reported
+  COMPLIANT in two consecutive verifications on widget-test evidence **while being false in
+  production**. It silently assumed the host document reports the device width.
+- [x] 8.2 **CRITICAL-2 — the defect was never intake-specific.** `home_page.dart:30` gates the public
+  Sala on `width >= Breakpoints.sidePanel` (880). At the ~980px fallback viewport, 980 >= 880, so the
+  live public Sala served `_DesktopBody` shrunk-to-fit to every mobile visitor. Phase 7 moved them to
+  `_MobileBody` at 1:1 — a user-visible behavioral change to a live screen, and precisely the risk
+  `proposal.md` ranks first. The characterization suite written to discharge that risk injects
+  `physicalSize` and is structurally blind to it.
+- [x] 8.3 Add `### Requirement: Host Document Viewport Precondition` to
+  `specs/responsive-breakpoints/spec.md` with three scenarios: device-width declared, zoom remains
+  available, and the precondition scoped explicitly to every `Breakpoints`-consuming screen including
+  the public Sala. The requirement states in prose why a widget test cannot verify it and mandates that
+  verification read the host document directly.
+- [x] 8.4 Correct `proposal.md`: tick the five satisfied Success Criteria, leave the sixth ("Sala
+  behaves identically to before") **unticked and struck through** with a "Correction: the Sala did
+  change on mobile" section stating what changed and why the covering tests could not see it. Add the
+  unlisted risk that fired to the risk table. The criterion was not re-worded to make it true.
+- [x] 8.5 **Self-inflicted gap, caught before re-verification.** Task 8.3's "Zoom remains available"
+  scenario had no covering test: `test/web_index_viewport_test.dart` asserted the meta's presence and
+  `width=device-width`/`initial-scale=1`, but never that `maximum-scale`/`user-scalable=no` are absent.
+  That is a spec scenario with no passing covering test — the same CRITICAL family this cycle has been
+  closing since Phase 5. Added the third test case. Mutation-verified: with
+  `content="...maximum-scale=1.0, user-scalable=no"` it fails (`Expected: not contains 'maximum-scale'`);
+  reverted via `git checkout --`, tree clean.
+- [x] 8.6 Run `flutter test` (168 green) + `flutter analyze` (clean).
+- [x] 8.7 Commit: `docs: especifica la precondición del documento anfitrión`.
+
 ### Known gaps carried forward (NOT closed by this change)
 
 - The 1024–1199px desktop band, where the form column is narrow enough that every row stacks, is
