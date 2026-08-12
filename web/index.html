@@ -18,6 +18,14 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+
+  <!--
+    Sin esto el navegador móvil cae a un viewport de ancho de escritorio y la
+    app renderiza sus layouts anchos dentro de una pantalla de teléfono.
+    Se omiten `maximum-scale`/`user-scalable=no` a propósito: bloquear el zoom
+    es una regresión de accesibilidad (WCAG 1.4.4) que aquí no compra nada.
+  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Base project for the true_app application.">
 
   <!-- iOS meta tags & icons -->
