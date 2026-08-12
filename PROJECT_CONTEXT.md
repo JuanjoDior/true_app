@@ -101,7 +101,8 @@ Tres piezas que conviene conocer antes de tocar nada:
   faltaba el `<meta name="viewport">`. Regla que se deriva de esto: **una
   precondición que vive en el documento anfitrión se verifica leyendo el
   documento**, no montando un árbol de widgets. El guard está en
-  `test/web_index_viewport_test.dart`.
+  `test/web_index_viewport_test.dart`. Y el cierre vino de donde tenía que
+  venir: de abrir el despliegue en un teléfono, no de un test más.
 - **Un test verde no prueba nada por sí solo.** Las cuatro verificaciones del
   ciclo `intake-responsive` encontraron el mismo tipo de defecto cuatro veces:
   una aserción que no podía fallar. Muestrear anchos alrededor de un umbral lo
@@ -116,8 +117,8 @@ Tres piezas que conviene conocer antes de tocar nada:
 | Qué | Estado |
 |-----|--------|
 | ~~El formulario sólo funciona en escritorio~~ | **Resuelto** (agosto 2026, ciclo `intake-responsive`). Layout estrecho por debajo de 1024px con hojas superpuestas, y el `<meta name="viewport">` que hacía falta para que el navegador móvil lo activara |
-| Comprobar en un dispositivo real | **Lo más barato y valioso que queda.** El arreglo del viewport está desplegado pero nadie lo ha mirado en un teléfono. Hay que mirar **las dos** pantallas, no sólo el formulario: la Sala pública también cambió |
-| El ciclo `intake-responsive` sigue abierto | Fase 9 commiteada sin re-verificar. Necesita reset de mantenedor a generación 8, un `sdd-verify` con `blockers: 0` y el archive |
+| ~~Comprobar en un dispositivo real~~ | **Hecho** (12 de agosto de 2026). El mantenedor abrió el despliegue público desde un teléfono y confirmó **las dos** pantallas: el formulario de alta y la Sala de Situación |
+| El ciclo `intake-responsive` sigue abierto | Fase 9 verificada en generación 8. Queda un blocker: el escenario "las seis secciones alcanzables a 360px" no tiene prueba runtime a nivel de workspace. Y el runtime de Gentle AI está en deadlock ([#2997](https://github.com/Gentleman-Programming/gentle-ai/issues/2997)). Detalle en `HANDOFF.md` §3 |
 | La banda 1024–1199px | Ahí la columna del formulario es tan estrecha que **todas** las filas se apilan, en pantallas que técnicamente son escritorio. Anticipado en `design.md:9`, ausente del proposal, sin test |
 | `SituationTopBar` desborda | En dos bandas de ancho medidas (980 y 1030–1080). Preexistente, fijado como está, candidato a change propio |
 | `featuredRank` y `relevanceRank` | Edición manual en el asset |
