@@ -56,27 +56,40 @@ void main() {
       );
     });
 
-    test('el meta viewport no bloquea el zoom del navegador', () {
-      final meta = RegExp(
-        r'<meta\s+name="viewport"[^>]*content="([^"]*)"',
-        caseSensitive: false,
-      ).firstMatch(html);
+    // Las dos condiciones del zoom viven en tests separados a propósito: en
+    // un mismo `test` la primera que falla aborta el cuerpo, así que una
+    // mutación combinada sólo demostraría que la primera está viva.
+    // La plantilla de Flutter trae ambos atributos; se omiten porque
+    // bloquear el pinch-zoom es una regresión de accesibilidad (WCAG 1.4.4).
 
-      expect(meta, isNotNull, reason: 'el meta viewport no tiene content');
-      final content = meta!.group(1)!.replaceAll(' ', '').toLowerCase();
-
-      // La plantilla de Flutter trae ambos; se omiten a propósito. Bloquear
-      // el pinch-zoom es una regresión de accesibilidad (WCAG 1.4.4).
+    test('el meta viewport no limita el zoom con maximum-scale', () {
       expect(
-        content,
+        _viewportContent(html),
         isNot(contains('maximum-scale')),
         reason: 'maximum-scale limita el zoom nativo del navegador.',
       );
+    });
+
+    test('el meta viewport no desactiva el zoom con user-scalable', () {
+      // `no` y `0` son equivalentes para el navegador, así que comprobar
+      // sólo la grafía canónica dejaría la puerta abierta.
       expect(
-        content,
-        isNot(contains('user-scalable=no')),
-        reason: 'user-scalable=no desactiva el zoom nativo del navegador.',
+        _viewportContent(html),
+        isNot(matches(RegExp(r'user-scalable=(no|0)'))),
+        reason: 'user-scalable=no y user-scalable=0 desactivan por igual el '
+            'zoom nativo del navegador.',
       );
     });
   });
+}
+
+/// El `content` del meta viewport, sin espacios y en minúsculas.
+String _viewportContent(String html) {
+  final meta = RegExp(
+    r'<meta\s+name="viewport"[^>]*content="([^"]*)"',
+    caseSensitive: false,
+  ).firstMatch(html);
+
+  expect(meta, isNotNull, reason: 'el meta viewport no tiene content');
+  return meta!.group(1)!.replaceAll(' ', '').toLowerCase();
 }

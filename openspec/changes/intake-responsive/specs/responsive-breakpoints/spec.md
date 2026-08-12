@@ -58,7 +58,9 @@ The shared breakpoints module MUST treat 360px as the minimum width any consumin
 
 Every width-gated layout decision in this app reads `MediaQuery.sizeOf(context).width`, which reflects the viewport the host browser reports to the Flutter web engine, not the physical device width. The web host document (`web/index.html`) MUST declare a `<meta name="viewport">` tag whose `content` attribute includes `width=device-width`. Without it, a mobile browser falls back to a desktop-width viewport (approximately 980 CSS px), which clears every threshold in this module and selects the wide-layout branch on a phone. This precondition is shared by every screen that consumes `Breakpoints` — it is not intake-specific.
 
-The viewport meta MUST NOT include `maximum-scale` or `user-scalable=no`. Suppressing pinch-zoom is a WCAG 1.4.4 regression that this app deliberately avoids; the browser's native zoom MUST remain available at every width. Known accepted cost of this trade-off: iOS may still trigger a zoom-in when a text field receives focus; on-device confirmation of a mitigation for that residual cost is pending.
+The viewport meta MUST NOT suppress the browser's native zoom: it MUST NOT include `maximum-scale`, nor `user-scalable` set to any disabling value (`no` and `0` are equivalent to browsers). Suppressing pinch-zoom is a WCAG 1.4.4 regression that this app deliberately avoids; native zoom MUST remain available at every width. Known accepted cost of this trade-off: iOS may still trigger a zoom-in when a text field receives focus; on-device confirmation of a mitigation for that residual cost is pending.
+
+Because this precondition is shared by every `Breakpoints`-consuming screen, declaring it correctly changes what the public Sala de Situación (`home_page.dart`) renders on a phone, not only the intake workspace. That consequence is asserted here as the reason the precondition is scoped app-wide; it is **not** stated as a verified acceptance criterion. No scenario below claims it, because the verification method this requirement mandates — reading the host document — cannot establish which branch a screen selects on a real device, and the widget suite injects `physicalSize` and so cannot either. On-device re-triage is tracked as an open gap in `tasks.md`.
 
 Because the browser negotiates the viewport before Flutter runs, a widget test cannot observe this precondition: `tester.view.physicalSize` injects the rendered size directly, bypassing viewport negotiation entirely. A widget test can prove a layout is correct for a given reported width; it cannot prove the browser will ever report that width on a real device. Verification of this requirement MUST read the host document (or its built output) directly, not exercise a widget tree.
 
@@ -72,11 +74,5 @@ Because the browser negotiates the viewport before Flutter runs, a widget test c
 
 - GIVEN the built web host document (`web/index.html`)
 - WHEN its viewport meta `content` attribute is inspected
-- THEN it contains neither `maximum-scale` nor `user-scalable=no`
-
-#### Scenario: The precondition governs every width-gated screen, not only intake
-
-- GIVEN a mobile browser lacking the device-width viewport declaration
-- WHEN any screen reading `Breakpoints` thresholds renders, including the public Sala de Situación (`home_page.dart`)
-- THEN its fallback desktop-width viewport (approximately 980 CSS px) clears breakpoints below it, selecting that screen's wide-layout branch on a phone
-- AND declaring the viewport correctly moves every such screen to its narrow-width branch on real devices, not only the intake workspace
+- THEN it contains no `maximum-scale`
+- AND it contains no `user-scalable` set to a disabling value, in any spelling browsers honour (`no` or `0`)

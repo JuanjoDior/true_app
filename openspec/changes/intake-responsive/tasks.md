@@ -194,6 +194,42 @@ The code is correct; the specification was incomplete. No `lib/` or `web/` file 
 - [x] 8.6 Run `flutter test` (168 green) + `flutter analyze` (clean).
 - [x] 8.7 Commit: `docs: especifica la precondición del documento anfitrión`.
 
+## Phase 9: Unfalsifiable Scenario and Guard Spelling (Commit 9 — fourth `sdd-verify` FAIL, 1 blocker)
+
+Re-verification confirmed both Phase 8 blockers genuinely closed and ruled explicitly that an unticked,
+struck-through, explained Success Criterion does **not** block archive — it is a planning-time
+prediction, not a normative requirement, and blocking on it would pressure future phases to re-word
+criteria until they read true. It then found one new blocker, in the requirement Phase 8 itself wrote.
+Artifact and test only: no `lib/` and no `web/` file changed.
+
+- [x] 9.1 **CRITICAL — a scenario that could never fail.** Scenario "The precondition governs every
+  width-gated screen, not only intake" was not a verifiable acceptance criterion, for three compounding
+  reasons: its GIVEN ("a mobile browser lacking the device-width viewport declaration") describes a
+  configuration the same requirement **forbids**, reachable only by a mutation probe, and a probe is not
+  a covering test; the verification method the requirement itself mandates — read the host document —
+  cannot settle which branch a screen selects on a phone; and its final clause asserted as an
+  established THEN that declaring the viewport moves every screen to its narrow branch *on real
+  devices*, while `proposal.md` and `tasks.md` both record that same claim as believed and pending
+  on-device re-triage. Marking it COMPLIANT from the 900/1000px samples in
+  `situation_breakpoints_test.dart` was explicitly declined: those inject `physicalSize` and would pass
+  identically with the meta deleted.
+- [x] 9.2 Delete the scenario and fold its two clauses into the requirement prose, which already scoped
+  the precondition app-wide. The prose now states the Sala consequence as the *reason* the precondition
+  is app-wide and says plainly that it is not a verified acceptance criterion, naming why neither
+  available verification method can establish it.
+- [x] 9.3 **A hole in the guard, found by the verifier, not by its author.** The zoom scenario named only
+  `user-scalable=no`; browsers honour `user-scalable=0` identically, so that spelling passed. Broadened
+  the scenario to "no `user-scalable` set to a disabling value, in any spelling browsers honour (`no` or
+  `0`)" and the test to `isNot(matches(RegExp(r'user-scalable=(no|0)')))`.
+- [x] 9.4 **Incomplete evidence, corrected.** Phase 8's two zoom assertions shared one `test`, so the
+  first mismatch aborted the body and the combined mutation only ever exercised the first assertion.
+  The claim was true; the evidence for it was not. Split into two independent `test` blocks and
+  re-proved with three isolated probes, each applied to a clean tree and reverted via `git checkout --`:
+  `maximum-scale=1.0` alone fails only the maximum-scale test; `user-scalable=no` alone fails only the
+  user-scalable test; `user-scalable=0` alone fails only the user-scalable test. Tree clean after each.
+- [x] 9.5 Run `flutter test` (169 green) + `flutter analyze` (clean).
+- [x] 9.6 Commit: `docs: quita el escenario que no podía fallar`.
+
 ### Known gaps carried forward (NOT closed by this change)
 
 - The 1024–1199px desktop band, where the form column is narrow enough that every row stacks, is
