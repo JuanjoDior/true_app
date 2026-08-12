@@ -3,7 +3,7 @@
 Este documento es para quien llega al proyecto y necesita entender **por qué**
 está hecho así, no sólo cómo. Para arrancarlo, el `README.md`.
 
-Última revisión: **3 de agosto de 2026**.
+Última revisión: **12 de agosto de 2026**.
 
 ## Qué es
 
@@ -93,6 +93,21 @@ Tres piezas que conviene conocer antes de tocar nada:
 - **Los tests con `pump()` entre pulsaciones ocultan carreras.** El bug más caro
   del proyecto (pérdida silenciosa de datos al escribir rápido) pasó por delante
   de 45 tests en verde. Apareció al usar la app de verdad en el navegador.
+- **Ningún widget test ve el navegador, y esa ceguera ya costó dos veces.**
+  `tester.view.physicalSize` inyecta el tamaño directamente y salta por encima
+  de la negociación de viewport. En agosto de 2026, 165 tests responsive
+  verificados por mutación estaban en verde mientras el sitio publicado
+  renderizaba el layout de escritorio en un teléfono: a `web/index.html` le
+  faltaba el `<meta name="viewport">`. Regla que se deriva de esto: **una
+  precondición que vive en el documento anfitrión se verifica leyendo el
+  documento**, no montando un árbol de widgets. El guard está en
+  `test/web_index_viewport_test.dart`.
+- **Un test verde no prueba nada por sí solo.** Las cuatro verificaciones del
+  ciclo `intake-responsive` encontraron el mismo tipo de defecto cuatro veces:
+  una aserción que no podía fallar. Muestrear anchos alrededor de un umbral lo
+  acota a un rango, nunca fija su valor. Dos `expect` en un mismo `test` abortan
+  en el primero, así que una mutación combinada sólo demuestra que la primera
+  está viva. Lo único que demuestra que un test sirve es verlo fallar.
 - En **Git Bash**, anteponer `MSYS_NO_PATHCONV=1` a los comandos con rutas que
   empiezan por `/`.
 
@@ -100,7 +115,11 @@ Tres piezas que conviene conocer antes de tocar nada:
 
 | Qué | Estado |
 |-----|--------|
-| El formulario sólo funciona en escritorio | Es un `Row` de anchos fijos con el mapa dentro. Depende de si se van a cargar casos desde el móvil |
+| ~~El formulario sólo funciona en escritorio~~ | **Resuelto** (agosto 2026, ciclo `intake-responsive`). Layout estrecho por debajo de 1024px con hojas superpuestas, y el `<meta name="viewport">` que hacía falta para que el navegador móvil lo activara |
+| Comprobar en un dispositivo real | **Lo más barato y valioso que queda.** El arreglo del viewport está desplegado pero nadie lo ha mirado en un teléfono. Hay que mirar **las dos** pantallas, no sólo el formulario: la Sala pública también cambió |
+| El ciclo `intake-responsive` sigue abierto | Fase 9 commiteada sin re-verificar. Necesita reset de mantenedor a generación 8, un `sdd-verify` con `blockers: 0` y el archive |
+| La banda 1024–1199px | Ahí la columna del formulario es tan estrecha que **todas** las filas se apilan, en pantallas que técnicamente son escritorio. Anticipado en `design.md:9`, ausente del proposal, sin test |
+| `SituationTopBar` desborda | En dos bandas de ancho medidas (980 y 1030–1080). Preexistente, fijado como está, candidato a change propio |
 | `featuredRank` y `relevanceRank` | Edición manual en el asset |
 | Error en consola al arrancar | `updates_ticker.dart:46`, sin efecto visible |
 
