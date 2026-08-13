@@ -48,3 +48,6 @@ app.*.map.json
 
 # Índice local de CodeGraph: se regenera, no se versiona.
 .codegraph/
+
+# Permisos y ajustes personales de Claude Code: no se versionan.
+.claude/settings.local.json

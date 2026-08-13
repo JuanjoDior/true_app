@@ -230,6 +230,56 @@ Artifact and test only: no `lib/` and no `web/` file changed.
 - [x] 9.5 Run `flutter test` (169 green) + `flutter analyze` (clean).
 - [x] 9.6 Commit: `docs: quita el escenario que no podía fallar`.
 
+## Phase 10 - Runtime coverage for six-section reachability
+
+Closes the single blocker left by generation 8: the scenario "All six sections reachable at 360px"
+had no workspace-level runtime coverage. Static registry evidence cannot satisfy a scenario whose
+trigger is *"WHEN the user scrolls the form"*.
+
+- [x] 10.1 **The first attempt at this test was dead, and a mutation proved it.** The draft used
+  `tester.scrollUntilVisible`. In Flutter 3.44.0 (`packages/flutter_test/lib/src/controller.dart:2471`)
+  that helper only drags `while (finder.evaluate().isEmpty)`, and a `SingleChildScrollView` builds all
+  children eagerly, so the drag loop never runs and line 2482's `Scrollable.ensureVisible` performs the
+  whole movement - bypassing `ScrollPhysics`. Mutating the form to `NeverScrollableScrollPhysics()`
+  left that draft GREEN. Same defect family as 9.4: an assertion that cannot fail.
+- [x] 10.2 Rewrote the test as `'all six form sections are reachable by dragging, in registry order,
+  at 360px'`, driving the viewport with `tester.dragFrom` so the gesture passes through `ScrollPhysics`.
+  The drag origin sits on the scroll margin (`viewport.left + 10`), outside the 20px padding where the
+  map picker and the fields would claim the gesture.
+- [x] 10.3 Added two preconditions so "reachable" cannot hold vacuously: `maxScrollExtent > 0`, and the
+  last section not fully visible on arrival. Measured at 360x780 the viewport is (0,52)-(360,780),
+  `maxScrollExtent` is 952, and four of the six headers start off-screen (tops 72, 460, 1024, 1424,
+  1520, 1616).
+- [x] 10.4 Sections entering the same frame are recorded by their measured `top`, not by the expected
+  order - otherwise the order assertion could not fail between neighbouring sections.
+- [x] 10.5 **Mutation evidence, as corrected by the generation-9 verification.** Each probe is a single
+  line applied to a clean tree and reverted afterwards. The attributions below are read off the
+  reported failing line; the first draft of this table credited probes to assertions they never
+  reached.
+
+  | # | Mutation (one line) | Failing line | What it proves |
+  |---|---|---|---|
+  | P1 | `SingleChildScrollView` gains `physics: NeverScrollableScrollPhysics()` | **217** - final `orderedEquals`, actual `['Datos basicos', 'Ubicacion']` | The walk really goes through scroll physics. Kills the dead `scrollUntilVisible` version. |
+  | P2 | Registry entry renamed `'Fotografias'` to `'Fotografias-MUTANT'` | **147** - static `kCaseFormSections` check | Only that the hardcoded six-title contract is pinned. Says nothing about runtime. |
+  | P3 | Render loop only: `kCaseFormSections.take(5)` (registry intact) | **162** - runtime presence loop | Each of the six sections must actually be mounted. |
+  | P4 | Render loop only: indices 3/4 swapped (registry intact) | **217** - runtime `orderedEquals` | The rendered vertical order is genuinely asserted. |
+
+- [x] 10.6 Run `flutter test` (170 green) + `flutter analyze` (clean). `lib/` and `web/` byte-identical
+  to HEAD; the change is test-only.
+- [x] 10.7 Bounded Gentle AI review of the candidate: lineage `review-bafa769931bf713c`, one lens
+  (`review-reliability`), approved with receipt and bound to this change. One non-blocking SUGGESTION
+  recorded below.
+- [ ] 10.8 Commit and push. **Not done at the time this phase was written** - the working tree still
+  holds the change.
+
+### Follow-ups opened by Phase 10 (NOT closed)
+
+- `isFullyVisible` measures against the `intake-form-column` rect rather than one derived from the
+  scroll viewport. They coincide today because the key sits on the `SingleChildScrollView` itself, so
+  `getRect` returns the viewport box; deriving it from the scrollable would keep that true if column
+  chrome is ever added. Raised by the bounded review as a SUGGESTION.
+- The scenario's "and editable" clause is covered only indirectly.
+
 ### Known gaps carried forward (NOT closed by this change)
 
 - The 1024–1199px desktop band, where the form column is narrow enough that every row stacks, is

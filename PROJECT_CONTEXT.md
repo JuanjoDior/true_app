@@ -87,6 +87,19 @@ Tres piezas que conviene conocer antes de tocar nada:
 - **`pumpAndSettle` no sirve** con nada animado de este proyecto. Ni con el
   ticker de la home ni con el mapa: `flutter_map` no dispara su `onTap` en tests
   con `pumpAndSettle`. Usar `tester.pump(Duration(milliseconds: 400))`.
+  (Excepción medida: el arrastre del formulario de intake en
+  `intake_narrow_layout_test.dart` sí asienta, porque el gesto va sobre el
+  margen del scroll y no toca el mapa. Si algún día ese test parpadea, éste es
+  el primer sospechoso.)
+- **`tester.scrollUntilVisible` no prueba que se pueda hacer scroll.** En
+  `flutter_test/src/controller.dart:2471` sólo arrastra
+  `while (finder.evaluate().isEmpty)`, y un `SingleChildScrollView` construye
+  todos sus hijos de golpe: el bucle no corre nunca y todo el movimiento sale
+  del `Scrollable.ensureVisible` de la línea 2482, que es programático y se
+  salta `ScrollPhysics`. Un formulario con `NeverScrollableScrollPhysics` deja
+  el test **en verde**. Para probar alcance de verdad: `tester.dragFrom`, más
+  una precondición de que el contenido desborda y de que lo que buscás no está
+  visible al arrancar.
 - **`copyWith` no borra.** Sigue el patrón `valor ?? this.valor`, así que pasar
   `null` conserva lo anterior. Para asentar un grupo de campos que vienen de la
   misma fuente hace falta un método explícito, como `withResolvedPlace`.

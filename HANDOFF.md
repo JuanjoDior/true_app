@@ -9,6 +9,50 @@ cubre el estado en vuelo.
 
 ---
 
+## 0. Lo primero al arrancar mañana
+
+Todo el trabajo está **en el árbol y sin commitear**. Nada se ha perdido, pero
+nada está entregado. El orden importa: cada paso desbloquea al siguiente.
+
+Antes de nada, foto del estado:
+
+```
+git status --short
+gentle-ai sdd-status intake-responsive --cwd <repo>
+gentle-ai sdd-attempt status --change intake-responsive --cwd <repo>
+```
+
+Lo que debería salir: cinco ficheros modificados (`.gitignore`,
+`test/intake_narrow_layout_test.dart`, `verify-report.md`, `tasks.md`,
+`HANDOFF.md`), `case-publication-detail/` sin trackear, y el **intento 9
+abierto** (`next_action: finish`, `evidence_revision: ""`).
+
+1. **Revisión nueva del candidato corregido.** La revisión
+   `review-bafa769931bf713c` está aprobada y atada, pero cubre un árbol
+   anterior; al escribir `verify-report.md`, `tasks.md` y este documento el
+   alcance cambió. Recorrer la cadena entera de la sección 3, empezando por
+   `review status --next-transition`. Es una revisión de documentación pasiva,
+   así que probablemente salga de riesgo bajo y ni pregunte consentimiento.
+2. **`review bind-sdd`** con el linaje nuevo.
+3. **Liquidar el intento 9.** `sdd-attempt settle` ya falló una vez pidiendo
+   exactamente esto, y el mensaje de error dice dónde sacar cada valor:
+   `--expected-binding-revision`, `--successor-lineage` y
+   `--remediates-evidence-revision` salen de `binding_revision`,
+   `binding.lineage` y `evidence_revision` de `sdd-attempt status`. La
+   evidencia de generación 9 es `sha256:bed28080…` y remedia a
+   `sha256:dbe736ab…`.
+4. **`sdd-archive`.** Vuelca las specs delta a `openspec/specs/`, que está
+   vacío: este ciclo funda el registro permanente.
+5. **Commit y push.** Es la tarea 10.8, la única sin tildar. **Decisión del
+   mantenedor**, no automática: este repo commitea directo a `main` y el push
+   despliega a producción.
+6. Con `intake-responsive` archivado, **borrar este documento** y seguir con
+   `case-publication-detail` (sección 5).
+
+Si algo se atasca, la sección 3 explica por qué y con qué comando se sale.
+
+---
+
 ## 1. Comprobado en un teléfono real
 
 **Hecho.** El mantenedor abrió `https://juanjodior.github.io/true_app/` desde un
@@ -90,7 +134,9 @@ veces: **una aserción que no podía fallar**. Está detallado en
 
 ## 3. Estado del ciclo SDD `intake-responsive`
 
-**Abierto.** La fase 9 está verificada; queda un blocker distinto.
+**Abierto, sin blockers y a un paso del archive.** La verificación de
+generación 9 devolvió `verdict: pass`, `blockers: 0`, 11/11 requisitos y 24/24
+escenarios.
 
 | Fase | Qué | Estado |
 |------|-----|--------|
@@ -99,6 +145,7 @@ veces: **una aserción que no podía fallar**. Está detallado en
 | 7 | `<meta name="viewport">` + guard `test/web_index_viewport_test.dart` | Verificada |
 | 8 | Requisito "Host Document Viewport Precondition" + corrección del proposal | Verificada |
 | 9 | Quitado el escenario infalsable + grafía `user-scalable=0` + aserciones separadas | Verificada (generación 8) |
+| 10 | Cobertura runtime de las seis secciones a 360px, probada por mutación | Verificada (generación 9, `blockers: 0`) |
 
 La verificación de generación 8 (`verify-report.md`, evidence
 `sha256:dbe736ab…`) cerró la fase 9: el escenario infalsable ya no está en la
@@ -106,42 +153,60 @@ especificación, y las mutaciones de `user-scalable=no` y `user-scalable=0` hace
 fallar el guard **por separado**. `flutter test` → 169 verdes. `flutter analyze`
 → limpio. Cobertura agregada 88.51%.
 
-Pero el veredicto sigue siendo `fail` con `blockers: 1`, y ahora por otra razón:
+Ese blocker —el escenario **"All six sections reachable at 360px"** sin prueba
+runtime a nivel de workspace— quedó cerrado en la fase 10 el 12/08/2026.
 
-> El escenario **"All six sections reachable at 360px"** no tiene ninguna prueba
-> runtime a nivel de workspace. `intake_narrow_layout_test.dart` monta a 360px
-> pero no recorre las seis secciones; `intake_form_widget_test.dart` itera
-> `kCaseFormSections` en otro harness. La evidencia estática del registro no
-> satisface un escenario que dice *"WHEN the user scrolls the form"*.
+### El "deadlock" de Gentle AI NO era un deadlock
 
-Ése es el único blocker para archivar.
+Esto estaba mal diagnosticado en este mismo documento y se reportó como defecto
+en [gentle-ai#2997](https://github.com/Gentleman-Programming/gentle-ai/issues/2997#issuecomment-5265732499).
+**No era un bug del runtime: era un procedimiento incompleto.** Si alguien
+vuelve a ver `nextRecommended: resolve-review` con
+`remediationState.required: false` y *"bounded review transaction is missing"*,
+faltan dos pasos, no un parche:
 
-### Cómo desbloquearlo
+1. **No había candidato que revisar.** Con el árbol limpio no se puede abrir una
+   revisión acotada: `review status --next-transition` devuelve `stop`. Con
+   cambios reales pasa a `execute` / `fresh_target_ready`.
+2. **La revisión aprobada hay que atarla al change.** Terminar la revisión y
+   tener recibo NO basta. Falta:
 
-El reset de mantenedor a generación 8 **ya se hizo**. No hay que repetirlo, ni
-reutilizar la etiqueta de work-unit anterior para colarse. El intento de
-generación 8 quedó settled como `failed` y devolvió `state: proceed`.
+   ```
+   gentle-ai review bind-sdd --cwd <repo> --change <change> \
+     --lineage <lineage> --expected-binding-revision ""
+   ```
 
-Lo que falta es la prueba, RED primero:
+   (vacío en el primer atado; su valor vive en `binding_revision` de
+   `sdd-attempt status`). Antes de atar: `required: false`, sin `reviewGate`,
+   sin salida. Después: `required: true`, `reviewGate.result: allow`,
+   `next: remediate`.
 
-1. Añadir a `test/intake_narrow_layout_test.dart` un test que monte el workspace
-   a 360px, haga scroll y afirme las seis secciones de `kCaseFormSections`, en
-   el mismo orden que en escritorio.
-2. **Verlo fallar antes** de que exista lo que lo pone en verde. Un test que no
-   se vio fallar no prueba nada (`PROJECT_CONTEXT.md` → "Trampas conocidas").
-3. Re-verificar con la contabilidad nativa hasta `blockers: 0`, y entonces
-   `sdd-archive`.
+Cadena completa que funciona, en orden: `review status --next-transition` →
+`review start` (target **fresco**) → consentimiento (envelope v3: se relaya al
+humano y decide él, `granted`/`declined`) → lanzar la lente → `capture-result`
+→ `finalize --captured-results=true` → `capture-evidence --outcome=passed` →
+`finalize --captured-evidence=true` → `approved` + recibo → **`bind-sdd`** →
+`sdd-attempt reset` (decisión de mantenedor) → `acquire` → `sdd-verify` →
+`settle` → `sdd-archive`.
 
-**Y hay un obstáculo antes de eso.** El runtime de Gentle AI 2.3.0 quedó en
-deadlock: `sdd-status` devuelve `nextRecommended: resolve-review` y
-`remediationState.required: false`, pero rechaza con `verify evidence cannot
-enter remediation: blockers must be zero for archive readiness; bounded review
-transaction is missing`. No hay transición ejecutable. Se reportó como
-ocurrencia con diagnóstico sanitizado en
-[gentle-ai#2997](https://github.com/Gentleman-Programming/gentle-ai/issues/2997#issuecomment-5265732499).
-El lifecycle no se reanuda hasta que haya una corrección publicada instalada, o
-una recuperación nativa documentada y autorizada. **Nada de inventar un PASS ni
-saltarse el gate.**
+Trampas que costaron tiempo:
+
+- **El target caduca.** Cualquier cambio en el árbol entre el `status` y el
+  `start` da `stale_target_identity`. Re-derivarlo justo antes.
+- **Cada vez que cambia el árbol, el alcance revisado deja de coincidir**
+  (`current repository target no longer matches the reviewed scope`) y hace
+  falta una revisión nueva. Conviene agrupar todos los cambios y revisar una
+  sola vez.
+- **El revisor de Claude Code no tiene herramientas.** Hay que darle la
+  evidencia nativa entre `GENTLE_AI_CLAUDE_REVIEW_CONTEXT` y su `_END`, con
+  `--name-status`, `--numstat` y el parche verbatim por ruta con índice
+  base-cero. Con prosa devuelve `inspection: incomplete` — y hace bien. Ese
+  resultado **no se captura**: un fallo de acceso no es una revisión.
+  `review advisory prompt --runtime claude-code` ya la renderiza.
+- **Formas de argumento inconsistentes:** `sdd-status` toma el change
+  **posicional**; `sdd-attempt` exige `--change` y `--cwd`.
+
+Sigue en pie lo de siempre: **nada de inventar un PASS ni saltarse el gate.**
 
 Con `blockers: 0`, toca `sdd-archive`. Eso vuelca las specs delta a
 `openspec/specs/`, que **está vacío**: este ciclo lo arranca, así que lo que se
@@ -161,12 +226,12 @@ Ordenados por lo que costaría descubrirlos tarde.
 
 | # | Qué | Dónde | Nota |
 |---|-----|-------|------|
-| 1 | Ciclo SDD abierto | `openspec/changes/intake-responsive/` | Sección 3. Un blocker y un runtime en deadlock |
+| 1 | Ciclo SDD abierto | `openspec/changes/intake-responsive/` | Sin blockers. Falta revisión del candidato corregido, liquidar el intento 9, archive y commit. Sección 0 |
 | 2 | Banda 1024–1199px | `intake_workspace_screen.dart` | La columna del formulario es `ancho - 260 - 380 - 40`, así que sólo llega a `formRowStack` (520) a partir de 1200. En toda esa banda **todas** las filas se apilan en pantallas de escritorio. Anticipado en `design.md:9`, ausente del proposal, sin test: `intake_desktop_layout_test.dart` sólo monta a 1440 |
 | 3 | `SituationTopBar` desborda | `situation_top_bar.dart` | Bandas medidas: 980 (21px) y 1030–1080 (59→9px). Preexistente, fijado como está en `situation_breakpoints_test.dart`. Candidato a change propio |
 | 4 | No hay capa de navegador real | `test/` | El guard del viewport tapa el agujero concreto, no la familia. Un E2E mínimo (Playwright) sobre el build web cerraría la clase entera |
 | 5 | 260 y 380 son literales mágicos | `intake_workspace_screen.dart:58,250` | Deberían ser tokens en `lib/core/layout/breakpoints.dart`. El test los redeclara, lo que hoy funciona como red pero duplica la verdad |
-| 6 | "Las seis secciones alcanzables a 360px" | `test/intake_narrow_layout_test.dart` | Sólo evidenciado estáticamente. Es el blocker de la sección 3 |
+| 6 | ~~"Las seis secciones alcanzables a 360px"~~ | `test/intake_narrow_layout_test.dart` | **Cerrado** en la fase 10 con un test que arrastra de verdad, probado por mutación (P1/P3/P4 en `tasks.md`) |
 | 7 | `isExpanded: true` en desplegables | `basic_data_section.dart:46,84` | Cambio cosmético en escritorio, sin test. Conocido y aceptado |
 | 8 | Error en consola al arrancar | `updates_ticker.dart:46` | Preexistente, sin efecto visible |
 
