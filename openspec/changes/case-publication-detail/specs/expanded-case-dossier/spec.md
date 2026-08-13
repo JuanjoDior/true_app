@@ -103,17 +103,27 @@ A known case route MUST render a reading-oriented expanded dossier on supported 
 #### Scenario: Expanded dossier is usable on mobile
 
 - GIVEN a known case route is opened in a supported compact mobile layout
+- AND the case carries enough content that the page overflows the viewport, so its last section is not visible on arrival
 - WHEN the expanded dossier is displayed
-- THEN its applicable content can be reached through normal scrolling
+- THEN the last section is reached by scrolling the page
 - AND its related-case and return actions remain operable
 - AND no overflow prevents reading or navigation
 
 #### Scenario: Expanded dossier is usable on desktop
 
 - GIVEN a known case route is opened in a supported wide desktop layout
+- AND the case carries enough content that the page overflows the viewport, so its last section is not visible on arrival
 - WHEN the expanded dossier is displayed
-- THEN its applicable content and page actions remain readable and operable
+- THEN the last section is reached by scrolling the page
+- AND its page actions remain readable and operable
 - AND no overflow prevents reading or navigation
+
+**Falsifiability note, normative for verification.** Both scenarios above assert
+scrolling, so both MUST first assert that the content overflows
+(`maxScrollExtent > 0`) and that the target is not visible on arrival, and MUST
+drive the scroll with a real gesture. Without those preconditions the assertion
+passes on a page that fits the viewport and on one whose scrolling is disabled —
+the defect `test/intake_narrow_layout_test.dart:176-177` was written to close.
 
 ### Requirement: Situation Room Behavior Remains Intact
 

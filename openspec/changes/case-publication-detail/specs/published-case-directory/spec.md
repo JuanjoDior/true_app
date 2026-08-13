@@ -15,11 +15,22 @@ Directory presentation MUST keep its entry point, entries, and navigation action
 #### Scenario: Mobile reader opens the directory
 
 - GIVEN the Situation Room is displayed in a supported compact mobile layout
+- AND the directory holds enough entries that its content overflows the viewport, so that the last entry is not visible on arrival
 - WHEN the reader uses the directory entry point
 - THEN the published-case directory becomes available
-- AND its entries can be reached through normal scrolling
+- AND the last entry is reached by scrolling through the list
 - AND an entry can be opened without a map gesture
 - AND no overflow prevents access to directory navigation
+
+**Falsifiability note, normative for verification.** A scroll assertion whose
+content already fits the viewport passes with scrolling disabled and proves
+nothing. This repository has shipped that exact defect: see
+`test/intake_narrow_layout_test.dart:176-177`, whose preconditions
+(`maxScrollExtent > 0`, last item not visible on arrival) exist because an
+earlier version passed green against a form that could not scroll. Every
+scrolling scenario in this change MUST assert those two preconditions before
+asserting reachability, and MUST drive the scroll with a real gesture rather
+than a programmatic helper.
 
 #### Scenario: Desktop reader opens the directory
 
@@ -33,7 +44,7 @@ Directory presentation MUST keep its entry point, entries, and navigation action
 
 The directory MUST represent every successfully loaded published case, including legacy cases without chapters.
 
-Entries MUST be ordered by case year descending. Cases with the same year MUST be ordered by published title ascending as the deterministic tie-breaker. The directory MUST NOT substitute `featuredRank`, `relevanceRank`, or a new ranking algorithm for this ordering.
+Entries MUST be ordered by case year descending, then published title ascending, then slug ascending. The third key is required for a total order: title alone leaves two same-year, same-title cases unordered, so calling it deterministic without it would be false. The directory MUST NOT substitute `featuredRank`, `relevanceRank`, or a new ranking algorithm for this ordering.
 
 #### Scenario: Cases are ordered by year and title
 

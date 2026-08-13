@@ -484,14 +484,23 @@ expanded detail page is the only host that composes shared content without
 
 ### 9.2 Panel and content contracts
 
-**Why this extraction still arrives in three units.** Measured on 2026-08-13:
-`case_dossier_panel.dart` is 636 lines and its editorial subwidgets span lines
-93 to 575, about 483 lines. Because the budget counts additions **plus**
-deletions, a pure move costs roughly 966 — which now fits under the 1000-line
-ceiling, but with a 34-line margin on an estimate. If the measured move reaches
-1000, split it by section group: `_Header`; `_StatsGrid`/`_StatDivider`/
-`_StatCell` plus `_PhotoStrip`/`_PhotoPlaceholder`; `_Timeline`, `_SourceCard`,
-`_RelatedCard`.
+**Dart privacy governs how this extraction can be sliced, and it comes before
+any line count.** All nine editorial subwidgets are library-private: `_Header`
+(93), `_StatsGrid` (214), `_StatDivider` (246), `_StatCell` (255),
+`_PhotoStrip` (311), `_PhotoPlaceholder` (366), `_Timeline` (384),
+`_SourceCard` (445), `_RelatedCard` (521). Dart privacy is scoped to the
+**library**, not the directory, so moving any one of them into
+`case_dossier_content.dart` breaks every remaining reference in
+`case_dossier_panel.dart` — starting with `_Header(crimeCase: crimeCase)` at
+line 30. **A move split by section group therefore does not compile at any
+intermediate point**, which is precisely the failure the 4a/4b/4c structure
+exists to prevent.
+
+The extraction is therefore ordered as: **4a-0 rename the nine widgets to public
+names in place** (`DossierHeader`, `DossierStatsGrid`, …) — a small change that
+compiles and keeps the suite green — and only then move them. Once the names are
+public they resolve across files, so the move itself may be sliced by section
+group if its measured size requires it.
 
 The split into 4a/4b/4c is **not** driven by the budget and survives the raise.
 Its reason is compiling intermediate states: making `mode` and `relatedCases`
@@ -506,13 +515,28 @@ behaviour-preserving defaults, so 4a moves code without touching a call site, 4b
 adds configuration without touching a call site, and 4c migrates hosts once
 everything they need already exists.
 
-D12 does **not** resolve the arithmetic half. Moving all ~483 subwidget lines
-(`case_dossier_panel.dart:93-575`) in one unit still counts ~966. The move is
-therefore split into three passes, each carrying under 200 moved lines: **4a-1**
-`_Header` (93-213); **4a-2** `_StatsGrid`/`_StatDivider`/`_StatCell` (214-310)
-plus `_PhotoStrip`/`_PhotoPlaceholder` (311-383); **4a-3** `_Timeline` (384-444),
-`_SourceCard` (445-520) and `_RelatedCard` (521-575). Each pass leaves the panel
-compiling and the suite green.
+**What 4a actually costs, counted rather than estimated.** The 966 figure
+(483 moved lines × 2) is a *floor* for the move alone. 4a's full scope also
+carries: the panel's own editorial composition at `case_dossier_panel.dart:26-89`
+(~55 lines, outside the 93-575 range, which must move for "the panel composes
+it" to be true); the `CaseDossierContent` class and its imports; the new
+`DossierSourceGroup` file; the new chapter-presentation-labels file; and task
+4.1's characterization tests for panel, side panel, mobile dossier and intake
+preview. Realistic total: **1,300-1,450**, comfortably over the ceiling.
+
+4a is therefore delivered as: **4a-0** public rename (~40); **4a-1** new files —
+`DossierSourceGroup`, chapter labels, empty `CaseDossierContent` shell (~150);
+**4a-2** move the nine widgets plus the panel composition (~1,080, split by
+section group if measured over 1000 — legal now that the names are public);
+**4a-3** characterization tests (~200-300).
+
+**The extraction is not behaviour-pure, and the plan must stop claiming it is.**
+`_Header` writes map state directly: `case_dossier_panel.dart:113` is
+`ref.read(selectedCaseIdProvider.notifier).state = null`. Moving it unchanged
+carries that write into the shared content and therefore into the routed detail
+page, which `specs/expanded-case-dossier/spec.md` forbids. The close action MUST
+become a callback owned by the host in the same sub-unit that moves `_Header`;
+it cannot wait for 4b.
 
 `case_dossier_panel.dart` defines a compact host configuration with map and
 preview presets:
@@ -654,10 +678,14 @@ from being rendered twice.
 | Intake preview | `IntakePreviewPanel → CaseDossierPanel(preview) → CaseDossierContent(compact)` | Preview framing and source overrides; no map or routed-page chrome |
 | Expanded detail page | `CaseDetailPage → CaseDossierContent(expanded)` | Page return action and related-case callback that navigates by slug |
 
-Editorial subwidgets perform no direct provider writes. Desktop and mobile
-map hosts inject map callbacks into the panel. The expanded route injects
-routed navigation directly into shared content and cannot inherit map-only
-controls.
+Editorial subwidgets MUST perform no direct provider writes **after the
+extraction**. They do today: `case_dossier_panel.dart:113` has `_Header` calling
+`ref.read(selectedCaseIdProvider.notifier).state = null` for its close action.
+This is a target state, not a description of the current code, and converting
+that write into a host-injected callback is required work inside the sub-unit
+that moves `_Header` — not a later cleanup. Desktop and mobile map hosts inject
+map callbacks into the panel. The expanded route injects routed navigation
+directly into shared content and cannot inherit map-only controls.
 
 ### 9.5 Chapter presentation
 
@@ -817,7 +845,7 @@ Before the first apply unit:
 
 ## 15. Review workload forecast and direct-main slicing
 
-- Estimated aggregate changed lines including tests: **2,510–3,270**, summed from the unit table in §15.
+- Estimated aggregate changed lines including tests: **2,860–3,799**, summed from the unit table in §15.
 - **1000-line budget risk: Low** per unit; only the dossier extraction comes
   close, at roughly 966.
 - Every source-bearing unit below is forecast below 1000 changed lines,
@@ -843,7 +871,7 @@ Before the first apply unit:
 | 8 | Directory provider/order, adaptive modal, mobile/desktop entry points, map-preservation and navigation tests | 170–240 | Complete public discovery path |
 | 9 | Full verification, web-build readback, deployment, and real-browser proof | 0 source lines; evidence only | Eligible for completion/archive |
 
-Forecast range across source-bearing units is **2,510–3,270 changed
+Forecast range across source-bearing units is **2,860–3,799 changed
 lines**, summed directly from the unit table rather than estimated. If an
 actual unit reaches 1000 changed lines before normalization, stop and split it
 before review or direct-main commit.

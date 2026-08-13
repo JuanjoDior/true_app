@@ -4,16 +4,16 @@
 >
 > `intake-responsive` was archived on 2026-08-13 with `blockers: 0`, and its
 > six-section `test/intake_narrow_layout_test.dart` baseline is committed on
-> `main` in `c351fac`. Unit 0 below is the evidence step for that gate: work it
-> first and record what you actually observe, rather than inheriting these
-> claims. Everything after Unit 0 is authorised once its checks pass.
+> `main` in `c351fac`. **Unit 0 was worked and its boxes carry what was actually
+> observed on 2026-08-13**, not inherited claims. Everything after Unit 0 is
+> authorised. Re-run Unit 0 before resuming if `main` has moved since.
 
 ## Review Workload Forecast
 
 | Field | Value |
 | --- | --- |
-| Estimated changed lines | **2,510–3,270 aggregate**, including tests |
-| 1000-line budget risk | Low; only 4a approaches it, at ~966 |
+| Estimated changed lines | **2,860–3,799 aggregate**, including tests |
+| 1000-line budget risk | Low; the largest unit is 4a-2, forecast up to 999 |
 | Chained PRs recommended | No |
 | Suggested split | Direct-main Units 1–8; no PRs |
 | Delivery strategy | Direct commits to `main` in bounded work units |
@@ -22,17 +22,20 @@ Decision needed before apply: No
 
 Chained PRs recommended: No
 
-1000-line budget risk: Low; only 4a approaches it, at ~966
+1000-line budget risk: Low; the largest unit is 4a-2, forecast up to 999
 
 Delivery is already approved as direct commits to `main`, so no workload decision remains. The `intake-responsive` archive and baseline checks remain an independent apply blocker.
 
-| Unit | Forecast including tests | Maximum | Review boundary |
+| Unit | Forecast including tests | Forecast maximum | Review boundary |
 | --- | ---: | ---: | --- |
 | 0 | 0 source lines | 0 | Dependency evidence only |
 | 1 | 150–220 | 220 | Dormant chapter domain and draft representation |
 | 2 | 170–240 | 240 | Publication and catalog compatibility |
 | 3 | 130–180 | 180 | Serialized persistence and preview projection |
-| 4a | 900–1000 | 1000 | Pure extraction; no call site changes |
+| 4a-0 | 30–50 | 50 | Public rename in place; unlocks slicing |
+| 4a-1 | 120–180 | 180 | New shared-content files |
+| 4a-2 | 900–999 | 999 | The move plus the header callback |
+| 4a-3 | 200–300 | 300 | Characterization tests |
 | 4b | 220–300 | 300 | Additive panel configuration behind defaults |
 | 4c | 180–260 | 260 | Host migration, one host per commit if needed |
 | 5 | 150–220 | 220 | Seven-section editor activation |
@@ -41,7 +44,7 @@ Delivery is already approved as direct commits to `main`, so no workload decisio
 | 8 | 170–240 | 240 | Published-case directory |
 | 9 | 0 source lines | 0 | Verification, deployment, and browser evidence |
 
-The source-bearing forecast is 2,510–3,270 lines, summed directly from the unit table above. Every source-bearing unit is forecast at or below 1000 changed lines. The per-unit ceiling was raised from 400 to 1000 on 2026-08-13: this is a single-developer codebase, so the lower ceiling was protecting a reviewer burden that does not exist here.
+The source-bearing forecast is 2,860–3,799 lines, summed directly from the unit table above. Every source-bearing unit is forecast at or below 1000 changed lines. The per-unit ceiling was raised from 400 to 1000 on 2026-08-13: this is a single-developer codebase, so the lower ceiling was protecting a reviewer burden that does not exist here.
 
 ## Execution Rules
 
@@ -84,8 +87,8 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [x] **0.3 Confirm the six-section baseline.** `git show main:test/intake_narrow_layout_test.dart` carries `_expectedCaseFormSectionTitles` with the six Spanish titles, the non-vacuity preconditions (`maxScrollExtent > 0` at line 176, last section not visible at 177) and the ordered walk (`orderedEquals` at 217). **Executed**, not merely read: the focused test passes.
 - [x] **0.4 Require a clean ownership boundary.** Confirmed clean: `git status --short test/intake_narrow_layout_test.dart` is empty and `git diff HEAD -- test/ lib/ web/` produces nothing, so the baseline is committed and unmodified. Later units 4c and 5 each have one authorised edit to that file, named in design §12; this check is about its state on arrival, not a permanent freeze.
 - [x] **0.5 Synchronize safely.** `git fetch origin` clean; local `main` level with `origin/main`.
-- [x] **0.6 Re-read archived seams.** Measured on 2026-08-13, every claim this plan makes about the current code holds: `kCaseFormSections` has exactly six entries (`Datos básicos`, `Ubicación`, `Resumen y ficha`, `Cronología`, `Enlaces`, `Fotografías`); `case_dossier_panel.dart` is 636 lines; `CaseDossierPanel(` has **six call sites** — `home_page.dart`, `situation_side_panel.dart`, `intake_preview_panel.dart`, `test/intake_narrow_layout_test.dart`, `test/case_dossier_photos_test.dart`, `test/intake_form_widget_test.dart`; `TrueCrimeApp` is a `StatelessWidget`; and **all 15 catalog cases have `id == slug`, none differ** — which is what makes the slug-identity requirement unfalsifiable without a hand-built fixture.
-- [x] **0.7 Reconcile planning.** Two reconciliations applied. (a) The per-unit line ceiling was raised from 400 to 1000 by maintainer decision: single-developer codebase, so the lower ceiling protected a reviewer burden that does not exist. (b) Unit 4a's three-pass subdivision was budget-driven and is therefore relaxed to a single move with a conditional split, while the 4a/4b/4c structure stays — its reason is compiling intermediate states, not size.
+- [x] **0.6 Re-read archived seams.** Measured on 2026-08-13. The six claims enumerated here hold; this is **not** a blanket statement about every claim the plan makes, and one such claim was subsequently found false — design §9.4 asserted that editorial subwidgets perform no direct provider writes, while `case_dossier_panel.dart:113` does exactly that. It is now written as a target state with the conversion assigned to 4a-2. The verified six: `kCaseFormSections` has exactly six entries (`Datos básicos`, `Ubicación`, `Resumen y ficha`, `Cronología`, `Enlaces`, `Fotografías`); `case_dossier_panel.dart` is 636 lines; `CaseDossierPanel(` has **six call sites** — `home_page.dart`, `situation_side_panel.dart`, `intake_preview_panel.dart`, `test/intake_narrow_layout_test.dart`, `test/case_dossier_photos_test.dart`, `test/intake_form_widget_test.dart`; `TrueCrimeApp` is a `StatelessWidget`; and **all 15 catalog cases have `id == slug`, none differ** — which is what makes the slug-identity requirement unfalsifiable without a hand-built fixture.
+- [x] **0.7 Reconcile planning.** Two reconciliations applied. (a) The per-unit line ceiling was raised from 400 to 1000 by maintainer decision: single-developer codebase, so the lower ceiling protected a reviewer burden that does not exist. (b) Unit 4a was re-planned entirely after an independent audit: its ~966 figure was a move-only floor, and slicing it by section group cannot compile because the nine subwidgets are library-private. It is now 4a-0 public rename, 4a-1 new files, 4a-2 the move plus the header callback, 4a-3 characterization tests. The 4a/4b/4c structure stays — its reason is compiling intermediate states, not size.
 - [x] **0.8 Persist gate evidence.** Archive commit `eeef7e3`; baseline delivered in `c351fac`; `main` at `cbfe028` at gate time, level with `origin/main`; `flutter test` 170/170 and `flutter analyze` clean; `git status` shows no change under `lib/`, `web/` or `test/`.
 
 **Verification:** evidence only; do not run this change’s tests.
@@ -160,16 +163,19 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 > leaving no state in which the app compiles between the move and the migration.
 > Per design D12, new parameters are optional with behaviour-preserving defaults:
 >
-> - **4a — pure extraction.** Move the ~483 subwidget lines
->   (`case_dossier_panel.dart:93-575`, measured 2026-08-13) into
->   `CaseDossierContent`; add `DossierSourceGroup` and the chapter labels; panel
->   composes it. Counting additions plus deletions that is ~966, inside the
->   1000 ceiling but with only a 34-line margin on an estimate — **if the
->   measured total reaches 1000, split by section group**: `_Header`; then
->   `_StatsGrid`/`_StatDivider`/`_StatCell` plus
->   `_PhotoStrip`/`_PhotoPlaceholder`; then `_Timeline`, `_SourceCard`,
->   `_RelatedCard`. Constructor unchanged, **no call site touched**. Task 4.1 and
->   the characterization half of 4.9 only.
+> - **4a — extraction, in four ordered sub-units.** Its full scope is ~1,300-1,450
+>   lines, not the ~966 of the bare move, so it does not fit one unit. And it
+>   cannot be sliced by section group first: the nine subwidgets are
+>   library-private, so moving any one of them breaks every remaining reference
+>   in `case_dossier_panel.dart` (starting at line 30). Order, per design §9.2:
+>   **4a-0** rename the nine widgets to public names in place (~40, compiles,
+>   suite green); **4a-1** new files — `DossierSourceGroup`, chapter labels,
+>   `CaseDossierContent` shell (~150); **4a-2** move the nine widgets plus the
+>   panel's own composition at `case_dossier_panel.dart:26-89` (~1,080; split by
+>   section group if measured over 1000 — legal only because 4a-0 made the names
+>   public), converting `_Header`'s `selectedCaseIdProvider` write at line 113
+>   into a host callback **in this same sub-unit**; **4a-3** characterization
+>   tests (~200-300, task 4.1). Constructor unchanged, **no call site touched**.
 > - **4b — additive configuration.** Optional `mode` (default `map`), optional
 >   `relatedCases` (default null, panel keeps deriving it), callbacks, source
 >   override, chapter rendering. Defaults keep every host compiling untouched.
@@ -179,7 +185,11 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 > - **4c — host migration.** `IntakePreviewPanel`, `situation_side_panel.dart`,
 >   `home_page.dart`, plus the three committed test call sites including
 >   `test/intake_narrow_layout_test.dart:452`. Remove the duplicated preview
->   source rendering here, not earlier. Task 4.8.
+>   source rendering here, not earlier. **Also migrate
+>   `test/intake_preview_panel_test.dart:114-136`**, whose
+>   `intake-preview-link-group-*` assertions guard the null-kind bucketing and
+>   the `Sin clasificar` relabel; design §9.3 makes that migration normative but
+>   the file was missing from both the §12 change plan and this forecast. Task 4.8.
 >
 > Each of 4a/4b/4c runs its own budget gate, focused tests, `flutter test`,
 > `flutter analyze`, review and commit.
@@ -195,7 +205,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **4.9 Observe GREEN** on new and characterization tests.
 - [ ] **4.10 TRIANGULATE** override states, legacy/partial chapters, callbacks, preview suppression, and group order.
 - [ ] **4.11 REFACTOR and verify** full tests/analyze.
-- [ ] **4.12 Apply the line-budget gate to each sub-unit separately.** 4a max 1000, 4b max 300, 4c max 260; stop and split further at 1000. If 4a measures 1000 or more, split it by section group per design §9.2.
+- [ ] **4.12 Apply the line-budget gate to each sub-unit separately.** The only enforced threshold is the one in Execution Rules: 1000 or more stops the unit. The per-row figures are forecasts, not gates — exceeding a forecast is a signal to re-plan, not a stop. If 4a-2 measures 1000 or more, split it by section group per design §9.2, which is legal only after 4a-0.
 - [ ] **4.13 Review and deliver each sub-unit** as `refactor(casos): extrae el contenido compartido del expediente` (4a), `feat(casos): configura el panel de expediente por contexto` (4b), and `refactor(casos): migra los hosts al panel configurable` (4c).
 
 ## Unit 5 — Activate the Seven-Section Chapter Editor
