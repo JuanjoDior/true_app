@@ -26,7 +26,7 @@ This change extends the existing versioned-JSON publication circuit with four fi
 | D8 | Derive the directory from the existing `casesProvider`, sorted by year descending, title ascending, then slug as a total-order fallback. |
 | D9 | Present the directory as an adaptive modal surface over the Situation Room; it does not replace the map and does not create a second catalog route. |
 | D10 | Distinguish catalog loading, catalog error, unknown slug, and valid dossier states without changing the active hash implicitly. |
-| D11 | Implement through independently releasable direct-main work units, targeting at most 400 changed lines per unit and never exceeding the 1000-line review budget. |
+| D11 | Implement through independently releasable direct-main work units, each at most **1000 changed lines**. Raised from 400 on 2026-08-13: this is a single-developer codebase, so the 400-line ceiling was protecting a reviewer burden that does not exist here. Units stay small for rollback and for compiling intermediate states, not to spare a second reader. |
 | D12 | **Every new `CaseDossierPanel` parameter is optional with a behaviour-preserving default, so no call site is forced to change in the same unit that introduces it.** `mode` defaults to `map`; `relatedCases` defaults to null and keeps the panel's current internal `ref.watch(relatedCasesProvider(...))`. This is what makes the extraction splittable at all — see §9.2 and the 4a/4b/4c units in §15. |
 
 ## 2. Existing seams and constraints
@@ -484,15 +484,22 @@ expanded detail page is the only host that composes shared content without
 
 ### 9.2 Panel and content contracts
 
-**Why this extraction must arrive in three units, not one.** `case_dossier_panel.dart`
-is 636 lines and roughly 450 of them are the editorial subwidgets moving into
-`CaseDossierContent`. Because the line budget counts additions **plus** deletions,
-a pure move already costs about 900 lines before anything new is written. Worse,
-making `mode` and `relatedCases` required would break all six call sites at once
-— `home_page.dart:103`, `situation_side_panel.dart:31`,
-`intake_preview_panel.dart:36`, `test/case_dossier_photos_test.dart:39`,
-`test/intake_form_widget_test.dart:73` and `test/intake_narrow_layout_test.dart:452`
-— leaving no compiling intermediate state and therefore no legal split.
+**Why this extraction still arrives in three units.** Measured on 2026-08-13:
+`case_dossier_panel.dart` is 636 lines and its editorial subwidgets span lines
+93 to 575, about 483 lines. Because the budget counts additions **plus**
+deletions, a pure move costs roughly 966 — which now fits under the 1000-line
+ceiling, but with a 34-line margin on an estimate. If the measured move reaches
+1000, split it by section group: `_Header`; `_StatsGrid`/`_StatDivider`/
+`_StatCell` plus `_PhotoStrip`/`_PhotoPlaceholder`; `_Timeline`, `_SourceCard`,
+`_RelatedCard`.
+
+The split into 4a/4b/4c is **not** driven by the budget and survives the raise.
+Its reason is compiling intermediate states: making `mode` and `relatedCases`
+required would break all six call sites at once — `home_page.dart`,
+`situation_side_panel.dart`, `intake_preview_panel.dart`,
+`test/case_dossier_photos_test.dart`, `test/intake_form_widget_test.dart` and
+`test/intake_narrow_layout_test.dart` — leaving no state in which the app
+compiles between the move and the migration.
 
 D12 resolves the call-site half: new parameters are optional with
 behaviour-preserving defaults, so 4a moves code without touching a call site, 4b
@@ -810,9 +817,10 @@ Before the first apply unit:
 
 ## 15. Review workload forecast and direct-main slicing
 
-- Estimated aggregate changed lines including tests: **1,450–2,100**.
-- **400-line budget risk: High** for an unsliced aggregate change.
-- Every source-bearing unit below is forecast below 400 changed lines,
+- Estimated aggregate changed lines including tests: **2,510–3,270**, summed from the unit table in §15.
+- **1000-line budget risk: Low** per unit; only the dossier extraction comes
+  close, at roughly 966.
+- Every source-bearing unit below is forecast below 1000 changed lines,
   including its focused tests.
 - Aggregate full-change review is unsuitable.
 - **Chained PRs recommended: No**, because the repository delivers direct
@@ -826,7 +834,7 @@ Before the first apply unit:
 | 1 | Chapter enum/value object, tolerant codec, additive `CaseDraft` field, and focused domain/draft tests; no intake registration | 150–220 | Dormant local chapter representation; no authoring surface |
 | 2 | Published model decoding, export omission/round trip, malformed optional-entry policy, and catalog tests | 170–240 | Dormant publication-data support with legacy compatibility |
 | 3 | Serialized draft persistence, preview projection, and rapid-edit projection tests; no visible chapter field | 130–180 | Race-safe dormant chapter persistence and preview data |
-| 4a | Pure extraction in **three move passes** grouped by section (see §9.2), plus `DossierSourceGroup`, chapter presentation labels, and characterization tests. `CaseDossierPanel` keeps its current constructor and composes the new content. **No call site changes.** | 240–390 per pass | Identical behavior, one editorial renderer |
+| 4a | Pure extraction of the editorial subwidgets into `CaseDossierContent`, plus `DossierSourceGroup`, chapter presentation labels, and characterization tests. `CaseDossierPanel` keeps its current constructor and composes the new content. **No call site changes.** Split by section group only if the measured move reaches 1000 (see §9.2). | 900–1000 | Identical behavior, one editorial renderer |
 | 4b | Additive panel configuration: optional `mode`, optional `relatedCases`, explicit callbacks, preview source override, chapter rendering, and their focused tests. Defaults preserve today's behavior (D12), so hosts still compile untouched. | 220–300 | Panel can serve preview and route hosts |
 | 4c | Host migration, one host per commit if needed: `IntakePreviewPanel`, `situation_side_panel.dart`, `home_page.dart`, and the three committed test call sites including `test/intake_narrow_layout_test.dart:452`. | 180–260 | Hosts pass explicit configuration; duplicated preview source rendering removed |
 | 5 | Update registry expectation to seven for RED, then add fixed chapter editor/registry entry and live-preview activation tests | 150–220 | Complete authoring circuit activated only after its prerequisites |
@@ -835,9 +843,9 @@ Before the first apply unit:
 | 8 | Directory provider/order, adaptive modal, mobile/desktop entry points, map-preservation and navigation tests | 170–240 | Complete public discovery path |
 | 9 | Full verification, web-build readback, deployment, and real-browser proof | 0 source lines; evidence only | Eligible for completion/archive |
 
-Forecast range across source-bearing units is **1,470–2,060 changed
-lines**. The aggregate estimate is therefore revised to **1,450–2,100** lines. If an
-actual unit reaches 400 changed lines before normalization, stop and split it
+Forecast range across source-bearing units is **2,510–3,270 changed
+lines**, summed directly from the unit table rather than estimated. If an
+actual unit reaches 1000 changed lines before normalization, stop and split it
 before review or direct-main commit.
 
 Each source-bearing unit gets focused RED/GREEN evidence, suite/analyze,

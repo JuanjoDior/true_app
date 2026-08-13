@@ -12,8 +12,8 @@
 
 | Field | Value |
 | --- | --- |
-| Estimated changed lines | **1,450–2,100 aggregate**, including tests |
-| 400-line budget risk | High |
+| Estimated changed lines | **2,510–3,270 aggregate**, including tests |
+| 1000-line budget risk | Low; only 4a approaches it, at ~966 |
 | Chained PRs recommended | No |
 | Suggested split | Direct-main Units 1–8; no PRs |
 | Delivery strategy | Direct commits to `main` in bounded work units |
@@ -22,7 +22,7 @@ Decision needed before apply: No
 
 Chained PRs recommended: No
 
-400-line budget risk: High
+1000-line budget risk: Low; only 4a approaches it, at ~966
 
 Delivery is already approved as direct commits to `main`, so no workload decision remains. The `intake-responsive` archive and baseline checks remain an independent apply blocker.
 
@@ -32,7 +32,7 @@ Delivery is already approved as direct commits to `main`, so no workload decisio
 | 1 | 150–220 | 220 | Dormant chapter domain and draft representation |
 | 2 | 170–240 | 240 | Publication and catalog compatibility |
 | 3 | 130–180 | 180 | Serialized persistence and preview projection |
-| 4a | three move passes, 240–390 each | 390 per pass | Pure extraction; no call site changes |
+| 4a | 900–1000 | 1000 | Pure extraction; no call site changes |
 | 4b | 220–300 | 300 | Additive panel configuration behind defaults |
 | 4c | 180–260 | 260 | Host migration, one host per commit if needed |
 | 5 | 150–220 | 220 | Seven-section editor activation |
@@ -41,7 +41,7 @@ Delivery is already approved as direct commits to `main`, so no workload decisio
 | 8 | 170–240 | 240 | Published-case directory |
 | 9 | 0 source lines | 0 | Verification, deployment, and browser evidence |
 
-The source-bearing forecast is 1,470–2,060 lines. Every source-bearing unit is forecast below 400 changed lines.
+The source-bearing forecast is 2,510–3,270 lines, summed directly from the unit table above. Every source-bearing unit is forecast at or below 1000 changed lines. The per-unit ceiling was raised from 400 to 1000 on 2026-08-13: this is a single-developer codebase, so the lower ceiling was protecting a reviewer burden that does not exist here.
 
 ## Execution Rules
 
@@ -67,7 +67,7 @@ For every source-bearing unit:
 3. Enumerate exact paths with `git status --short`.
 4. Count additions plus deletions from `git diff --numstat <unit-start-sha>`, including untracked files.
 5. Record actual lines in apply progress.
-6. If the total is **400 or more**, stop before review, staging, commit, or push and split the unit.
+6. If the total is **1000 or more**, stop before review, staging, commit, or push and split the unit.
 7. Review only normalized bytes. Any later byte, path, or mode change invalidates that candidate.
 8. Keep tests with the behavior they verify.
 
@@ -79,14 +79,14 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 
 **Finish state:** archived dependency, committed baseline, synchronized `main`, and reconciled post-archive plan are evidenced.
 
-- [ ] **0.1 Confirm legitimate archive.** Require authoritative native/OpenSpec archive state with no blocker or unresolved review transition.
-- [ ] **0.2 Confirm archived bytes on `main`.** Verify final commit is an ancestor of local and `origin/main`.
-- [ ] **0.3 Confirm the six-section baseline.** Read `main:test/intake_narrow_layout_test.dart` and verify its runtime test reaches all six sections at 360px in order.
-- [ ] **0.4 Require a clean ownership boundary.** At this gate the baseline test MUST be committed and unmodified. Otherwise stop without stashing, resetting, staging, moving, or editing it. Later units 4 and 5 each have one authorised edit to that file, named in design §12; this check is about its state on arrival, not a permanent freeze.
-- [ ] **0.5 Synchronize safely.** Fetch and fast-forward to exact post-archive `main`.
-- [ ] **0.6 Re-read archived seams.** Inspect draft model/providers, exporter, intake registry/workspace/preview, dossier panel, home page, responsive baseline test, and every additional path changed by `intake-responsive`.
-- [ ] **0.7 Reconcile planning.** Return to design/tasks if archived bytes invalidate a seam or forecast.
-- [ ] **0.8 Persist gate evidence.** Record archive identity, baseline SHA, main SHA, clean-path proof, and re-read findings.
+- [x] **0.1 Confirm legitimate archive.** `openspec/changes/` contains only `archive/` and `case-publication-detail/`; `intake-responsive` is gone. `openspec/specs/` holds `responsive-breakpoints` and `intake-responsive-layout`. Archived record at `openspec/changes/archive/2026-08-13-intake-responsive/` with `blockers: 0`.
+- [x] **0.2 Confirm archived bytes on `main`.** `git merge-base --is-ancestor eeef7e3 HEAD` and the same against `origin/main` both succeed. `git status -sb` shows `## main...origin/main` with no divergence.
+- [x] **0.3 Confirm the six-section baseline.** `git show main:test/intake_narrow_layout_test.dart` carries `_expectedCaseFormSectionTitles` with the six Spanish titles, the non-vacuity preconditions (`maxScrollExtent > 0` at line 176, last section not visible at 177) and the ordered walk (`orderedEquals` at 217). **Executed**, not merely read: the focused test passes.
+- [x] **0.4 Require a clean ownership boundary.** Confirmed clean: `git status --short test/intake_narrow_layout_test.dart` is empty and `git diff HEAD -- test/ lib/ web/` produces nothing, so the baseline is committed and unmodified. Later units 4c and 5 each have one authorised edit to that file, named in design §12; this check is about its state on arrival, not a permanent freeze.
+- [x] **0.5 Synchronize safely.** `git fetch origin` clean; local `main` level with `origin/main`.
+- [x] **0.6 Re-read archived seams.** Measured on 2026-08-13, every claim this plan makes about the current code holds: `kCaseFormSections` has exactly six entries (`Datos básicos`, `Ubicación`, `Resumen y ficha`, `Cronología`, `Enlaces`, `Fotografías`); `case_dossier_panel.dart` is 636 lines; `CaseDossierPanel(` has **six call sites** — `home_page.dart`, `situation_side_panel.dart`, `intake_preview_panel.dart`, `test/intake_narrow_layout_test.dart`, `test/case_dossier_photos_test.dart`, `test/intake_form_widget_test.dart`; `TrueCrimeApp` is a `StatelessWidget`; and **all 15 catalog cases have `id == slug`, none differ** — which is what makes the slug-identity requirement unfalsifiable without a hand-built fixture.
+- [x] **0.7 Reconcile planning.** Two reconciliations applied. (a) The per-unit line ceiling was raised from 400 to 1000 by maintainer decision: single-developer codebase, so the lower ceiling protected a reviewer burden that does not exist. (b) Unit 4a's three-pass subdivision was budget-driven and is therefore relaxed to a single move with a conditional split, while the 4a/4b/4c structure stays — its reason is compiling intermediate states, not size.
+- [x] **0.8 Persist gate evidence.** Archive commit `eeef7e3`; baseline delivered in `c351fac`; `main` at `cbfe028` at gate time, level with `origin/main`; `flutter test` 170/170 and `flutter analyze` clean; `git status` shows no change under `lib/`, `web/` or `test/`.
 
 **Verification:** evidence only; do not run this change’s tests.
 
@@ -104,7 +104,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **1.6 Observe GREEN** on the same focused tests.
 - [ ] **1.7 TRIANGULATE** malformed-entry, duplicate, ordering, and whitespace vectors.
 - [ ] **1.8 REFACTOR and verify** with `flutter test` and `flutter analyze`.
-- [ ] **1.9 Apply line-budget gate.** Split at 400 or more lines.
+- [ ] **1.9 Apply line-budget gate.** Split at 1000 or more lines.
 - [ ] **1.10 Review and deliver** as `feat(casos): incorpora el modelo de capítulos editoriales`.
 
 **Rollback:** restore the original draft schema and remove only dormant chapter types/tests.
@@ -145,7 +145,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **3.7 Observe GREEN** on the same focused tests.
 - [ ] **3.8 TRIANGULATE** operation ordering, rapid edits, clearing, and failure recovery.
 - [ ] **3.9 REFACTOR and verify** full tests/analyze.
-- [ ] **3.10 Apply line-budget gate.** Split at 400 or more lines.
+- [ ] **3.10 Apply line-budget gate.** Split at 1000 or more lines.
 - [ ] **3.11 Review and deliver** as `fix(casos): serializa la persistencia de borradores`.
 
 ## Unit 4 — Shared Dossier Content and Host Contracts
@@ -154,20 +154,21 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 
 **Finish state:** one renderer serves map/preview contracts and can render dormant chapter data; no editor is exposed.
 
-> **Split into 4a, 4b and 4c. This is not optional.** `case_dossier_panel.dart`
-> is 636 lines and ~450 of them move; counting additions plus deletions, a pure
-> move alone is ~900. Doing it as one unit hits the mandatory 400-line stop with
-> no legal split available, because required new parameters would break all six
-> call sites at once. Per design D12, new parameters are optional with
-> behaviour-preserving defaults:
+> **Split into 4a, 4b and 4c. This is not optional, and the 1000-line budget
+> does not change it.** The reason is not size but compiling states: making
+> `mode` and `relatedCases` required would break all six call sites at once,
+> leaving no state in which the app compiles between the move and the migration.
+> Per design D12, new parameters are optional with behaviour-preserving defaults:
 >
-> - **4a — pure extraction, in three move passes.** A single move of all ~483
->   subwidget lines (`case_dossier_panel.dart:93-575`) counts ~966 and blows the
->   gate, so the move is split by section group, each pass carrying under 200
->   moved lines: **4a-1** `_Header`; **4a-2** `_StatsGrid`/`_StatDivider`/
->   `_StatCell` plus `_PhotoStrip`/`_PhotoPlaceholder`; **4a-3** `_Timeline`,
->   `_SourceCard`, `_RelatedCard`. `DossierSourceGroup` and the chapter labels
->   land with 4a-1. Constructor unchanged, **no call site touched**. Task 4.1 and
+> - **4a — pure extraction.** Move the ~483 subwidget lines
+>   (`case_dossier_panel.dart:93-575`, measured 2026-08-13) into
+>   `CaseDossierContent`; add `DossierSourceGroup` and the chapter labels; panel
+>   composes it. Counting additions plus deletions that is ~966, inside the
+>   1000 ceiling but with only a 34-line margin on an estimate — **if the
+>   measured total reaches 1000, split by section group**: `_Header`; then
+>   `_StatsGrid`/`_StatDivider`/`_StatCell` plus
+>   `_PhotoStrip`/`_PhotoPlaceholder`; then `_Timeline`, `_SourceCard`,
+>   `_RelatedCard`. Constructor unchanged, **no call site touched**. Task 4.1 and
 >   the characterization half of 4.9 only.
 > - **4b — additive configuration.** Optional `mode` (default `map`), optional
 >   `relatedCases` (default null, panel keeps deriving it), callbacks, source
@@ -194,7 +195,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **4.9 Observe GREEN** on new and characterization tests.
 - [ ] **4.10 TRIANGULATE** override states, legacy/partial chapters, callbacks, preview suppression, and group order.
 - [ ] **4.11 REFACTOR and verify** full tests/analyze.
-- [ ] **4.12 Apply the line-budget gate to each sub-unit and each 4a pass separately.** 4a passes max 390 each, 4b max 300, 4c max 260; stop and split further at 400.
+- [ ] **4.12 Apply the line-budget gate to each sub-unit separately.** 4a max 1000, 4b max 300, 4c max 260; stop and split further at 1000. If 4a measures 1000 or more, split it by section group per design §9.2.
 - [ ] **4.13 Review and deliver each sub-unit** as `refactor(casos): extrae el contenido compartido del expediente` (4a), `feat(casos): configura el panel de expediente por contexto` (4b), and `refactor(casos): migra los hosts al panel configurable` (4c).
 
 ## Unit 5 — Activate the Seven-Section Chapter Editor
@@ -213,7 +214,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **5.8 Observe GREEN** on registry, editor, and preview tests.
 - [ ] **5.9 TRIANGULATE** partial/whitespace content, switching, rapid edits, 360px reachability, and absence of arbitrary controls.
 - [ ] **5.10 REFACTOR and verify** full tests/analyze.
-- [ ] **5.11 Apply line-budget gate.** Split at 400 or more.
+- [ ] **5.11 Apply line-budget gate.** Split at 1000 or more.
 - [ ] **5.12 Review and deliver** as `feat(casos): habilita la edición de capítulos`.
 
 **Rollback:** remove editor and restore committed six-section baseline; Units 1–4 remain dormant.
@@ -233,7 +234,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **6.7 Observe GREEN** on parser/router tests.
 - [ ] **6.8 TRIANGULATE** encoded/unknown routes, repeated restoration, a deep link applied while `workspaceProvider` holds `Workspace.intake`, and preserved map selection.
 - [ ] **6.9 REFACTOR and verify** full tests/analyze and unchanged public behavior.
-- [ ] **6.10 Apply line-budget gate.** Split at 400 or more.
+- [ ] **6.10 Apply line-budget gate.** Split at 1000 or more.
 - [ ] **6.11 Review and deliver** as `feat(navegacion): prepara las rutas hash de expedientes`.
 
 ## Unit 7 — Activate Complete Hash Routing and Expanded Detail
@@ -256,7 +257,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **7.11b RED — Return from a deep link while intake is open.** Design §7.4 now specifies that the root reveals whatever `workspaceProvider` already held. Assert it directly: with `workspaceProvider` holding `Workspace.intake`, apply a case deep link, then return; the root MUST show `IntakeWorkspaceScreen`, not the Situation Room. This replaced a removed guarantee and would otherwise ship unasserted.
 - [ ] **7.12 Verify structural boundaries.** Confirm no `dart:html`/path strategy and inspect `web/index.html` plus deployment workflow at their boundary.
 - [ ] **7.13 REFACTOR and verify** full tests/analyze.
-- [ ] **7.14 Apply line-budget gate.** Forecast maximum 360; split at 400.
+- [ ] **7.14 Apply line-budget gate.** Forecast maximum 360; split at 1000.
 - [ ] **7.15 Review and deliver** as `feat(navegacion): activa el detalle público por hash`.
 
 ## Unit 8 — Published-Case Directory
@@ -276,7 +277,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **8.9 Observe GREEN** on focused tests.
 - [ ] **8.10 TRIANGULATE** ordering fallback, excluded ranks, legacy inclusion, scrolling, slug navigation, and map preservation.
 - [ ] **8.11 REFACTOR and verify** full tests/analyze.
-- [ ] **8.12 Apply line-budget gate.** Split at 400 or more.
+- [ ] **8.12 Apply line-budget gate.** Split at 1000 or more.
 - [ ] **8.13 Review and deliver** as `feat(casos): añade el directorio público de expedientes`.
 
 ## Unit 9 — Verification, Deployment, and Browser Proof
@@ -343,7 +344,7 @@ The change is ready for verification only when:
 
 - Units 0–8 are complete in order.
 - Every new behavior has recorded RED-before-GREEN evidence.
-- Every source-bearing unit records fewer than 400 actual changed lines.
+- Every source-bearing unit records fewer than 1000 actual changed lines.
 - Every unit passes focused tests, `flutter test`, and `flutter analyze`.
 - No PR was created; direct-main commits use Spanish conventional messages without AI attribution.
 - Built host-document and deployed browser evidence are complete.
