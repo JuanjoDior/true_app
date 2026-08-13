@@ -157,7 +157,7 @@ Non-goals:
 - Changing the manual publication circuit.
 - Capturing `featuredRank` or `relevanceRank` unless scope is explicitly expanded later.
 - Replacing or duplicating `CaseDossierPanel`.
-- Incorporating `test/intake_narrow_layout_test.dart` into this change; it belongs to the archived `intake-responsive` cycle and was committed in `c351fac`.
+- Taking ownership of `test/intake_narrow_layout_test.dart`; it belongs to the archived `intake-responsive` cycle (committed in `c351fac`). Design §12 authorises exactly two edits: its section-registry expectation, forced by unit 5, and optionally its `CaseDossierPanel` construction in unit 4c.
 
 ## Risks and open technical questions
 

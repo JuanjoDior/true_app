@@ -55,10 +55,18 @@ The directory MUST derive its entries from the application's already loaded publ
 
 #### Scenario: Directory uses the existing loaded catalog
 
-- GIVEN the published catalog has already been loaded for the Situation Room
+- GIVEN a catalog loader that records how many times it is invoked
+- AND the published catalog has already been loaded once for the Situation Room
 - WHEN the reader opens the directory
 - THEN the directory displays cases from that same loaded catalog state
-- AND no independent catalog parse or load is initiated
+- AND the recorded invocation count is still one
+
+**Falsifiability note, normative for verification.** Asserting merely that "no
+independent parse is initiated" passes before the directory exists, and would
+still pass if the directory were deleted. The assertion MUST be made against an
+instrumented loader whose invocation count can go up, so that a second load is
+observable. A test that cannot count loads MUST NOT be accepted as evidence for
+this requirement.
 
 ### Requirement: Directory Route Navigation
 

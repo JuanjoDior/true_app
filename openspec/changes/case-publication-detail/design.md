@@ -27,6 +27,7 @@ This change extends the existing versioned-JSON publication circuit with four fi
 | D9 | Present the directory as an adaptive modal surface over the Situation Room; it does not replace the map and does not create a second catalog route. |
 | D10 | Distinguish catalog loading, catalog error, unknown slug, and valid dossier states without changing the active hash implicitly. |
 | D11 | Implement through independently releasable direct-main work units, targeting at most 400 changed lines per unit and never exceeding the 1000-line review budget. |
+| D12 | **Every new `CaseDossierPanel` parameter is optional with a behaviour-preserving default, so no call site is forced to change in the same unit that introduces it.** `mode` defaults to `map`; `relatedCases` defaults to null and keeps the panel's current internal `ref.watch(relatedCasesProvider(...))`. This is what makes the extraction splittable at all — see §9.2 and the 4a/4b/4c units in §15. |
 
 ## 2. Existing seams and constraints
 
@@ -252,9 +253,9 @@ Once `intake-responsive` is archived and its
 `test/intake_narrow_layout_test.dart` is committed on `main`, the first
 intake-registry mutation for this change MUST update that test from the
 existing six-section expectation to the approved seven-section expectation,
-with `Chapters` after `Fotografías`. The focused test MUST then be observed
+with `Capítulos` after `Fotografías`. The focused test MUST then be observed
 RED because `kCaseFormSections` still exposes only six sections and lacks
-`Chapters`. Only after recording that RED may implementation create and
+`Capítulos`. Only after recording that RED may implementation create and
 register `ChaptersSection`; the same test must then become GREEN.
 
 The section renders exactly four long-form fields by iterating
@@ -389,7 +390,37 @@ abstract interface class AppNavigation {
 }
 ```
 
-`openCase` changes route state and notifies the delegate. Back/Forward enters through `setNewRoutePath` without creating duplicate history. Applying `SituationRoomPath` through either `showSituationRoom` or `setNewRoutePath` MUST set `workspaceProvider` to `Workspace.situationRoom` before rendering the root page; platform restoration MUST NOT leave the root URL displaying `IntakeWorkspaceScreen`. This workspace correction creates no new history entry and does not clear `selectedCaseIdProvider`. No other route operation changes map selection; marker selection changes only selected map ID and does not rewrite URL.
+`openCase` changes route state and notifies the delegate. Back/Forward enters through `setNewRoutePath` without creating duplicate history.
+
+**The router MUST NOT write `workspaceProvider`.** An earlier version of this
+section required the router to set `Workspace.situationRoom` "before rendering
+the root page". That is rejected for three reasons, each independently
+sufficient:
+
+1. **It is a modify-during-build.** `TrueCrimeHomePage` watches
+   `workspaceProvider` (`home_page.dart:23-26`). Writing it from
+   `setNewRoutePath` or from the delegate's `build` is exactly the timing
+   Riverpod rejects, and the delegate has no defined `Ref` anyway — `main.dart:7`
+   puts `ProviderScope` above `TrueCrimeApp`, so delegate lifecycle callbacks run
+   outside any `build`.
+2. **It creates a second mutable authority.** `situation_nav_rail.dart:42-43`
+   already writes `workspaceProvider = Workspace.intake` with no route change.
+   A router that writes it back on every root route means two owners disagree
+   about what `/` shows. §17 rejects this exact shape for map selection; it must
+   not be reintroduced for workspace.
+3. **`TrueCrimeApp` is a `StatelessWidget`** (`true_crime_app.dart:6`), so
+   "create controller and delegate once" is impossible as written. Unit 7 MUST
+   convert it to a `StatefulWidget` (or equivalent) and say so explicitly.
+
+**The rule instead:** `workspaceProvider` remains the sole UI authority over
+Situation Room versus intake, and the router never touches it. The detail route
+contributes a page **above** the root page in the Navigator stack, so a deep link
+renders the dossier regardless of the workspace underneath it. Returning from the
+detail route pops that page and reveals whatever the workspace already said —
+intake included. Intake is deliberately not routable in this change; if that is
+wanted later it becomes its own route, not a second writer.
+
+No route operation changes map selection; marker selection changes only selected map ID and does not rewrite URL.
 
 ### 7.4 Route and map state boundary
 
@@ -402,9 +433,14 @@ abstract interface class AppNavigation {
 | Open related case from expanded page | Set related routed slug | Unchanged |
 | Directly load case hash | Set routed slug | Not required |
 | Return from expanded page | Situation Room route | Preserve existing map selection |
-| Browser Back/Forward | Restore platform route; root restoration also activates `Workspace.situationRoom` without adding history | Unchanged |
+| Browser Back/Forward | Restore platform route only | Unchanged |
+| Enter intake from the nav rail | Unchanged root route | Unchanged |
+| Leave intake back to the Situation Room | Unchanged root route | Unchanged |
+| Deep link to a case while workspace is `intake` | Set routed slug; detail page sits above the root page | Unchanged |
+| Return from that detail page | Situation Room route; root reveals whatever `workspaceProvider` already held | Preserve existing map selection |
 
-There is intentionally no provider mirroring routed slug.
+There is intentionally no provider mirroring routed slug, and the router never
+writes `workspaceProvider`.
 
 ## 8. Detail route states
 
@@ -448,17 +484,40 @@ expanded detail page is the only host that composes shared content without
 
 ### 9.2 Panel and content contracts
 
+**Why this extraction must arrive in three units, not one.** `case_dossier_panel.dart`
+is 636 lines and roughly 450 of them are the editorial subwidgets moving into
+`CaseDossierContent`. Because the line budget counts additions **plus** deletions,
+a pure move already costs about 900 lines before anything new is written. Worse,
+making `mode` and `relatedCases` required would break all six call sites at once
+— `home_page.dart:103`, `situation_side_panel.dart:31`,
+`intake_preview_panel.dart:36`, `test/case_dossier_photos_test.dart:39`,
+`test/intake_form_widget_test.dart:73` and `test/intake_narrow_layout_test.dart:452`
+— leaving no compiling intermediate state and therefore no legal split.
+
+D12 resolves the call-site half: new parameters are optional with
+behaviour-preserving defaults, so 4a moves code without touching a call site, 4b
+adds configuration without touching a call site, and 4c migrates hosts once
+everything they need already exists.
+
+D12 does **not** resolve the arithmetic half. Moving all ~483 subwidget lines
+(`case_dossier_panel.dart:93-575`) in one unit still counts ~966. The move is
+therefore split into three passes, each carrying under 200 moved lines: **4a-1**
+`_Header` (93-213); **4a-2** `_StatsGrid`/`_StatDivider`/`_StatCell` (214-310)
+plus `_PhotoStrip`/`_PhotoPlaceholder` (311-383); **4a-3** `_Timeline` (384-444),
+`_SourceCard` (445-520) and `_RelatedCard` (521-575). Each pass leaves the panel
+compiling and the suite green.
+
 `case_dossier_panel.dart` defines a compact host configuration with map and
 preview presets:
 
 ```dart
 enum CaseDossierPanelMode { map, preview }
 
-class CaseDossierPanel extends StatelessWidget {
+class CaseDossierPanel extends ConsumerWidget {
   const CaseDossierPanel({
     required this.crimeCase,
-    required this.relatedCases,
-    required this.mode,
+    this.mode = CaseDossierPanelMode.map,
+    this.relatedCases,
     this.onReturnToMap,
     this.onCenterMap,
     this.onOpenRelatedCase,
@@ -466,7 +525,14 @@ class CaseDossierPanel extends StatelessWidget {
   });
 
   final TrueCrimeCase crimeCase;
-  final List<RelatedCase> relatedCases;
+
+  /// Null means "derive it yourself", preserving today's
+  /// `ref.watch(relatedCasesProvider(crimeCase.id))`. Only hosts that already
+  /// hold the list pass it. Making this required would break every call site
+  /// in one edit; see D12.
+  final List<RelatedCase>? relatedCases;
+
+  /// Defaults to the map preset so existing call sites compile untouched.
   final CaseDossierPanelMode mode;
   final VoidCallback? onReturnToMap;
   final VoidCallback? onCenterMap;
@@ -480,7 +546,11 @@ receives callbacks that clear/recenter map state. Preview mode suppresses
 return-to-map, recenter, follow, share, and other map/public chrome while
 retaining compact dossier presentation. It receives no map callbacks.
 
-In both modes, the panel composes:
+In both modes, the panel composes the following. Note that D12's
+optional-parameter rule applies to `CaseDossierPanel`, which has six existing
+call sites; `CaseDossierContent` is a new type with none, so its parameters are
+required. The panel supplies `relatedCases` from whatever it holds — the value
+passed in, or the one it derives itself when that is null.
 
 ```dart
 class CaseDossierContent extends StatelessWidget {
@@ -537,12 +607,30 @@ rules:
   implementation.
 
 `IntakePreviewPanel` derives preview groups by iterating
-`DraftLinkKind.values` in enum order. For each draft link with a meaningful
-URL, it creates the same `CaseSource` projection used by publication preview:
-trimmed URL as `id` and `url`, meaningful trimmed title or URL fallback as
-`title`, podcast links as `CaseSourceKind.podcast`, and all other draft link
-kinds as `CaseSourceKind.investigation`. The group label comes from the
-corresponding `DraftLinkKind` presentation label.
+`DraftLinkKind.values` in enum order. **This must preserve three behaviours the
+current widget already has; an earlier version of this section described the
+exporter instead and would have regressed all three.**
+
+1. **Null kinds bucket into `other`.** `intake_preview_panel.dart:62` matches
+   `(link.kind ?? DraftLinkKind.other) == kind`. Iterating `link.kind` directly
+   drops every untyped link from the preview.
+2. **The `other` group is relabelled.** `intake_preview_panel.dart:79-80` uses
+   `kind == DraftLinkKind.other ? 'Sin clasificar' : kind.label`, deliberately,
+   because `other.label` is `'Otro'` (`case_draft.dart:277`) and an untyped link
+   must not be presented as a real type. Do not substitute `kind.label`.
+3. **Preview does not trim.** `case_draft_providers.dart:169-172` uses
+   `id: link.url!` and `title: link.title?.isNotEmpty == true ? link.title! :
+   link.url!`. The exporter trims (`case_exporter.dart:93-96`); the preview
+   projection does not. Keep them distinct unless a separate decision changes
+   both.
+
+Podcast links map to `CaseSourceKind.podcast` and all other draft link kinds to
+`CaseSourceKind.investigation`.
+
+`test/intake_preview_panel_test.dart:114-136` asserts the
+`intake-preview-link-group-*` keys carried by the widget this unit deletes.
+Unit 4c MUST migrate that test rather than let it fail silently; it is the guard
+for behaviours 1 and 2.
 
 `IntakePreviewPanel` passes those groups to
 `CaseDossierPanel(mode: CaseDossierPanelMode.preview, sourceGroups: groups)`.
@@ -603,7 +691,7 @@ The modal overlays existing home body; it does not replace the map, alter filter
 | `lib/features/cases/application/case_draft_providers.dart` | Project chapters and serialize saves. |
 | `lib/features/cases/application/cases_providers.dart` | Add slug resolver and directory providers. |
 | `lib/features/cases/presentation/intake/sections/chapters_section.dart` | Add the fixed four-field editor only after the seven-section registry test has been observed RED. |
-| `lib/features/cases/presentation/intake/case_form_section.dart` | Register `Chapters` after `Fotografías` only after the required registry RED. |
+| `lib/features/cases/presentation/intake/case_form_section.dart` | Register `Capítulos` after `Fotografías` only after the required registry RED. |
 | `lib/features/cases/presentation/intake/intake_preview_panel.dart` | Continue composing a preview-configured `CaseDossierPanel`, pass grouped source overrides, and remove only the appended duplicate source list. |
 | `lib/features/cases/presentation/case_chapter_presentation.dart` | Spanish presentation labels. |
 | `lib/features/home/presentation/widgets/situation/dossier_source_group.dart` | Define the immutable `DossierSourceGroup` source-rendering contract. |
@@ -620,7 +708,7 @@ The modal overlays existing home body; it does not replace the map, alter filter
 | `.github/workflows/deploy-pages.yml` | No planned behavior change. |
 | `web/index.html` | No planned behavior change. |
 | `assets/data/cases.json` | No automatic migration/change. |
-| `test/intake_narrow_layout_test.dart` | Do not touch while `intake-responsive` is open. After archive and baseline commit, update its registry expectation from six to seven before registering `Chapters`; record the required RED, then register the section and obtain GREEN. |
+| `test/intake_narrow_layout_test.dart` | Two authorised edits, each owned by the sub-unit that chooses to make it. **Unit 4c:** its `CaseDossierPanel` construction (line 452) is migrated to explicit configuration along with the other hosts. Per D12 this is a deliberate migration, **not** forced by the constructor — the optional defaults mean the call site would keep compiling untouched — so 4c may also leave it as-is if that reads better. **Unit 5:** update its registry expectation from six to seven before registering `Capítulos`; record the required RED, then register the section and obtain GREEN. That one is genuinely unavoidable. No other edit to this file is authorised, and the expectation must never be changed without the implementation that justifies it. |
 
 ## 13. Strict-TDD test strategy
 
@@ -634,9 +722,9 @@ Only after those prerequisites are available may the authoring surface be
 activated. Its registry RED is mandatory and ordered:
 
 1. Before creating or registering `ChaptersSection`, update the baseline test
-   from six to seven sections and assert `Chapters` after `Fotografías`.
+   from six to seven sections and assert `Capítulos` after `Fotografías`.
 2. Run that focused test and record RED because the registry still has only
-   six sections and lacks `Chapters`.
+   six sections and lacks `Capítulos`.
 3. Add and register `ChaptersSection`.
 4. Run the same focused test and record GREEN with all seven sections
    reachable in order.
@@ -651,7 +739,7 @@ after refactoring.
 
 | Unit | Planned focused test | Required initial RED |
 | --- | --- | --- |
-| Intake registry activation — after dormant prerequisites | `test/intake_narrow_layout_test.dart` | After changing the committed expectation from six to seven before registration, the workspace exposes only six sections and `Chapters` is missing after `Fotografías`. |
+| Intake registry activation — after dormant prerequisites | `test/intake_narrow_layout_test.dart` | After changing the committed expectation from six to seven before registration, the workspace exposes only six sections and `Capítulos` is missing after `Fotografías`. |
 | Chapter codec | `test/case_chapter_codec_test.dart` | Fixed types/order or tolerant decoding absent. |
 | Draft compatibility | `test/case_draft_chapters_test.dart` | Round trip or legacy behavior absent. |
 | Serialized editing | `test/case_draft_chapter_editing_test.dart` | Delayed older save overwrites or loses a rapid edit. |
@@ -713,7 +801,7 @@ Before the first apply unit:
    compatibility, serialized persistence/preview projection, and shared dossier
    rendering. None exposes the chapter editor.
 9. At Unit 5 activation, update the committed narrow-layout test from six to
-   seven expected sections and assert `Chapters` after `Fotografías`, without
+   seven expected sections and assert `Capítulos` after `Fotografías`, without
    yet creating or registering `ChaptersSection`.
 10. Run the focused registry test and record RED for the missing seventh
     section.
@@ -738,7 +826,9 @@ Before the first apply unit:
 | 1 | Chapter enum/value object, tolerant codec, additive `CaseDraft` field, and focused domain/draft tests; no intake registration | 150–220 | Dormant local chapter representation; no authoring surface |
 | 2 | Published model decoding, export omission/round trip, malformed optional-entry policy, and catalog tests | 170–240 | Dormant publication-data support with legacy compatibility |
 | 3 | Serialized draft persistence, preview projection, and rapid-edit projection tests; no visible chapter field | 130–180 | Race-safe dormant chapter persistence and preview data |
-| 4 | `DossierSourceGroup`, shared-content extraction, map/preview panel configurations, explicit callbacks, preview source override, chapter rendering, and characterization tests | 260–350 | One editorial renderer; chapter data can render but no editor is exposed |
+| 4a | Pure extraction in **three move passes** grouped by section (see §9.2), plus `DossierSourceGroup`, chapter presentation labels, and characterization tests. `CaseDossierPanel` keeps its current constructor and composes the new content. **No call site changes.** | 240–390 per pass | Identical behavior, one editorial renderer |
+| 4b | Additive panel configuration: optional `mode`, optional `relatedCases`, explicit callbacks, preview source override, chapter rendering, and their focused tests. Defaults preserve today's behavior (D12), so hosts still compile untouched. | 220–300 | Panel can serve preview and route hosts |
+| 4c | Host migration, one host per commit if needed: `IntakePreviewPanel`, `situation_side_panel.dart`, `home_page.dart`, and the three committed test call sites including `test/intake_narrow_layout_test.dart:452`. | 180–260 | Hosts pass explicit configuration; duplicated preview source rendering removed |
 | 5 | Update registry expectation to seven for RED, then add fixed chapter editor/registry entry and live-preview activation tests | 150–220 | Complete authoring circuit activated only after its prerequisites |
 | 6 | Dormant route foundation: route model, parser, controller/delegate, restoration/history model tests; do not switch the app root yet | 180–250 | Tested routing infrastructure with public behavior unchanged |
 | 7 | Route activation: `MaterialApp.router`, complete `CaseDetailPage` loading/error/not-found/known-case composition, expanded responsive layout, and direct-route tests | 260–360 | Stable hash routes with a complete valid-case experience |

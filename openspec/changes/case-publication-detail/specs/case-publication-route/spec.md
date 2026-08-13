@@ -27,6 +27,23 @@ Opening a case route MUST NOT require a prior map gesture. Clean paths, server r
 - THEN the route resolves that published case
 - AND route identity does not depend on the displayed title
 
+#### Scenario: Route identity is the slug, not the selection ID
+
+- GIVEN a published case whose `id` and `slug` differ, for example `id` `legacy-7` and `slug` `known-case`
+- WHEN `/#/casos/known-case` is opened
+- THEN the route resolves that case
+- WHEN `/#/casos/legacy-7` is opened
+- THEN the in-app not-found state is shown
+- AND no case is resolved by its `id`
+
+**Falsifiability note, normative for verification.** Every case in
+`assets/data/cases.json` currently has `id` equal to `slug`, and
+`case_exporter.dart` emits both from the same value. A test built from real or
+exported fixtures therefore passes whether resolution is by slug or by ID, and
+proves nothing. The scenario above MUST be verified with a hand-built fixture in
+which the two differ; a fixture where they are equal MUST NOT be accepted as
+evidence for this requirement.
+
 ### Requirement: Known-Case Direct Load and Refresh
 
 A direct browser load of a known case hash route MUST render the expanded dossier for the matching published case after catalog resolution. Refreshing that URL MUST preserve the hash and render the same case without redirecting to the Situation Room or requiring prior in-app navigation.

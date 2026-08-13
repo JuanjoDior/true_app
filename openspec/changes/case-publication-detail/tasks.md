@@ -32,7 +32,9 @@ Delivery is already approved as direct commits to `main`, so no workload decisio
 | 1 | 150–220 | 220 | Dormant chapter domain and draft representation |
 | 2 | 170–240 | 240 | Publication and catalog compatibility |
 | 3 | 130–180 | 180 | Serialized persistence and preview projection |
-| 4 | 260–350 | 350 | Shared dossier extraction and host contracts |
+| 4a | three move passes, 240–390 each | 390 per pass | Pure extraction; no call site changes |
+| 4b | 220–300 | 300 | Additive panel configuration behind defaults |
+| 4c | 180–260 | 260 | Host migration, one host per commit if needed |
 | 5 | 150–220 | 220 | Seven-section editor activation |
 | 6 | 180–250 | 250 | Dormant Router API foundation |
 | 7 | 260–360 | 360 | Router activation and complete detail page |
@@ -80,7 +82,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **0.1 Confirm legitimate archive.** Require authoritative native/OpenSpec archive state with no blocker or unresolved review transition.
 - [ ] **0.2 Confirm archived bytes on `main`.** Verify final commit is an ancestor of local and `origin/main`.
 - [ ] **0.3 Confirm the six-section baseline.** Read `main:test/intake_narrow_layout_test.dart` and verify its runtime test reaches all six sections at 360px in order.
-- [ ] **0.4 Require a clean ownership boundary.** The baseline test MUST be committed and unmodified. Otherwise stop without stashing, resetting, staging, moving, or editing it.
+- [ ] **0.4 Require a clean ownership boundary.** At this gate the baseline test MUST be committed and unmodified. Otherwise stop without stashing, resetting, staging, moving, or editing it. Later units 4 and 5 each have one authorised edit to that file, named in design §12; this check is about its state on arrival, not a permanent freeze.
 - [ ] **0.5 Synchronize safely.** Fetch and fast-forward to exact post-archive `main`.
 - [ ] **0.6 Re-read archived seams.** Inspect draft model/providers, exporter, intake registry/workspace/preview, dossier panel, home page, responsive baseline test, and every additional path changed by `intake-responsive`.
 - [ ] **0.7 Reconcile planning.** Return to design/tasks if archived bytes invalidate a seam or forecast.
@@ -152,6 +154,35 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 
 **Finish state:** one renderer serves map/preview contracts and can render dormant chapter data; no editor is exposed.
 
+> **Split into 4a, 4b and 4c. This is not optional.** `case_dossier_panel.dart`
+> is 636 lines and ~450 of them move; counting additions plus deletions, a pure
+> move alone is ~900. Doing it as one unit hits the mandatory 400-line stop with
+> no legal split available, because required new parameters would break all six
+> call sites at once. Per design D12, new parameters are optional with
+> behaviour-preserving defaults:
+>
+> - **4a — pure extraction, in three move passes.** A single move of all ~483
+>   subwidget lines (`case_dossier_panel.dart:93-575`) counts ~966 and blows the
+>   gate, so the move is split by section group, each pass carrying under 200
+>   moved lines: **4a-1** `_Header`; **4a-2** `_StatsGrid`/`_StatDivider`/
+>   `_StatCell` plus `_PhotoStrip`/`_PhotoPlaceholder`; **4a-3** `_Timeline`,
+>   `_SourceCard`, `_RelatedCard`. `DossierSourceGroup` and the chapter labels
+>   land with 4a-1. Constructor unchanged, **no call site touched**. Task 4.1 and
+>   the characterization half of 4.9 only.
+> - **4b — additive configuration.** Optional `mode` (default `map`), optional
+>   `relatedCases` (default null, panel keeps deriving it), callbacks, source
+>   override, chapter rendering. Defaults keep every host compiling untouched.
+>   Tasks 4.2–4.7 and 4.10. **Task 4.2 belongs here, not in 4a**: its
+>   chapters-once-and-in-order assertion cannot go GREEN until chapter rendering
+>   exists, and no sub-unit may reach its commit gate with a knowingly red test.
+> - **4c — host migration.** `IntakePreviewPanel`, `situation_side_panel.dart`,
+>   `home_page.dart`, plus the three committed test call sites including
+>   `test/intake_narrow_layout_test.dart:452`. Remove the duplicated preview
+>   source rendering here, not earlier. Task 4.8.
+>
+> Each of 4a/4b/4c runs its own budget gate, focused tests, `flutter test`,
+> `flutter analyze`, review and commit.
+
 - [ ] **4.1 CHARACTERIZE** existing panel, side-panel, mobile dossier, and intake preview behavior. GREEN characterization cannot prove new behavior.
 - [ ] **4.2 RED — Shared content.** Add `case_dossier_content_test.dart` for metadata, summary, chapters once/in order, photos, timeline, sources, related cases, optional omission, and legacy cases.
 - [ ] **4.3 RED — Source overrides and modes.** Prove null/empty/grouped override semantics and map/preview chrome separation.
@@ -163,8 +194,8 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 - [ ] **4.9 Observe GREEN** on new and characterization tests.
 - [ ] **4.10 TRIANGULATE** override states, legacy/partial chapters, callbacks, preview suppression, and group order.
 - [ ] **4.11 REFACTOR and verify** full tests/analyze.
-- [ ] **4.12 Apply line-budget gate.** Forecast maximum 350; split at 400.
-- [ ] **4.13 Review and deliver** as `refactor(casos): comparte el contenido del expediente`.
+- [ ] **4.12 Apply the line-budget gate to each sub-unit and each 4a pass separately.** 4a passes max 390 each, 4b max 300, 4c max 260; stop and split further at 400.
+- [ ] **4.13 Review and deliver each sub-unit** as `refactor(casos): extrae el contenido compartido del expediente` (4a), `feat(casos): configura el panel de expediente por contexto` (4b), and `refactor(casos): migra los hosts al panel configurable` (4c).
 
 ## Unit 5 — Activate the Seven-Section Chapter Editor
 
@@ -195,12 +226,12 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 
 - [ ] **6.1 RED — Parse/restore.** Add parser tests for root, exact case route, encoding, invalid segments, and unknown URI preservation.
 - [ ] **6.2 RED — Controller/page stack.** Add tests for root/detail/unknown stacks, open/return, `setNewRoutePath`, and restoration without duplicate history.
-- [ ] **6.3 RED — State separation.** Prove routes never access map selection and root restoration activates `Workspace.situationRoom` without clearing selection or adding history.
+- [ ] **6.3 RED — State separation.** Prove routes never access map selection, and that the router never reads or writes `workspaceProvider` (design §7.3). Root restoration must add no history entry and must not clear the map selection.
 - [ ] **6.4 Observe RED** while navigation package is absent.
 - [ ] **6.5 GREEN — Add navigation package** with route model, parser, controller, delegate, and navigation contract.
 - [ ] **6.6 Keep it dormant.** Do not edit `TrueCrimeApp`, activate placeholders, call `usePathUrlStrategy`, or use `dart:html`.
 - [ ] **6.7 Observe GREEN** on parser/router tests.
-- [ ] **6.8 TRIANGULATE** encoded/unknown routes, repeated restoration, root workspace correction, and preserved map selection.
+- [ ] **6.8 TRIANGULATE** encoded/unknown routes, repeated restoration, a deep link applied while `workspaceProvider` holds `Workspace.intake`, and preserved map selection.
 - [ ] **6.9 REFACTOR and verify** full tests/analyze and unchanged public behavior.
 - [ ] **6.10 Apply line-budget gate.** Split at 400 or more.
 - [ ] **6.11 Review and deliver** as `feat(navegacion): prepara las rutas hash de expedientes`.
@@ -211,17 +242,18 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 
 **Finish state:** routing activates only with complete loading/error/not-found/known-case responsive detail.
 
-- [ ] **7.1 RED — Slug lookup.** Test loading/error/exact match/missing slug and no map-provider access.
+- [ ] **7.1 RED — Slug lookup.** Test loading/error/exact match/missing slug and no map-provider access. **The match tests MUST use a hand-built fixture where `id != slug`** (for example `id: 'legacy-7'`, `slug: 'known-case'`) and MUST assert that the `id` value does *not* resolve. Every case in the real catalog has `id == slug`, so a real or exported fixture cannot tell slug lookup from ID lookup and proves nothing.
 - [ ] **7.2 RED — All detail states.** Add `case_detail_page_test.dart` for loading, catalog error, unknown slug, known legacy/chapter case, expanded shared content, return, and related slug navigation.
 - [ ] **7.3 RED — Responsive reading.** Prove realistic compact/wide scrolling, reachable actions, and no blocking overflow.
 - [ ] **7.4 Observe RED** before provider/page implementation.
 - [ ] **7.5 GREEN — Complete detail surface.** Add slug provider and `CaseDetailPage` with all states and direct expanded shared composition.
 - [ ] **7.6 GREEN — Route-specific navigation.** Wire related and return actions; keep generic unknown syntax distinct and map state unchanged.
 - [ ] **7.7 Observe detail GREEN before root activation.** App root remains old.
-- [ ] **7.8 RED — Application activation.** Mount `TrueCrimeApp` and require Router ownership for all routes, restoration, and root workspace correction.
+- [ ] **7.8 RED — Application activation.** Convert `TrueCrimeApp` to a `StatefulWidget` so controller and delegate are created once; it is a `StatelessWidget` today (`true_crime_app.dart:6`) and "create once" is otherwise impossible. Mount it and require Router ownership for all routes and restoration, while proving the router still never writes `workspaceProvider`.
 - [ ] **7.9 GREEN — Activate complete graph.** Switch to `MaterialApp.router`, creating controller/delegate once.
 - [ ] **7.10 Observe router GREEN** across parser/router/provider/detail/host tests.
-- [ ] **7.11 TRIANGULATE** slug identity, no map prerequisite, A→B routes/history, root restoration, and legacy presentation.
+- [ ] **7.11 TRIANGULATE** slug identity against an `id != slug` fixture, no map prerequisite, A→B routes/history, root restoration, and legacy presentation.
+- [ ] **7.11b RED — Return from a deep link while intake is open.** Design §7.4 now specifies that the root reveals whatever `workspaceProvider` already held. Assert it directly: with `workspaceProvider` holding `Workspace.intake`, apply a case deep link, then return; the root MUST show `IntakeWorkspaceScreen`, not the Situation Room. This replaced a removed guarantee and would otherwise ship unasserted.
 - [ ] **7.12 Verify structural boundaries.** Confirm no `dart:html`/path strategy and inspect `web/index.html` plus deployment workflow at their boundary.
 - [ ] **7.13 REFACTOR and verify** full tests/analyze.
 - [ ] **7.14 Apply line-budget gate.** Forecast maximum 360; split at 400.
@@ -235,7 +267,7 @@ Accepted units are committed directly to `main` with Spanish conventional commit
 
 - [ ] **8.1 RED — Ordering/reuse.** Test every loaded case, year-desc/title-asc/slug-asc order, legacy cases, and no independent load.
 - [ ] **8.2 RED — States/navigation.** Test loading/error/retry/empty/list, modal close, and exact slug navigation.
-- [ ] **8.3 RED — Responsive access.** Test rail-less mobile/map action, desktop rail icon, scroll, navigation, and no blocking overflow.
+- [ ] **8.3 RED — Responsive access.** Test three topologies, not two: rail-less mobile below 880, **desktop-without-rail between 880 and 1099** (`breakpoints.dart:13,22` — `_DesktopBody` with `showRail: false`, so the rail icon entry point does not exist there), and desktop with rail at 1100 or above. Each must expose a reachable entry point, scroll, navigate, and show no blocking overflow.
 - [ ] **8.4 RED — Map preservation.** Prove directory actions do not alter filters, selection, recenter, markers, or compact dossier.
 - [ ] **8.5 Observe RED** with bounded pumps.
 - [ ] **8.6 GREEN — Derived provider.** Derive complete ordered directory only from `casesProvider`.

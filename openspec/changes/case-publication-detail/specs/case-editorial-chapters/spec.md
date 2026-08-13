@@ -91,7 +91,18 @@ Chapter-bearing draft data MUST survive the complete supported publication round
 
 Published-case decoding MUST treat an absent `chapters` member as an empty chapter collection. Existing published cases without chapter data MUST remain valid without catalog migration.
 
-Optional malformed chapter entries MUST be ignored individually when the case's required core fields remain valid. An entry is malformed when it is structurally invalid, has a non-textual content value, uses an unsupported chapter type, or repeats an already accepted valid chapter type. Valid chapter entries and valid core case fields MUST continue to load.
+Optional malformed chapter entries MUST be ignored individually when the case's required core fields remain valid. An entry is malformed when it is structurally invalid, has a non-textual content value, uses an unsupported chapter type, has content that is not meaningful under the meaningfulness rule above, or repeats a chapter type already **accepted** from an earlier entry. Valid chapter entries and valid core case fields MUST continue to load.
+
+An ignored entry MUST NOT consume its type slot: a whitespace-only or otherwise malformed entry earlier in the array does not prevent a later valid entry of the same type from being accepted. Only an entry that was actually accepted makes a later entry of that type a duplicate.
+
+Meaningfulness is therefore evaluated at decode time as well as at presentation time, and the two MUST agree.
+
+#### Scenario: A blank earlier entry does not block a later valid one
+
+- GIVEN a catalog entry whose `chapters` array is `[{background, "   "}, {background, "Real text."}]`
+- WHEN the catalog entry is decoded
+- THEN the case has exactly one Background chapter
+- AND its content is `Real text.`
 
 A malformed required core case field MUST NOT be reclassified as an optional chapter error or silently hidden. Catalog loading MUST surface the malformed-core condition through its catalog error behavior rather than return a successful catalog result that merely omits the malformed case.
 
@@ -148,8 +159,16 @@ The observed failure MUST be attributed to the assertion the evidence credits, r
 
 #### Scenario: New behavior has RED-before-GREEN evidence
 
-- GIVEN `intake-responsive` has been archived and implementation is eligible to begin
-- WHEN a new specified behavior is implemented
+- GIVEN a new behavior specified by this change
+- WHEN it is implemented
 - THEN the implementation evidence records the relevant test failing for the expected missing behavior
 - AND records the same behavior passing after implementation
 - AND a test observed only in a passing state is not accepted as strict-TDD evidence
+
+#### Scenario: A compile failure is labelled as such
+
+- GIVEN a new behavior whose test cannot compile because the type it exercises does not exist yet
+- WHEN the RED observation is recorded
+- THEN it is recorded as a compile failure naming the missing symbol
+- AND it is not credited to any assertion line
+- AND once the type exists, the behavior is re-observed failing on its own assertion before that assertion is satisfied

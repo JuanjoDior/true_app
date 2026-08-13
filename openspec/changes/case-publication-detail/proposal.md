@@ -103,7 +103,7 @@ A maintainer continues publishing through the existing clipboard-to-asset-to-com
 - Rich-text editing, uploads, arbitrary chapter types, or free-form additional chapters.
 - A new ranking algorithm, backend search, pagination service, or independent catalog source.
 - Replacing or duplicating `CaseDossierPanel`.
-- Changes to what `intake-responsive` delivered, including `test/intake_narrow_layout_test.dart` (committed in `c351fac`).
+- Changes to what `intake-responsive` delivered, **except** two edits to `test/intake_narrow_layout_test.dart` (committed in `c351fac`): its section-registry expectation, which registering the seventh section genuinely forces (unit 5), and optionally its `CaseDossierPanel` construction, which unit 4c may migrate to explicit configuration. Both are named in design §12 and confined to those units; no other edit to that file is in scope.
 
 ## Dependencies
 
