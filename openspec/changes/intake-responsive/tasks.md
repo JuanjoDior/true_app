@@ -269,8 +269,9 @@ trigger is *"WHEN the user scrolls the form"*.
 - [x] 10.7 Bounded Gentle AI review of the candidate: lineage `review-bafa769931bf713c`, one lens
   (`review-reliability`), approved with receipt and bound to this change. One non-blocking SUGGESTION
   recorded below.
-- [ ] 10.8 Commit and push. **Not done at the time this phase was written** - the working tree still
-  holds the change.
+- [x] 10.8 Commit and push: `c351fac` *test: prueba que las seis secciones se alcanzan arrastrando a
+  360px*. Delivered through the bound review `review-0b070be74363facd`, whose `pre-commit` gate
+  returned `allow` against the exact staged tree.
 
 ### Follow-ups opened by Phase 10 (NOT closed)
 
