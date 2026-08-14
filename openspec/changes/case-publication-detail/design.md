@@ -26,7 +26,7 @@ This change extends the existing versioned-JSON publication circuit with four fi
 | D8 | Derive the directory from the existing `casesProvider`, sorted by year descending, title ascending, then slug as a total-order fallback. |
 | D9 | Present the directory as an adaptive modal surface over the Situation Room; it does not replace the map and does not create a second catalog route. |
 | D10 | Distinguish catalog loading, catalog error, unknown slug, and valid dossier states without changing the active hash implicitly. |
-| D11 | Implement through independently releasable direct-main work units, each at most **1000 changed lines**. Raised from 400 on 2026-08-13: this is a single-developer codebase, so the 400-line ceiling was protecting a reviewer burden that does not exist here. Units stay small for rollback and for compiling intermediate states, not to spare a second reader. |
+| D11 | Implement through independently releasable direct-main work units, each at most **1500 changed lines**. Raised 400 → 1000 → 1500 on 2026-08-13: this codebase has one developer and no second reviewer, so a low ceiling was protecting a review burden that does not exist. Units stay small for rollback and for compiling intermediate states, **never** to spare a second reader. |
 | D12 | **Every new `CaseDossierPanel` parameter is optional with a behaviour-preserving default, so no call site is forced to change in the same unit that introduces it.** `mode` defaults to `map`; `relatedCases` defaults to null and keeps the panel's current internal `ref.watch(relatedCasesProvider(...))`. This is what makes the extraction splittable at all — see §9.2 and the 4a/4b/4c units in §15. |
 
 ## 2. Existing seams and constraints
@@ -496,11 +496,18 @@ line 30. **A move split by section group therefore does not compile at any
 intermediate point**, which is precisely the failure the 4a/4b/4c structure
 exists to prevent.
 
-The extraction is therefore ordered as: **4a-0 rename the nine widgets to public
-names in place** (`DossierHeader`, `DossierStatsGrid`, …) — a small change that
-compiles and keeps the suite green — and only then move them. Once the names are
-public they resolve across files, so the move itself may be sliced by section
-group if its measured size requires it.
+**But an atomic move needs no rename, and that was verified rather than
+assumed.** Every reference to the nine widgets from outside their own
+definitions lives in the panel's composition at `case_dossier_panel.dart:30-71`
+(`rg` for each constructor call, 2026-08-13). The references *between* them —
+`_StatsGrid` → `_StatCell`/`_StatDivider` at 230-234, `_PhotoStrip` →
+`_PhotoPlaceholder` at 341 — travel together. So if the composition moves with
+the widgets, `case_dossier_panel.dart` retains no reference to any of them and
+they may stay private in `case_dossier_content.dart`.
+
+The rename to public names is therefore **not** part of the plan. It becomes
+necessary only if the move ever has to be sliced, which under a 1500-line
+ceiling it does not.
 
 The split into 4a/4b/4c is **not** driven by the budget and survives the raise.
 Its reason is compiling intermediate states: making `mode` and `relatedCases`
@@ -515,27 +522,31 @@ behaviour-preserving defaults, so 4a moves code without touching a call site, 4b
 adds configuration without touching a call site, and 4c migrates hosts once
 everything they need already exists.
 
-**What 4a actually costs, counted rather than estimated.** The 966 figure
-(483 moved lines × 2) is a *floor* for the move alone. 4a's full scope also
-carries: the panel's own editorial composition at `case_dossier_panel.dart:26-89`
-(~55 lines, outside the 93-575 range, which must move for "the panel composes
-it" to be true); the `CaseDossierContent` class and its imports; the new
-`DossierSourceGroup` file; the new chapter-presentation-labels file; and task
-4.1's characterization tests for panel, side panel, mobile dossier and intake
-preview. Realistic total: **1,300-1,450**, comfortably over the ceiling.
+**What 4a actually costs, itemised rather than estimated.** The 966 figure
+(483 moved lines × 2) is a *floor* for the widget move alone. The rest:
 
-4a is therefore delivered as: **4a-0** public rename (~40); **4a-1** new files —
-`DossierSourceGroup`, chapter labels, empty `CaseDossierContent` shell (~150);
-**4a-2** move the nine widgets plus the panel composition (~1,080, split by
-section group if measured over 1000 — legal now that the names are public);
-**4a-3** characterization tests (~200-300).
+| Item | Counted |
+| --- | ---: |
+| Nine subwidgets, `case_dossier_panel.dart:93-575` | 483 × 2 = 966 |
+| Panel composition, `case_dossier_panel.dart:26-89` | ~55 × 2 = 110 |
+| `CaseDossierContent` class and imports | ~40 |
+| New `DossierSourceGroup` file | ~30 |
+| New chapter-presentation-labels file | ~30 |
+| `_Header` close action → host callback | ~30 |
+| **4a-2 subtotal** | **~1,206** |
+| Characterization tests (task 4.1) | 200–300 |
+
+4a is delivered as two sub-units: **4a-1** characterization tests first, because
+they must capture existing behaviour *before* it moves; then **4a-2** the new
+files plus the atomic move plus the callback conversion, forecast 1,150–1,320,
+inside the 1500 ceiling.
 
 **The extraction is not behaviour-pure, and the plan must stop claiming it is.**
 `_Header` writes map state directly: `case_dossier_panel.dart:113` is
 `ref.read(selectedCaseIdProvider.notifier).state = null`. Moving it unchanged
 carries that write into the shared content and therefore into the routed detail
 page, which `specs/expanded-case-dossier/spec.md` forbids. The close action MUST
-become a callback owned by the host in the same sub-unit that moves `_Header`;
+become a callback owned by the host in 4a-2, the sub-unit that moves `_Header`;
 it cannot wait for 4b.
 
 `case_dossier_panel.dart` defines a compact host configuration with map and
@@ -845,10 +856,10 @@ Before the first apply unit:
 
 ## 15. Review workload forecast and direct-main slicing
 
-- Estimated aggregate changed lines including tests: **2,860–3,799**, summed from the unit table in §15.
-- **1000-line budget risk: Low** per unit; only the dossier extraction comes
-  close, at roughly 966.
-- Every source-bearing unit below is forecast below 1000 changed lines,
+- Estimated aggregate changed lines including tests: **2,960–3,890**, summed from the unit table in §15.
+- **1500-line budget risk: Low** per unit; the largest is 4a-2, forecast up to
+  1,320.
+- Every source-bearing unit below is forecast below 1500 changed lines,
   including its focused tests.
 - Aggregate full-change review is unsuitable.
 - **Chained PRs recommended: No**, because the repository delivers direct
@@ -862,7 +873,8 @@ Before the first apply unit:
 | 1 | Chapter enum/value object, tolerant codec, additive `CaseDraft` field, and focused domain/draft tests; no intake registration | 150–220 | Dormant local chapter representation; no authoring surface |
 | 2 | Published model decoding, export omission/round trip, malformed optional-entry policy, and catalog tests | 170–240 | Dormant publication-data support with legacy compatibility |
 | 3 | Serialized draft persistence, preview projection, and rapid-edit projection tests; no visible chapter field | 130–180 | Race-safe dormant chapter persistence and preview data |
-| 4a | Pure extraction of the editorial subwidgets into `CaseDossierContent`, plus `DossierSourceGroup`, chapter presentation labels, and characterization tests. `CaseDossierPanel` keeps its current constructor and composes the new content. **No call site changes.** Split by section group only if the measured move reaches 1000 (see §9.2). | 900–1000 | Identical behavior, one editorial renderer |
+| 4a-1 | Characterization tests for panel, side panel, mobile dossier and intake preview, capturing behaviour before it moves. GREEN throughout; they prove nothing new and are not TDD evidence. | 200–300 | Behaviour pinned before extraction |
+| 4a-2 | New files (`DossierSourceGroup`, chapter labels, `CaseDossierContent`) plus the **atomic** move of all nine subwidgets and the panel composition, plus converting `_Header`'s `selectedCaseIdProvider` write into a host callback. `CaseDossierPanel` keeps its current constructor. **No call site changes.** | 1,150–1,320 | Identical behavior, one editorial renderer |
 | 4b | Additive panel configuration: optional `mode`, optional `relatedCases`, explicit callbacks, preview source override, chapter rendering, and their focused tests. Defaults preserve today's behavior (D12), so hosts still compile untouched. | 220–300 | Panel can serve preview and route hosts |
 | 4c | Host migration, one host per commit if needed: `IntakePreviewPanel`, `situation_side_panel.dart`, `home_page.dart`, and the three committed test call sites including `test/intake_narrow_layout_test.dart:452`. | 180–260 | Hosts pass explicit configuration; duplicated preview source rendering removed |
 | 5 | Update registry expectation to seven for RED, then add fixed chapter editor/registry entry and live-preview activation tests | 150–220 | Complete authoring circuit activated only after its prerequisites |
@@ -871,9 +883,9 @@ Before the first apply unit:
 | 8 | Directory provider/order, adaptive modal, mobile/desktop entry points, map-preservation and navigation tests | 170–240 | Complete public discovery path |
 | 9 | Full verification, web-build readback, deployment, and real-browser proof | 0 source lines; evidence only | Eligible for completion/archive |
 
-Forecast range across source-bearing units is **2,860–3,799 changed
+Forecast range across source-bearing units is **2,960–3,890 changed
 lines**, summed directly from the unit table rather than estimated. If an
-actual unit reaches 1000 changed lines before normalization, stop and split it
+actual unit reaches 1500 changed lines before normalization, stop and split it
 before review or direct-main commit.
 
 Each source-bearing unit gets focused RED/GREEN evidence, suite/analyze,
