@@ -46,7 +46,9 @@ class _SituationTopBarState extends ConsumerState<SituationTopBar> {
         children: [
           const _Wordmark(),
           const SizedBox(width: 16),
-          Expanded(child: Center(child: _SearchField(controller: _controller))),
+          Expanded(
+            child: Center(child: _SearchField(controller: _controller)),
+          ),
           const SizedBox(width: 12),
           const _IntakeEntryButton(),
           const SizedBox(width: 16),
@@ -99,7 +101,11 @@ class _Wordmark extends StatelessWidget {
           alignment: Alignment.center,
           child: Text(
             'T',
-            style: SituationStyles.serif(size: 18, color: Colors.white, height: 1),
+            style: SituationStyles.serif(
+              size: 18,
+              color: Colors.white,
+              height: 1,
+            ),
           ),
         ),
         const SizedBox(width: 11),
@@ -152,7 +158,11 @@ class _SearchField extends ConsumerWidget {
         ),
         child: Row(
           children: [
-            const Icon(Icons.search_rounded, size: 16, color: AppColors.textSoft),
+            const Icon(
+              Icons.search_rounded,
+              size: 16,
+              color: AppColors.textSoft,
+            ),
             const SizedBox(width: 10),
             Expanded(
               child: TextField(
@@ -161,13 +171,18 @@ class _SearchField extends ConsumerWidget {
                 onChanged: (value) =>
                     ref.read(searchQueryProvider.notifier).state = value,
                 cursorColor: AppColors.accent,
-                style: SituationStyles.sans(size: 13, color: AppColors.textBody),
+                style: SituationStyles.sans(
+                  size: 13,
+                  color: AppColors.textBody,
+                ),
                 decoration: InputDecoration(
                   isCollapsed: true,
                   border: InputBorder.none,
                   hintText: 'Buscar por nombre, lugar o año…',
-                  hintStyle:
-                      SituationStyles.sans(size: 13, color: AppColors.textFaint2),
+                  hintStyle: SituationStyles.sans(
+                    size: 13,
+                    color: AppColors.textFaint2,
+                  ),
                 ),
               ),
             ),

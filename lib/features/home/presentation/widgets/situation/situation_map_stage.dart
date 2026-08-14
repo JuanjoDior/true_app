@@ -29,6 +29,22 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
   final MapController _map = MapController();
   bool _ready = false;
 
+  /// Si la cámara se puede mover ahora mismo.
+  ///
+  /// `onMapReady` se dispara aunque el mapa esté FUERA DE PANTALLA — por
+  /// ejemplo con la Sala de Situación tapada por la ruta de un expediente —,
+  /// pero su visor interactivo sólo se inicializa cuando de verdad se pinta.
+  /// Mover la cámara en ese hueco revienta con un `LateInitializationError`
+  /// dentro de flutter_map. Un mapa sin tamaño no está en pantalla, y a un mapa
+  /// que no está en pantalla no hay nada que moverle.
+  bool get _canMoveCamera {
+    if (!_ready || !mounted) {
+      return false;
+    }
+    final box = context.findRenderObject();
+    return box is RenderBox && box.hasSize && !box.size.isEmpty;
+  }
+
   @override
   void dispose() {
     _map.dispose();
@@ -36,7 +52,7 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
   }
 
   void _fitToCases(List<TrueCrimeCase> cases) {
-    if (!_ready || cases.isEmpty) return;
+    if (!_canMoveCamera || cases.isEmpty) return;
     final bounds = LatLngBounds.fromPoints(
       cases.map((c) => c.location).toList(growable: false),
     );
@@ -73,7 +89,7 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
     // Mueve la cámara al seleccionar un caso.
     ref.listen(selectedCaseProvider, (_, next) {
       final crimeCase = next.value;
-      if (crimeCase != null && _ready) {
+      if (crimeCase != null && _canMoveCamera) {
         _map.move(crimeCase.location, config.focusZoom);
       }
     });
@@ -81,7 +97,7 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
     // Recentra el caso seleccionado cuando lo pide un control externo.
     ref.listen(mapRecenterTickProvider, (_, _) {
       final crimeCase = ref.read(selectedCaseProvider).value;
-      if (crimeCase != null && _ready) {
+      if (crimeCase != null && _canMoveCamera) {
         _map.move(crimeCase.location, config.focusZoom);
       }
     });
@@ -132,9 +148,7 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
                           points: [selected.location, r.crimeCase.location],
                           strokeWidth: 1.4,
                           color: AppColors.gold.withValues(alpha: 0.78),
-                          pattern: StrokePattern.dashed(
-                            segments: const [6, 8],
-                          ),
+                          pattern: StrokePattern.dashed(segments: const [6, 8]),
                         ),
                     ],
                   ),
@@ -167,12 +181,13 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
                           color: crimeCase.category.presentation.color,
                           selected: selected?.id == crimeCase.id,
                           related: relatedIds.contains(crimeCase.id),
-                          dimmed: selected != null &&
+                          dimmed:
+                              selected != null &&
                               selected.id != crimeCase.id &&
                               !relatedIds.contains(crimeCase.id),
-                          onTap: () => ref
-                              .read(selectedCaseIdProvider.notifier)
-                              .state = crimeCase.id,
+                          onTap: () =>
+                              ref.read(selectedCaseIdProvider.notifier).state =
+                                  crimeCase.id,
                         ),
                       ),
                     if (selected != null)
@@ -249,7 +264,11 @@ class _RespectBadge extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.shield_outlined, size: 12, color: AppColors.textFaint),
+          const Icon(
+            Icons.shield_outlined,
+            size: 12,
+            color: AppColors.textFaint,
+          ),
           const SizedBox(width: 7),
           Text(
             'Crímenes reales · documentados con respeto',

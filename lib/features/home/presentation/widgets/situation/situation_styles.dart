@@ -61,7 +61,12 @@ abstract final class SituationStyles {
 
 /// Punto de color con halo, usado en leyendas, cronologías y relacionados.
 class SituationDot extends StatelessWidget {
-  const SituationDot({super.key, required this.color, this.size = 9, this.glow = true});
+  const SituationDot({
+    super.key,
+    required this.color,
+    this.size = 9,
+    this.glow = true,
+  });
 
   final Color color;
   final double size;
@@ -76,7 +81,13 @@ class SituationDot extends StatelessWidget {
         color: color,
         shape: BoxShape.circle,
         boxShadow: glow
-            ? [BoxShadow(color: color.withValues(alpha: 0.5), blurRadius: 7, spreadRadius: 1)]
+            ? [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.5),
+                  blurRadius: 7,
+                  spreadRadius: 1,
+                ),
+              ]
             : null,
       ),
     );
@@ -120,7 +131,11 @@ class SituationBadge extends StatelessWidget {
 
 /// Encabezado de sección en versalitas mono (p. ej. "Cronología verificada").
 class SituationSectionLabel extends StatelessWidget {
-  const SituationSectionLabel(this.text, {super.key, this.color = AppColors.textSoft});
+  const SituationSectionLabel(
+    this.text, {
+    super.key,
+    this.color = AppColors.textSoft,
+  });
 
   final String text;
   final Color color;

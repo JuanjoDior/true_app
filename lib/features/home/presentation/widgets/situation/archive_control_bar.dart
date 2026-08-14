@@ -239,7 +239,10 @@ class _Timeline extends StatelessWidget {
               child: GestureDetector(
                 onTap: onToggle,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 13,
+                    vertical: 7,
+                  ),
                   decoration: BoxDecoration(
                     color: const Color(0xFF15171D),
                     borderRadius: BorderRadius.circular(7),
@@ -263,18 +266,20 @@ class _Timeline extends StatelessWidget {
                   activeTrackColor: AppColors.accent,
                   inactiveTrackColor: AppColors.border,
                   thumbColor: AppColors.textBody,
-                  overlayShape:
-                      const RoundSliderOverlayShape(overlayRadius: 14),
-                  thumbShape:
-                      const RoundSliderThumbShape(enabledThumbRadius: 7),
+                  overlayShape: const RoundSliderOverlayShape(
+                    overlayRadius: 14,
+                  ),
+                  thumbShape: const RoundSliderThumbShape(
+                    enabledThumbRadius: 7,
+                  ),
                 ),
                 child: Slider(
                   min: kTimelineMinYear.toDouble(),
                   max: kTimelineMaxYear.toDouble(),
                   value: year.toDouble().clamp(
-                        kTimelineMinYear.toDouble(),
-                        kTimelineMaxYear.toDouble(),
-                      ),
+                    kTimelineMinYear.toDouble(),
+                    kTimelineMaxYear.toDouble(),
+                  ),
                   onChanged: (value) => onYear(value.round()),
                 ),
               ),

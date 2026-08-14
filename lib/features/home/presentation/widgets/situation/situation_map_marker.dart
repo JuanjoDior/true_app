@@ -34,7 +34,13 @@ class CaseMarker extends StatelessWidget {
             ),
             BoxShadow(color: color, blurRadius: 14, spreadRadius: 3),
           ]
-        : [BoxShadow(color: color.withValues(alpha: 0.6), blurRadius: 12, spreadRadius: 2)];
+        : [
+            BoxShadow(
+              color: color.withValues(alpha: 0.6),
+              blurRadius: 12,
+              spreadRadius: 2,
+            ),
+          ];
 
     return MouseRegion(
       cursor: SystemMouseCursors.click,
@@ -186,7 +192,10 @@ class SelectedMarkerTooltip extends StatelessWidget {
             Container(width: 2, color: AppColors.accent),
             Flexible(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,7 +211,10 @@ class SelectedMarkerTooltip extends StatelessWidget {
                       '${crimeCase.regionOrCity} · ${crimeCase.year}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: SituationStyles.mono(size: 10, color: AppColors.textSub),
+                      style: SituationStyles.mono(
+                        size: 10,
+                        color: AppColors.textSub,
+                      ),
                     ),
                   ],
                 ),

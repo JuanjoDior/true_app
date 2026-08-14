@@ -53,7 +53,9 @@ final selectedCaseIdProvider = StateProvider<String?>((ref) => null);
 /// formulario de alta de casos de Iván (diseño #7).
 enum Workspace { situationRoom, intake }
 
-final workspaceProvider = StateProvider<Workspace>((ref) => Workspace.situationRoom);
+final workspaceProvider = StateProvider<Workspace>(
+  (ref) => Workspace.situationRoom,
+);
 
 /// Desbloqueo del workspace de intake, por sesión (no persiste al recargar).
 final intakeUnlockedProvider = StateProvider<bool>((ref) => false);
@@ -66,20 +68,48 @@ final filteredCasesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
   final maxYear = ref.watch(timelineYearProvider);
   final query = ref.watch(searchQueryProvider);
 
-  final preFiltered = cases.where((crimeCase) {
-    if (activeCategory != null && crimeCase.category != activeCategory) {
-      return false;
-    }
-    if (statusFilter != null && crimeCase.status != statusFilter) {
-      return false;
-    }
-    if (crimeCase.year > maxYear) {
-      return false;
-    }
-    return true;
-  }).toList(growable: false);
+  final preFiltered = cases
+      .where((crimeCase) {
+        if (activeCategory != null && crimeCase.category != activeCategory) {
+          return false;
+        }
+        if (statusFilter != null && crimeCase.status != statusFilter) {
+          return false;
+        }
+        if (crimeCase.year > maxYear) {
+          return false;
+        }
+        return true;
+      })
+      .toList(growable: false);
 
   return search.search(preFiltered, query);
+});
+
+/// Caso publicado que corresponde a un slug de la URL pública.
+///
+/// **Busca por `slug`, nunca por `id`.** Hoy los quince casos del catálogo
+/// tienen `id == slug`, así que las dos búsquedas darían el mismo resultado y
+/// la diferencia parece académica. No lo es: el día que un caso cambie de
+/// título y de slug conservando su id, buscar por id serviría el caso
+/// equivocado en una URL ya compartida.
+///
+/// No lee la selección del mapa: un enlace directo no exige que el mapa haya
+/// seleccionado nada primero [diseño §7.4].
+final caseBySlugProvider = Provider.family<AsyncValue<TrueCrimeCase?>, String>((
+  ref,
+  slug,
+) {
+  return ref.watch(casesProvider).whenData((cases) {
+    for (final crimeCase in cases) {
+      if (crimeCase.slug == slug) {
+        return crimeCase;
+      }
+    }
+    // Ausente es un VALOR, no un error: "no hay caso con ese slug" y "el
+    // catálogo no se pudo leer" son cosas distintas y la página las distingue.
+    return null;
+  });
 });
 
 final selectedCaseProvider = Provider<AsyncValue<TrueCrimeCase?>>((ref) {

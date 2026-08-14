@@ -88,7 +88,10 @@ class FeaturedFocusPanel extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 14),
-          Text(featured.title, style: SituationStyles.serif(size: 30, height: 1.05)),
+          Text(
+            featured.title,
+            style: SituationStyles.serif(size: 30, height: 1.05),
+          ),
           const SizedBox(height: 6),
           Text(
             '${featured.locationLabel} · ${featured.year}',
@@ -137,7 +140,10 @@ class FeaturedFocusPanel extends ConsumerWidget {
           Center(
             child: Text(
               'Selecciona cualquier punto del mapa para investigar',
-              style: SituationStyles.sans(size: 11, color: AppColors.textFaint2),
+              style: SituationStyles.sans(
+                size: 11,
+                color: AppColors.textFaint2,
+              ),
             ),
           ),
         ],
@@ -167,9 +173,7 @@ class _MiniMap extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: Stack(
         children: [
-          Positioned.fill(
-            child: CustomPaint(painter: _GridPainter()),
-          ),
+          Positioned.fill(child: CustomPaint(painter: _GridPainter())),
           Center(
             child: Container(
               width: 13,

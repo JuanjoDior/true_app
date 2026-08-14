@@ -51,7 +51,12 @@ class SituationNavRail extends ConsumerWidget {
 }
 
 class _RailItem extends StatelessWidget {
-  const _RailItem({super.key, required this.icon, this.active = false, this.onTap});
+  const _RailItem({
+    super.key,
+    required this.icon,
+    this.active = false,
+    this.onTap,
+  });
 
   final IconData icon;
   final bool active;

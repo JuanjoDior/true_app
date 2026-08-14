@@ -20,6 +20,16 @@ import 'situation_styles.dart';
 /// ofrece nada de eso porque no hay mapa detrás al que volver.
 enum CaseDossierMode { map, preview }
 
+/// Cómo se dispone el expediente, que es cosa aparte de qué acciones ofrece.
+///
+/// - [compact] es el panel de siempre: cabecera fija, cuerpo con su propio
+///   scroll y pie. Exige una altura acotada, porque el cuerpo se estira para
+///   llenarla.
+/// - [expanded] devuelve el mismo contenido en un flujo continuo, sin scroll
+///   propio ni altura exigida, para que una página lo componga dentro del
+///   suyo. Mismo contenido, distinta caja.
+enum DossierPresentation { compact, expanded }
+
 /// Renderizado del expediente: cabecera, métricas, resumen, capítulos,
 /// fotografías, cronología, fuentes y casos relacionados.
 ///
@@ -34,6 +44,7 @@ class CaseDossierContent extends StatelessWidget {
     required this.crimeCase,
     required this.relatedCases,
     required this.mode,
+    this.presentation = DossierPresentation.compact,
     this.onReturnToMap,
     this.onCenterMap,
     this.onOpenRelatedCase,
@@ -46,6 +57,8 @@ class CaseDossierContent extends StatelessWidget {
   final List<RelatedCase> relatedCases;
 
   final CaseDossierMode mode;
+
+  final DossierPresentation presentation;
 
   /// Volver atrás desde la cabecera. Qué signifique "atrás" es del host.
   final VoidCallback? onReturnToMap;
@@ -77,102 +90,115 @@ class CaseDossierContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final header = _Header(
+      crimeCase: crimeCase,
+      onReturnToMap: _showsMapChrome ? onReturnToMap : null,
+      showsMapChrome: _showsMapChrome,
+    );
+    final body = Padding(
+      padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
+      child: _body(),
+    );
+
+    // Mismo contenido, distinta caja. El panel compacto envuelve el cuerpo en
+    // su propio scroll y se estira para llenar la altura que le den; la página
+    // ampliada devuelve un flujo continuo y deja que sea ella quien desplace,
+    // porque dentro de un scroll no cabe otro que exija altura infinita.
+    return switch (presentation) {
+      DossierPresentation.compact => Column(
+        key: const Key('detail-panel'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          header,
+          Expanded(child: SingleChildScrollView(child: body)),
+          if (_showsMapChrome) _Footer(onCenter: onCenterMap),
+        ],
+      ),
+      DossierPresentation.expanded => Column(
+        key: const Key('detail-panel'),
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [header, body],
+      ),
+    };
+  }
+
+  Widget _body() {
     final chapters = crimeCase.chapters.orderedMeaningful;
 
     return Column(
-      key: const Key('detail-panel'),
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        _Header(
-          crimeCase: crimeCase,
-          onReturnToMap: _showsMapChrome ? onReturnToMap : null,
-          showsMapChrome: _showsMapChrome,
-        ),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _StatsGrid(
-                  crimeCase: crimeCase,
-                  connections: relatedCases.length,
-                ),
-                const SizedBox(height: 18),
-                Text(
-                  crimeCase.summary,
-                  style: SituationStyles.sans(
-                    size: 14,
-                    color: AppColors.textSub2,
-                    height: 1.65,
-                  ),
-                ),
-                // Los capítulos van justo detrás del resumen: son la lectura
-                // larga de lo que el resumen cuenta en tres líneas. Sólo los
-                // significativos, y siempre en orden editorial, sea cual sea
-                // el orden en que se escribieron [spec: expanded-case-dossier].
-                for (final chapter in chapters) ...[
-                  const SizedBox(height: 22),
-                  SituationSectionLabel(chapter.type.label),
-                  const SizedBox(height: 10),
-                  Text(
-                    chapter.content,
-                    style: SituationStyles.sans(
-                      size: 13,
-                      color: AppColors.textSub2,
-                      height: 1.7,
-                    ),
-                  ),
-                ],
-                if (crimeCase.photos.isNotEmpty) ...[
-                  const SizedBox(height: 22),
-                  const SituationSectionLabel('Fotografías'),
-                  const SizedBox(height: 12),
-                  _PhotoStrip(photos: crimeCase.photos),
-                ],
-                if (crimeCase.timeline.isNotEmpty) ...[
-                  const SizedBox(height: 22),
-                  const SituationSectionLabel('Cronología verificada'),
-                  const SizedBox(height: 13),
-                  _Timeline(events: crimeCase.timeline),
-                ],
-                // Un override sustituye a las fuentes publicadas, no se suma a
-                // ellas. Por eso se mira `sourceGroups`, y no `_visibleGroups`:
-                // una lista vacía sigue siendo un override.
-                if (sourceGroups == null) ...[
-                  if (crimeCase.sources.isNotEmpty) ...[
-                    const SizedBox(height: 8),
-                    const SituationSectionLabel('Fuentes citadas'),
-                    const SizedBox(height: 12),
-                    for (final source in crimeCase.sources)
-                      _SourceCard(source: source),
-                  ],
-                ] else
-                  for (final group in _visibleGroups) ...[
-                    const SizedBox(height: 8),
-                    SituationSectionLabel(group.label),
-                    const SizedBox(height: 12),
-                    // La misma tarjeta que un caso publicado: el agrupado
-                    // cambia el encabezado, no el renderizador.
-                    for (final source in group.sources)
-                      _SourceCard(source: source),
-                  ],
-                if (relatedCases.isNotEmpty) ...[
-                  const SizedBox(height: 18),
-                  const SituationSectionLabel('Casos relacionados'),
-                  const SizedBox(height: 12),
-                  for (final r in relatedCases)
-                    _RelatedCard(
-                      related: r,
-                      onTap: () => onOpenRelatedCase?.call(r.crimeCase),
-                    ),
-                ],
-                const SizedBox(height: 8),
-              ],
-            ),
+        _StatsGrid(crimeCase: crimeCase, connections: relatedCases.length),
+        const SizedBox(height: 18),
+        Text(
+          crimeCase.summary,
+          style: SituationStyles.sans(
+            size: 14,
+            color: AppColors.textSub2,
+            height: 1.65,
           ),
         ),
-        if (_showsMapChrome) _Footer(onCenter: onCenterMap),
+        // Los capítulos van justo detrás del resumen: son la lectura
+        // larga de lo que el resumen cuenta en tres líneas. Sólo los
+        // significativos, y siempre en orden editorial, sea cual sea
+        // el orden en que se escribieron [spec: expanded-case-dossier].
+        for (final chapter in chapters) ...[
+          const SizedBox(height: 22),
+          SituationSectionLabel(chapter.type.label),
+          const SizedBox(height: 10),
+          Text(
+            chapter.content,
+            style: SituationStyles.sans(
+              size: 13,
+              color: AppColors.textSub2,
+              height: 1.7,
+            ),
+          ),
+        ],
+        if (crimeCase.photos.isNotEmpty) ...[
+          const SizedBox(height: 22),
+          const SituationSectionLabel('Fotografías'),
+          const SizedBox(height: 12),
+          _PhotoStrip(photos: crimeCase.photos),
+        ],
+        if (crimeCase.timeline.isNotEmpty) ...[
+          const SizedBox(height: 22),
+          const SituationSectionLabel('Cronología verificada'),
+          const SizedBox(height: 13),
+          _Timeline(events: crimeCase.timeline),
+        ],
+        // Un override sustituye a las fuentes publicadas, no se suma a
+        // ellas. Por eso se mira `sourceGroups`, y no `_visibleGroups`:
+        // una lista vacía sigue siendo un override.
+        if (sourceGroups == null) ...[
+          if (crimeCase.sources.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            const SituationSectionLabel('Fuentes citadas'),
+            const SizedBox(height: 12),
+            for (final source in crimeCase.sources) _SourceCard(source: source),
+          ],
+        ] else
+          for (final group in _visibleGroups) ...[
+            const SizedBox(height: 8),
+            SituationSectionLabel(group.label),
+            const SizedBox(height: 12),
+            // La misma tarjeta que un caso publicado: el agrupado
+            // cambia el encabezado, no el renderizador.
+            for (final source in group.sources) _SourceCard(source: source),
+          ],
+        if (relatedCases.isNotEmpty) ...[
+          const SizedBox(height: 18),
+          const SituationSectionLabel('Casos relacionados'),
+          const SizedBox(height: 12),
+          for (final r in relatedCases)
+            _RelatedCard(
+              related: r,
+              onTap: () => onOpenRelatedCase?.call(r.crimeCase),
+            ),
+        ],
+        const SizedBox(height: 8),
       ],
     );
   }

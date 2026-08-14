@@ -409,6 +409,42 @@ one prevents a defect that actually shipped into a draft.
 
 **Finish state:** routing activates only with complete loading/error/not-found/known-case responsive detail.
 
+**Unit 7 delivered.** `flutter test` **431/431**, `flutter analyze` clean. Measured **489 changed + 1,077 new = 1,566**, which **exceeds the 1500 ceiling**. Reported rather than hidden: the overrun is 819 lines of new tests against 258 of source, and the unit was already at its last indivisible seam — the detail page cannot ship without the slug provider, and activating the router without the page would put a broken route in production. The forecast of "maximum 360" was wrong by a factor of four; that is a planning error, recorded here, not a reason to under-test.
+
+**A real production defect found and fixed on the way.** `situation_map_stage.dart` moved the camera from `onMapReady` and from two `ref.listen` callbacks, guarded only by `_ready`. But `onMapReady` fires even when the Situation Room is **offstage underneath a route**, while flutter_map's interactive viewer only initialises when actually painted — so any case deep link crashed with `LateInitializationError`. The guard is now `_canMoveCamera`, which also requires the widget to be mounted with a non-empty size. Without this the routes could not be activated at all.
+
+Original task list follows.
+
+- [x] **7.1 RED — Slug lookup.** `test/case_by_slug_provider_test.dart`, 13 tests. The fixture is `id: 'legacy-7'`, `slug: 'known-case'`, and `the id of that same case does NOT resolve` is what makes the positive test honest — with the real catalog's `id == slug` both implementations would pass. Proven by mutation R1.
+- [x] **7.2 RED — All detail states.** `test/case_detail_page_test.dart`, 21 tests across loading, catalog error, unknown slug, known case, chapters, related-slug navigation and responsive reading.
+- [x] **7.3 RED — Responsive reading.** Four tests at 360×780 with four 200-word chapters: no overflow, return stays reachable, `maxScrollExtent > 0` as a non-vacuity precondition, and content below the fold reached by scrolling.
+
+  **One precondition had to be rewritten.** `expect(find.text(end), findsNothing)` before scrolling was false: `SingleChildScrollView` builds every child even off-screen — the same mechanism behind the `scrollUntilVisible` defect. The precondition now checks the widget's *position* (`getRect(end).top > 780`), which a dead scroll cannot satisfy.
+- [x] **7.4 Observe RED.** Compile failure — `caseBySlugProvider` and `CaseDetailPage` absent.
+- [x] **7.5 GREEN — Complete detail surface.** `caseBySlugProvider` and `CaseDetailPage`. Absent is a **value**, error is an **error**: "no case with that slug" and "the archive could not be read" are different states with different screens and different keys.
+- [x] **7.6 GREEN — Route-specific navigation.** Related cases navigate by `slug`, never `id`; return goes through the injected `AppNavigation`; map state untouched. `RouteNotFoundPage` keeps unknown syntax distinct from a missing case and shows the original URI verbatim.
+- [x] **7.7 Observe detail GREEN before root activation.** 34/34 with `TrueCrimeApp` still on `MaterialApp.home`.
+- [x] **7.8 RED — Application activation.** `test/app_routing_activation_test.dart`, 13 tests. `TrueCrimeApp` gained an `initialLocation` parameter used only by tests.
+- [x] **7.9 GREEN — Activate complete graph.** `TrueCrimeApp` is now a `StatefulWidget` creating controller and delegate once in field initialisers; `MaterialApp.router` wired with the real builders. `DossierPresentation` — deferred from 4b — gains its second value here: `expanded` returns the same content in a continuous flow without its own scroll, so a page can compose it inside its own.
+- [x] **7.10 Observe router GREEN.** 25/25 across activation and boundary; full suite 431/431.
+- [x] **7.11 TRIANGULATE.** Probes, each isolated and reverted:
+
+  | # | Probe | Failing tests | Proves |
+  |---|---|---|---|
+  | R1 | look up by `id` instead of `slug` | 8 across three files | Slug identity, not id identity |
+  | R2 | catalog error renders the not-found key | 2 | A broken archive is never reported as a deleted case |
+  | R3 | related navigation uses `id` | *opening a related case routes to its slug* | Public URLs are slug-addressed |
+  | R5 | page uses `compact` presentation | the whole file hangs on infinite constraints | `expanded` is what makes the page composable inside a scroll |
+
+  The boundary probe from Unit 6 (Q5) still covers the router/`workspaceProvider` separation and was not repeated.
+- [x] **7.11b RED — Return from a deep link while intake is open.** `returning from that deep link reveals the intake underneath`, with `returning from a deep link with no intake shows the map` as its twin so "always shows intake" cannot pass both. `the deep link does not rewrite the workspace` asserts the provider directly.
+- [x] **7.12 Verify structural boundaries.** No `dart:html`, no `usePathUrlStrategy` anywhere in `lib` except one explanatory comment (the boundary test strips comments). `web/index.html` keeps `$FLUTTER_BASE_HREF` untouched; the deploy workflow still builds with `--base-href` and needs no rewrite rule, which is exactly what the hash strategy buys.
+- [x] **7.13 REFACTOR and verify.** `dart format`; **431/431**; `analyze` clean.
+- [x] **7.14 Apply line-budget gate.** See the note above — 1,566, over ceiling, reported.
+- [x] **7.15 Review and deliver** as `feat(navegacion): activa el detalle público por hash`.
+
+Original task text:
+
 - [ ] **7.1 RED — Slug lookup.** Test loading/error/exact match/missing slug and no map-provider access. **The match tests MUST use a hand-built fixture where `id != slug`** (for example `id: 'legacy-7'`, `slug: 'known-case'`) and MUST assert that the `id` value does *not* resolve. Every case in the real catalog has `id == slug`, so a real or exported fixture cannot tell slug lookup from ID lookup and proves nothing.
 - [ ] **7.2 RED — All detail states.** Add `case_detail_page_test.dart` for loading, catalog error, unknown slug, known legacy/chapter case, expanded shared content, return, and related slug navigation.
 - [ ] **7.3 RED — Responsive reading.** Prove realistic compact/wide scrolling, reachable actions, and no blocking overflow.

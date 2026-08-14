@@ -41,8 +41,8 @@ class CaseStatusChips extends ConsumerWidget {
                   key: Key('status-chip-${item.key}'),
                   label: item.label,
                   selected: active == item.status,
-                  onTap: () =>
-                      ref.read(statusFilterProvider.notifier).state = item.status,
+                  onTap: () => ref.read(statusFilterProvider.notifier).state =
+                      item.status,
                 ),
             ],
           ),

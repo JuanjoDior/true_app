@@ -85,19 +85,30 @@ void main() {
     expect(_mentioning('usePathUrlStrategy'), isEmpty);
   });
 
-  test('the app root is still not routed', () {
-    // La Unit 6 entrega la infraestructura DORMIDA. Activarla es la Unit 7, y
-    // hacerlo antes dejaría rutas a medio construir en producción.
+  // La Unit 6 entregó esto dormido y afirmaba aquí que `TrueCrimeApp` seguía
+  // en `MaterialApp.home`. La Unit 7 lo activa, así que esas dos afirmaciones
+  // se invierten: dejarlas como estaban habría obligado a borrarlas, y una
+  // afirmación borrada no protege nada.
+  test('the app root is routed', () {
     final source = File('lib/app/true_crime_app.dart').readAsStringSync();
 
-    expect(source.contains('MaterialApp.router'), isFalse);
+    expect(source.contains('MaterialApp.router'), isTrue);
   });
 
-  test('the app root still uses MaterialApp.home', () {
-    // Gemelo de presencia del anterior: sin él, borrar el fichero entero
-    // también daría verde.
+  test('the app root no longer uses MaterialApp.home', () {
+    // Gemelo del anterior: sin él, un fichero que usara las dos formas a la
+    // vez pasaría igual.
     final source = File('lib/app/true_crime_app.dart').readAsStringSync();
 
-    expect(source.contains('home:'), isTrue);
+    expect(source.contains('home: const'), isFalse);
+  });
+
+  test('the app root creates its router once, outside build', () {
+    // `StatelessWidget` recrearía controlador y delegate en cada
+    // reconstrucción, perdiendo la ruta y dejando al motor hablando con un
+    // objeto muerto. El diseño lo exige explícitamente.
+    final source = File('lib/app/true_crime_app.dart').readAsStringSync();
+
+    expect(source.contains('extends StatefulWidget'), isTrue);
   });
 }
