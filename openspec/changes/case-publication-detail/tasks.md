@@ -523,7 +523,16 @@ Original task text:
 
 **Finish state:** automated, structural, built-host, deployed, and browser evidence agree. Unit 9 changes no source.
 
-**Unit 9 — local half complete, deployed half pending authorisation.**
+**Unit 9 — complete. Deployed and verified against the live site.**
+
+**Deployment evidence.** Browser: Chrome (Claude in Chrome automation). Deployed SHA `89cb790f2a26d31b8821b3bc00af4cc6449997de`, Pages run 31833902940, `success`. Verified on `https://juanjodior.github.io/true_app/`:
+
+| URL | Visible hash | Title | Content |
+|---|---|---|---|
+| `/#/casos/zodiac` (direct entry) | `#/casos/zodiac` | `true_app` | Full expanded dossier: badges, Zodiac, San Francisco, victims, 1968 / 3 connections / coords, summary, verified timeline, two cited sources, related cases |
+| same, after a hard `location.reload()` | `#/casos/zodiac` | `true_app` | Identical — the deep link survives a refresh, which is the whole point of a shareable URL |
+| `/#/casos/no-existe-este` | `#/casos/no-existe-este` | `true_app` | "Ese expediente no existe" · hash preserved verbatim · no substituted case · return offered |
+
 
 **9.12 IS VIOLATED, and that is the headline.** Unit 9 was to change no source. Browser verification found a real defect, so one source file changed and **Unit 7 is reopened** by its own rule.
 
@@ -536,7 +545,7 @@ This is the second production defect this cycle that only the composition could 
 - [x] **9.3 Build web** with `/true_app/` base href. `BUILD_EXIT=0`. (Git Bash rewrites `/true_app/` into a Windows path; `MSYS_NO_PATHCONV=1` is required.)
 - [x] **9.4 Read `build/web/index.html`.** `<base href="/true_app/">` at line 17, `<meta name="viewport" content="width=device-width, initial-scale=1.0">` at line 28. The workflow builds with `--base-href "/${GITHUB_REPOSITORY#*/}/"` and publishes `path: build/web`.
 - [x] **9.5 Record structural route proof.** Parser and restorer present; **zero** matches for `dart:html`, `usePathUrlStrategy` or `setUrlStrategy` in code across all of `lib`; lookup is `crimeCase.slug == slug`; the only mentions of `workspaceProvider` inside `lib/app/navigation/` are three `///` documentation lines, no code.
-- [ ] **9.6 Confirm exact deployment SHA.** **BLOCKED — awaiting maintainer authorisation to push.** Nothing is pushed and no deployment claim is made.
+- [x] **9.6 Confirm exact deployment SHA.** Maintainer authorised the push. Ten commits pushed to `main` (`182003a..89cb790`). Pages workflow run [31833902940](https://github.com/JuanjoDior/true_app/actions/runs/31833902940): `conclusion: success`, `headSha: 89cb790f2a26d31b8821b3bc00af4cc6449997de` — the exact SHA verified locally.
 - [x] **9.7 Prove direct entry/refresh in a real browser.** Chrome, release build served from `build/web` under `/true_app/` with no rewrite rule — the same condition Pages provides. `#/casos/zodiac` renders the full expanded dossier (badges, title, victims, year/connections/coords, summary, verified timeline, cited sources, related cases). **This is the step that caught the defect above**; the first attempt landed on the Situation Room with the hash erased.
 - [x] **9.8 Prove history.** Root → directory → `#/casos/zodiac` → related → `#/casos/goldenstate` → Back, Back → Forward, Forward. Recorded hash at each step: `''` → `#/casos/zodiac` → `#/casos/goldenstate` → `#/casos/zodiac` → `''` → `#/casos/zodiac` → `#/casos/goldenstate`. Exact, no duplicate entries.
 - [x] **9.9 Prove unknown slug.** `#/casos/este-caso-no-existe` keeps its hash verbatim, renders "Ese expediente no existe", substitutes no case, and offers the return action.
