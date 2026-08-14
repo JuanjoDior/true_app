@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'sections/basic_data_section.dart';
+import 'sections/chapters_section.dart';
 import 'sections/links_section.dart';
 import 'sections/location_section.dart';
 import 'sections/photos_section.dart';
@@ -40,5 +41,9 @@ final List<CaseFormSection> kCaseFormSections = <CaseFormSection>[
   CaseFormSection(
     title: 'Fotografías',
     builder: (context) => const PhotosSection(),
+  ),
+  CaseFormSection(
+    title: 'Capítulos',
+    builder: (context) => const ChaptersSection(),
   ),
 ];

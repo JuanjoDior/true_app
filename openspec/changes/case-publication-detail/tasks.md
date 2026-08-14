@@ -344,18 +344,28 @@ one prevents a defect that actually shipped into a draft.
 
 **Finish state:** the seventh section follows `Fotografías`, and edits update shared preview.
 
-- [ ] **5.1 RED — Change registry expectation first.** Update `test/intake_narrow_layout_test.dart` from six to seven sections and assert `Capítulos` after `Fotografías`; do not create/register the section yet.
-- [ ] **5.2 Observe mandatory registry RED** because only six sections exist.
-- [ ] **5.3 RED — Fixed editor.** Add `chapters_section_test.dart` for four fields, fixed order, no arbitrary controls, stable draft/type keys, switching, editing, and clearing.
-- [ ] **5.4 RED — Live activation.** Add `intake_chapter_preview_test.dart` for current-state transformations, rapid edits without pumps, shared preview order, and no map chrome.
-- [ ] **5.5 Observe editor/preview RED** before creating the section.
-- [ ] **5.6 GREEN — Editor.** Add fixed four-field `ChaptersSection` using current-state transformations.
-- [ ] **5.7 GREEN — Registry.** Register it immediately after `Fotografías`.
-- [ ] **5.8 Observe GREEN** on registry, editor, and preview tests.
-- [ ] **5.9 TRIANGULATE** partial/whitespace content, switching, rapid edits, 360px reachability, and absence of arbitrary controls.
-- [ ] **5.10 REFACTOR and verify** full tests/analyze.
-- [ ] **5.11 Apply line-budget gate.** Split at 1500 or more.
-- [ ] **5.12 Review and deliver** as `feat(casos): habilita la edición de capítulos`.
+- [x] **5.1 RED — Change registry expectation first.** `_expectedCaseFormSectionTitles` in `test/intake_narrow_layout_test.dart` gains `'Capítulos'` after `'Fotografías'`, with nothing registered yet. This is one of the two edits design §12 authorises on that file.
+- [x] **5.2 Observe mandatory registry RED.** `all … form sections are reachable by dragging, in registry order, at 360px` fails on the registry comparison: six titles against seven expected.
+- [x] **5.3 RED — Fixed editor.** `test/chapters_section_test.dart`, 14 tests.
+- [x] **5.4 RED — Live activation.** `test/intake_chapter_preview_test.dart`, 7 tests. Editor and preview are mounted **together**, which is how someone writing actually uses them; testing them apart would leave exactly the wire between them uncovered.
+- [x] **5.5 Observe editor/preview RED.** Compile failure — `chapters_section.dart` does not exist. Recorded as a compile RED.
+- [x] **5.6 GREEN — Editor.** `ChaptersSection`: four `TextFormField`s over `CaseChapterType.values`, multiline, keyed `intake-field-chapter-<draftId>-<type>`. The draft id is in the key because `TextFormField` ignores `initialValue` changes — without it, switching drafts would leave the previous draft's text on screen.
+- [x] **5.7 GREEN — Registry.** Registered immediately after `Fotografías`.
+- [x] **5.8 Observe GREEN.** 31/31 across the three focused files; full suite **337/337**.
+- [x] **5.9 TRIANGULATE.** Five probes, each isolated and reverted:
+
+  | # | Probe | Failing tests | Proves |
+  |---|---|---|---|
+  | P1 | edit the `build`-captured draft instead of `current` | *two edits in the same frame both survive* | Two fast keystrokes in one frame cannot lose the first |
+  | P2 | key drops the draft id | 10 across both files | Switching drafts actually reloads the fields |
+  | P3 | iterate `CaseChapterType.values.reversed` | *labels them in the fixed editorial order* | Editor order is the editorial order |
+  | P4 | section left unregistered | the 360px registry test | The section is registered **and** reachable by dragging at 360px |
+  | P5 | add an "Añadir capítulo" button | *offers no button at all* | The absence of arbitrary controls is asserted, not assumed |
+
+  **P1 caught a test of mine that could not fail — the project's signature defect, written by me while believing I was catching it.** The original `two edits in a row without a pump both survive` used `tester.enterText`, which pumps internally. With a rebuild guaranteed between the two edits, editing `current` and editing the captured `draft` are indistinguishable, and the mutation passed green. Rewritten to fire both `onChanged` handlers directly via `EditableText.onChanged`, with no pump between them, it fails as `['Después']` — the first edit lost. The same lie was in the preview test's name; it is now `two edits in a row both reach the preview`, promising only what it checks.
+- [x] **5.10 REFACTOR and verify.** `dart format` on touched files; `flutter test` **337/337**, `SUITE_EXIT=0`; `flutter analyze` `ANALYZE_EXIT=0`. The six-section wording in `intake_narrow_layout_test.dart` (test name and two comments) updated to seven.
+- [x] **5.11 Apply line-budget gate.** 12 changed lines plus 60 + 342 + 206 new = **620** against the 1500 ceiling.
+- [x] **5.12 Review and deliver** as `feat(casos): habilita la edición de capítulos`.
 
 **Rollback:** remove editor and restore committed six-section baseline; Units 1–4 remain dormant.
 

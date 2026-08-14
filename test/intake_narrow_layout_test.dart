@@ -48,6 +48,7 @@ const _expectedCaseFormSectionTitles = <String>[
   'Cronología',
   'Enlaces',
   'Fotografías',
+  'Capítulos',
 ];
 
 /// Un borrador con todos los campos obligatorios rellenos, listo para
@@ -132,7 +133,7 @@ void main() {
     );
 
     testWidgets(
-      'all six form sections are reachable by dragging, in registry order, at 360px',
+      'all seven form sections are reachable by dragging, in registry order, at 360px',
       (tester) async {
         await _pumpNarrowWorkspace(
           tester,
@@ -141,7 +142,7 @@ void main() {
         );
         expect(tester.takeException(), isNull);
 
-        // La lista explícita fija el contrato de seis secciones. Derivarla del
+        // La lista explícita fija el contrato de siete secciones. Derivarla del
         // registro permitiría que eliminar una sección redujera también la
         // expectativa y dejara el test en verde.
         expect(
@@ -178,7 +179,7 @@ void main() {
 
         // Se arrastra con el dedo en vez de usar `scrollUntilVisible`: ese
         // helper sólo arrastra mientras el finder no encuentra nada, y en un
-        // `SingleChildScrollView` los seis hijos se construyen de golpe, así
+        // `SingleChildScrollView` los siete hijos se construyen de golpe, así
         // que cae directo en `Scrollable.ensureVisible`. Eso mueve la ventana
         // por programa y se salta la física, de modo que un formulario con
         // `NeverScrollableScrollPhysics` también pasaría.
