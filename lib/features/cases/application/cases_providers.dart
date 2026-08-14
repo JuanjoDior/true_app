@@ -86,6 +86,37 @@ final filteredCasesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
   return search.search(preFiltered, query);
 });
 
+/// El archivo completo, ordenado para leerlo como un índice.
+///
+/// **Deriva sólo de `casesProvider` y no carga nada por su cuenta.** El
+/// catálogo ya está en memoria desde que el mapa lo pintó; una segunda lectura
+/// sería un segundo origen de verdad que puede discrepar del primero.
+///
+/// **Ignora los filtros del mapa a propósito.** El mapa enseña lo que el
+/// usuario está buscando ahora; el directorio enseña todo lo publicado. Que un
+/// filtro activo vaciara el índice sería desconcertante.
+///
+/// El orden es año descendente — lo más reciente arriba — y desempata primero
+/// por título y después por slug. Ese último desempate no es paranoia: sin él
+/// dos casos del mismo año y título se listarían en el orden accidental del
+/// JSON, y dos cargas podrían dar órdenes distintos.
+final publishedDirectoryProvider = Provider<AsyncValue<List<TrueCrimeCase>>>((
+  ref,
+) {
+  return ref.watch(casesProvider).whenData((cases) {
+    final ordered = [...cases];
+    ordered.sort((a, b) {
+      final byYear = b.year.compareTo(a.year);
+      if (byYear != 0) {
+        return byYear;
+      }
+      final byTitle = a.title.compareTo(b.title);
+      return byTitle != 0 ? byTitle : a.slug.compareTo(b.slug);
+    });
+    return List<TrueCrimeCase>.unmodifiable(ordered);
+  });
+});
+
 /// Caso publicado que corresponde a un slug de la URL pública.
 ///
 /// **Busca por `slug`, nunca por `id`.** Hoy los quince casos del catálogo

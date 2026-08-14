@@ -17,35 +17,25 @@ import 'test_support/sample_cases.dart';
 /// assertion here MUST stay GREEN after the migration — that is what proves
 /// the migration is behavior-preserving, byte-for-byte.
 ///
-/// Pre-existing, out-of-scope defect pinned as-is (approval-testing style):
-/// `SituationTopBar` already overflows (`RenderFlex overflowed`) in two
-/// measured bands, reproduced deterministically with the top bar in isolation
-/// (so it is not caused by this test's fixtures or by sibling widgets):
+/// **La tolerancia de desbordamiento se ha retirado, y ésa es la noticia.**
 ///
-/// | width | overflow |
-/// |-------|----------|
-/// | 980   | 21 px    |
-/// | 1000  | 1.2 px   |
-/// | 1010  | none     |
-/// | 1024  | none     |
-/// | 1030  | 59 px    |
-/// | 1040  | 49 px    |
-/// | 1050  | 39 px    |
-/// | 1060  | 29 px    |
-/// | 1080  | 9.4 px   |
-/// | 1100  | none     |
+/// Este fichero documentaba un defecto preexistente de `SituationTopBar`, medido
+/// banda a banda: desbordaba 21px a 980, 1.2px a 1000, y entre 59 y 9.4px en el
+/// tramo 1030–1080. Se toleraba SÓLO en esos anchos, con la instrucción expresa
+/// de retirar la tolerancia el día que el defecto se arreglara.
 ///
-/// Fixing it is out of Phase 1 scope (behavior-preserving rename only). This
-/// test therefore tolerates that overflow ONLY at the widths measured to
-/// exhibit it, and REQUIRES a clean pump everywhere else — so a newly
-/// introduced overflow at 1440/900/800 still fails, instead of hiding behind a
-/// blanket tolerance. That keeps the file a real safety net for its actual
-/// subject: Requirement "Sala de Situación Layout Selection Is
-/// Behavior-Preserving".
+/// Ese día fue el del directorio del archivo. Subir `topBarFull` de 980 a 1040
+/// —hecho para que cupiera el acceso al directorio— recorta las métricas justo
+/// en el tramo donde la fila no daba de sí, y con eso el desbordamiento
+/// desaparece en todos los anchos medidos. El arreglo fue un efecto secundario
+/// buscando otra cosa, pero es un arreglo real y la lista de tolerancias se
+/// queda vacía.
+///
+/// A partir de aquí, CUALQUIER ancho debe pintar limpio. Un desbordamiento
+/// nuevo en cualquier punto es una regresión, no un conocido.
 void main() {
-  /// Widths measured to overflow today. Anything outside this set must pump
-  /// clean; anything inside it may only throw `RenderFlex overflowed`.
-  const overflowingWidths = <double>[1050, 1000];
+  /// Ya ninguno. Un desbordamiento a cualquier ancho es ahora una regresión.
+  const overflowingWidths = <double>[];
 
   /// Returns `true` when this pump reported the known overflow. The defect is
   /// raised during layout, so a later pump that does not relayout the top bar
@@ -58,13 +48,15 @@ void main() {
     expect(
       overflowingWidths.contains(width),
       isTrue,
-      reason: 'Width $width px pumps clean today. A new exception here is a '
+      reason:
+          'Width $width px pumps clean today. A new exception here is a '
           'regression, not the known SituationTopBar defect.',
     );
     expect(
       exception.toString(),
       contains('RenderFlex overflowed'),
-      reason: 'Only the known pre-existing SituationTopBar overflow is '
+      reason:
+          'Only the known pre-existing SituationTopBar overflow is '
           'tolerated at width $width px; any other exception must fail.',
     );
     return true;
@@ -80,8 +72,9 @@ void main() {
 
     final container = ProviderContainer(
       overrides: [
-        casesRepositoryProvider
-            .overrideWithValue(const FakeCasesRepository(sampleCases)),
+        casesRepositoryProvider.overrideWithValue(
+          const FakeCasesRepository(sampleCases),
+        ),
         mapConfigProvider.overrideWithValue(MapConfig.testing()),
       ],
     );
@@ -106,7 +99,8 @@ void main() {
       expect(
         sawKnownOverflow,
         isTrue,
-        reason: 'Width $width px is pinned as overflowing but pumped clean. If '
+        reason:
+            'Width $width px is pinned as overflowing but pumped clean. If '
             'the SituationTopBar defect was fixed, remove $width from '
             'overflowingWidths so this tolerance disappears with it.',
       );
@@ -134,11 +128,20 @@ void main() {
     // ya están ancladas por comportamiento en `intake_desktop_layout_test.dart`
     // y en las medidas de ancho de las secciones (ambas verificadas por
     // mutación).
-    test('the four migrated Sala thresholds keep their original values', () {
+    test('the migrated Sala thresholds keep their original values', () {
       expect(Breakpoints.sidePanel, 880);
-      expect(Breakpoints.topBarFull, 980);
       expect(Breakpoints.widePanel, 1024);
       expect(Breakpoints.navRail, 1100);
+    });
+
+    // `topBarFull` SÍ cambió, de 980 a 1040, y este test se actualiza en vez de
+    // borrarse. El motivo: el acceso al directorio del archivo añadió 44px a la
+    // barra, que a 1000px desbordaba 45. Entre 880 y 1100 no hay rail donde
+    // poner ese acceso, así que ceden las métricas — decorativas — y no el
+    // acceso, que es funcional. El coste, declarado: en el tramo 980–1040 las
+    // métricas ya no se ven, y antes sí.
+    test('topBarFull moved to make room for the directory entry point', () {
+      expect(Breakpoints.topBarFull, 1040);
     });
   });
 
@@ -170,17 +173,29 @@ void main() {
     );
 
     testWidgets(
-      '1000px: no nav rail, 320px panel, metrics still visible, no mobile sheet',
+      '1000px: no nav rail, 320px panel, metrics now hidden, no mobile sheet',
       (tester) async {
         await pumpAt(tester, 1000);
 
         expect(find.byType(SituationNavRail), findsNothing);
         expect(tester.getSize(find.byType(SituationSidePanel)).width, 320);
         expect(find.byKey(const Key('mobile-case-sheet')), findsNothing);
-        expect(find.text('DOCUMENTADOS'), findsOneWidget);
-        expect(find.text('Global ▾'), findsOneWidget);
+        // Cambió con `topBarFull`: a 1000px las métricas ya no caben junto al
+        // acceso al directorio. Es la consecuencia declarada de ese umbral.
+        expect(find.text('DOCUMENTADOS'), findsNothing);
+        expect(find.text('Global ▾'), findsNothing);
       },
     );
+
+    testWidgets('1000px still renders the whole bar without overflowing', (
+      tester,
+    ) async {
+      // El desbordamiento que provocó el cambio de umbral. Sin este test
+      // volvería a colarse en cuanto la barra gane otro control.
+      await pumpAt(tester, 1000);
+
+      expect(tester.takeException(), isNull);
+    });
 
     testWidgets(
       '900px: no nav rail, 320px panel, compact top bar, no mobile sheet',

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../app/navigation/app_navigation_scope.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../cases/application/cases_providers.dart';
+import '../../../../cases/presentation/case_directory.dart';
 import 'situation_styles.dart';
 
 /// Barra superior de la Sala de Situación: marca, buscador y métricas.
@@ -47,9 +49,20 @@ class _SituationTopBarState extends ConsumerState<SituationTopBar> {
           const _Wordmark(),
           const SizedBox(width: 16),
           Expanded(
-            child: Center(child: _SearchField(controller: _controller)),
+            child: Center(
+              child: _SearchField(
+                controller: _controller,
+                compact: widget.compact,
+              ),
+            ),
           ),
           const SizedBox(width: 12),
+          // Fuera del bloque `!compact`: es el ÚNICO punto de entrada al
+          // directorio que existe en las tres topologías. El icono del rail
+          // sólo aparece a partir de 1100px, así que depender de él dejaría el
+          // archivo inalcanzable en dos de las tres.
+          const _DirectoryEntryButton(),
+          const SizedBox(width: 8),
           const _IntakeEntryButton(),
           const SizedBox(width: 16),
           if (!widget.compact) ...[
@@ -140,9 +153,10 @@ class _Wordmark extends StatelessWidget {
 }
 
 class _SearchField extends ConsumerWidget {
-  const _SearchField({required this.controller});
+  const _SearchField({required this.controller, required this.compact});
 
   final TextEditingController controller;
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -186,14 +200,18 @@ class _SearchField extends ConsumerWidget {
                 ),
               ),
             ),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(4),
-                border: Border.all(color: AppColors.border),
+            // El atajo de teclado no se enseña en compacto: ahí no hay teclado
+            // físico que lo use, y sus ~34px son justo los que le faltaban al
+            // buscador desde que la barra ganó el acceso al directorio.
+            if (!compact)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Text('⌘K', style: SituationStyles.mono(size: 10)),
               ),
-              child: Text('⌘K', style: SituationStyles.mono(size: 10)),
-            ),
           ],
         ),
       ),
@@ -203,6 +221,46 @@ class _SearchField extends ConsumerWidget {
 
 /// Entrada al workspace de intake de Iván, visible también en móvil (donde
 /// el rail lateral desaparece por falta de espacio).
+/// Abre el directorio del archivo completo.
+///
+/// Se oculta si no hay navegación en el árbol, que sólo pasa en composiciones
+/// parciales de test: un botón que no puede llevar a ningún sitio es peor que
+/// no tener botón.
+class _DirectoryEntryButton extends StatelessWidget {
+  const _DirectoryEntryButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final navigation = AppNavigationScope.maybeOf(context);
+    if (navigation == null) {
+      return const SizedBox.shrink();
+    }
+
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        key: const Key('open-case-directory'),
+        onTap: () => showCaseDirectory(context, navigation),
+        child: Container(
+          width: 36,
+          height: 36,
+          decoration: BoxDecoration(
+            color: AppColors.inputFill,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppColors.border),
+          ),
+          alignment: Alignment.center,
+          child: const Icon(
+            Icons.format_list_bulleted_rounded,
+            size: 17,
+            color: AppColors.textSoft,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _IntakeEntryButton extends ConsumerWidget {
   const _IntakeEntryButton();
 

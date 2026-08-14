@@ -13,7 +13,12 @@ abstract final class Breakpoints {
   static const double sidePanel = 880;
 
   /// Sala: por debajo, la barra superior oculta métricas y selector global.
-  static const double topBarFull = 980;
+  ///
+  /// Subido de 980 a 1040 al añadir el acceso al directorio: con el botón
+  /// nuevo, la barra desbordaba 45px en el tramo 980–1024. Se recortan las
+  /// métricas y no el acceso porque las métricas son decorativas y el acceso al
+  /// archivo es funcional — y en el tramo 880–1100 no hay rail donde caiga.
+  static const double topBarFull = 1040;
 
   /// Sala: por debajo, el panel lateral mide 320px; a partir de aquí, 362px.
   static const double widePanel = 1024;

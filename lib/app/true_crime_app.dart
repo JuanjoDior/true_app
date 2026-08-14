@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
 import '../features/cases/presentation/case_detail_page.dart';
 import '../features/home/presentation/home_page.dart';
+import 'navigation/app_navigation_scope.dart';
 import 'navigation/app_route_controller.dart';
 import 'navigation/app_route_information_parser.dart';
 import 'navigation/app_router_delegate.dart';
@@ -45,6 +46,10 @@ class _TrueCrimeAppState extends State<TrueCrimeApp> {
 
   @override
   Widget build(BuildContext context) {
+    return AppNavigationScope(navigation: _controller, child: _buildApp());
+  }
+
+  Widget _buildApp() {
     return MaterialApp.router(
       title: 'true_app',
       debugShowCheckedModeBanner: false,

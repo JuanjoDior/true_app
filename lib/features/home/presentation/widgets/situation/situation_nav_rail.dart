@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../app/navigation/app_navigation_scope.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../cases/application/cases_providers.dart';
+import '../../../../cases/presentation/case_directory.dart';
 
 /// Rail lateral de iconos de la Sala de Situación.
 ///
@@ -29,7 +31,18 @@ class SituationNavRail extends ConsumerWidget {
             active: workspace == Workspace.situationRoom,
           ),
           const SizedBox(height: 6),
-          const _RailItem(icon: Icons.format_list_bulleted_rounded),
+          // Llevaba aquí sin `onTap` desde el principio, esperando a tener un
+          // archivo que listar. Ya lo tiene.
+          _RailItem(
+            key: const Key('rail-case-directory'),
+            icon: Icons.format_list_bulleted_rounded,
+            onTap: () {
+              final navigation = AppNavigationScope.maybeOf(context);
+              if (navigation != null) {
+                showCaseDirectory(context, navigation);
+              }
+            },
+          ),
           const SizedBox(height: 6),
           const _RailItem(icon: Icons.hub_outlined),
           const SizedBox(height: 6),

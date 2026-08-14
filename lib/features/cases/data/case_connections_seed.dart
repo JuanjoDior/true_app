@@ -3,7 +3,11 @@
 import '../domain/case_connection.dart';
 
 const List<CaseConnection> kCaseConnections = <CaseConnection>[
-  CaseConnection(aId: 'zodiac', bId: 'goldenstate', relation: 'Norte de California'),
+  CaseConnection(
+    aId: 'zodiac',
+    bId: 'goldenstate',
+    relation: 'Norte de California',
+  ),
   CaseConnection(
     aId: 'zodiac',
     bId: 'ripper',

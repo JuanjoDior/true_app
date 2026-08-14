@@ -468,6 +468,41 @@ Original task text:
 
 **Finish state:** one adaptive directory reuses loaded catalog and preserves map behavior.
 
+**Unit 8 delivered.** `flutter test` **470/470**, `flutter analyze` clean. Measured 231 changed + 871 new = **1,102**, under the 1500 ceiling.
+
+**The three-topology requirement earned its keep immediately.** Task 8.3 insisted on testing *three* widths, not two, and the middle one — desktop between 880 and 1099, where there is no rail — is exactly the one that failed: adding a 44px entry point overflowed `SituationTopBar` by 45px at 1000px. Testing only mobile and wide-desktop would have shipped a visible overflow.
+
+**Two pre-existing defects fixed as a consequence.**
+
+1. `situation_breakpoints_test.dart` documented, band by band, an overflow `SituationTopBar` already had — 21px at 980, 1.2px at 1000, 59 to 9.4px across 1030–1080 — tolerated only at those widths, with an explicit instruction to remove the tolerance the day it was fixed. Raising `topBarFull` from 980 to 1040 trims the metrics exactly where the row ran out of room, and **every measured width now pumps clean**. `overflowingWidths` is empty and any overflow anywhere is now a regression.
+2. The search field's `⌘K` shortcut chip is hidden in compact: it had no meaning without a physical keyboard, and its ~34px were exactly what the field was short by once the bar gained the entry point.
+
+**Declared cost:** between 980 and 1040 the top-bar metrics no longer show, and they used to. Metrics are decorative; the archive entry point is functional, and between 880 and 1100 there is no rail to put it in. `situation_breakpoints_test.dart` now pins that consequence instead of the old value.
+
+- [x] **8.1 RED — Ordering/reuse.** `test/case_directory_provider_test.dart`, 15 tests. Year descending, then title, then **slug** — that last tie-break is what stops two same-year same-title cases listing in the accidental order of the JSON. Ordering tests come in pairs with the input reversed, so neither can pass by luck. Reuse is asserted by counting repository loads.
+- [x] **8.2 RED — States/navigation.** `test/case_directory_test.dart`, 22 tests, mounting the **whole app** — the composition is the subject, and it was a test like this that found the map crash in Unit 7. Empty archive and broken catalog are distinct keys, same discipline as the detail page.
+- [x] **8.3 RED — Responsive access.** All three topologies, parameterised, each asserting both that the entry point exists and that it opens.
+- [x] **8.4 RED — Map preservation.** Selection, search filter and recenter tick asserted unchanged; opening a case from the directory does not select it on the map.
+- [x] **8.5 Observe RED** with bounded pumps — `pumpAndSettle` times out against the Situation Room's perpetual animation.
+- [x] **8.6 GREEN — Derived provider.** `publishedDirectoryProvider`, derived only from `casesProvider`, deliberately ignoring map filters: the map shows what you are searching, the directory shows everything published.
+- [x] **8.7 GREEN — Adaptive directory.** Full-width safe-area sheet in compact, 720px-constrained panel on wide screens, 85% height cap, scrollable list.
+- [x] **8.8 GREEN — Entry points.** Top-bar button (all three topologies) plus the rail icon, which had been sitting there **without an `onTap` since the beginning**, waiting for an archive to list. `AppNavigationScope` distributes the `AppNavigation` contract through an `InheritedWidget` rather than a provider, so the navigation package still does not know Riverpod exists.
+- [x] **8.9 Observe GREEN.** 22/22 focused, 470/470 full.
+- [x] **8.10 TRIANGULATE.** Four probes, each isolated and reverted:
+
+  | # | Probe | Failing tests | Proves |
+  |---|---|---|---|
+  | S1 | drop the slug tie-break | *same year and title falls back to slug ascending* | Order is total and reproducible |
+  | S2 | derive from `filteredCasesProvider` | 4 ordering tests | The directory is the archive, not the current map view |
+  | S3 | entry point only when `!compact` | 6 across two topologies | Reachable below 1040 too, where there is no rail |
+  | S4 | also write `selectedCaseIdProvider` when opening | 2 | Route and map selection stay separate states |
+
+- [x] **8.11 REFACTOR and verify.** `dart format`; **470/470**; `analyze` clean.
+- [x] **8.12 Apply line-budget gate.** 1,102 against 1500.
+- [x] **8.13 Review and deliver** as `feat(casos): añade el directorio público de expedientes`.
+
+Original task text:
+
 - [ ] **8.1 RED — Ordering/reuse.** Test every loaded case, year-desc/title-asc/slug-asc order, legacy cases, and no independent load.
 - [ ] **8.2 RED — States/navigation.** Test loading/error/retry/empty/list, modal close, and exact slug navigation.
 - [ ] **8.3 RED — Responsive access.** Test three topologies, not two: rail-less mobile below 880, **desktop-without-rail between 880 and 1099** (`breakpoints.dart:13,22` — `_DesktopBody` with `showRail: false`, so the rail icon entry point does not exist there), and desktop with rail at 1100 or above. Each must expose a reachable entry point, scroll, navigate, and show no blocking overflow.

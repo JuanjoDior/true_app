@@ -15,9 +15,7 @@ abstract class CaseDraftsStore {
 /// Guarda todos los borradores bajo una única clave, en un sobre versionado
 /// `{"schemaVersion": 1, "drafts": [...]}` para permitir migraciones futuras.
 class SharedPreferencesCaseDraftsStore implements CaseDraftsStore {
-  SharedPreferencesCaseDraftsStore({
-    this.storageKey = 'truecrime.case_drafts',
-  });
+  SharedPreferencesCaseDraftsStore({this.storageKey = 'truecrime.case_drafts'});
 
   final String storageKey;
 
