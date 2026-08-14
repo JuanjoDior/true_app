@@ -35,7 +35,8 @@ class _IntakeFormBody extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final draftsAsync = ref.watch(caseDraftsProvider);
     final editingDraftId = ref.watch(editingDraftIdProvider);
-    final isNarrow = MediaQuery.sizeOf(context).width < Breakpoints.intakeThreePane;
+    final isNarrow =
+        MediaQuery.sizeOf(context).width < Breakpoints.intakeThreePane;
 
     return Scaffold(
       backgroundColor: AppColors.bgDeep,
@@ -115,9 +116,8 @@ class _WorkspaceTopBar extends ConsumerWidget {
           IconButton(
             key: const Key('intake-back-button'),
             icon: const Icon(Icons.arrow_back, color: AppColors.textSoft),
-            onPressed: () =>
-                ref.read(workspaceProvider.notifier).state =
-                    Workspace.situationRoom,
+            onPressed: () => ref.read(workspaceProvider.notifier).state =
+                Workspace.situationRoom,
           ),
           if (compact)
             Flexible(
@@ -137,17 +137,17 @@ class _WorkspaceTopBar extends ConsumerWidget {
               key: const Key('intake-drafts-toggle-button'),
               tooltip: 'Borradores',
               icon: const Icon(Icons.list_alt, size: 20),
-              onPressed: () => ref
-                  .read(intakeDraftListOpenProvider.notifier)
-                  .state = !ref.read(intakeDraftListOpenProvider),
+              onPressed: () =>
+                  ref.read(intakeDraftListOpenProvider.notifier).state = !ref
+                      .read(intakeDraftListOpenProvider),
             ),
             IconButton(
               key: const Key('intake-preview-toggle-button'),
               tooltip: 'Previsualización',
               icon: const Icon(Icons.visibility_outlined, size: 20),
-              onPressed: () => ref
-                  .read(intakePreviewOpenProvider.notifier)
-                  .state = !ref.read(intakePreviewOpenProvider),
+              onPressed: () =>
+                  ref.read(intakePreviewOpenProvider.notifier).state = !ref
+                      .read(intakePreviewOpenProvider),
             ),
             const ExportCaseButton(compact: true),
             IconButton(
@@ -155,8 +155,9 @@ class _WorkspaceTopBar extends ConsumerWidget {
               tooltip: 'Nuevo borrador',
               icon: const Icon(Icons.add, size: 20),
               onPressed: () async {
-                final draftId =
-                    await ref.read(caseDraftsProvider.notifier).createDraft();
+                final draftId = await ref
+                    .read(caseDraftsProvider.notifier)
+                    .createDraft();
                 ref.read(editingDraftIdProvider.notifier).state = draftId;
               },
             ),
@@ -166,8 +167,9 @@ class _WorkspaceTopBar extends ConsumerWidget {
             TextButton.icon(
               key: const Key('intake-new-draft-button'),
               onPressed: () async {
-                final draftId =
-                    await ref.read(caseDraftsProvider.notifier).createDraft();
+                final draftId = await ref
+                    .read(caseDraftsProvider.notifier)
+                    .createDraft();
                 ref.read(editingDraftIdProvider.notifier).state = draftId;
               },
               icon: const Icon(Icons.add, size: 16),
@@ -246,10 +248,7 @@ class _FormAndPreview extends StatelessWidget {
     return Row(
       children: [
         const Expanded(child: _IntakeFormColumn()),
-        const SizedBox(
-          width: 380,
-          child: IntakePreviewPanel(),
-        ),
+        const SizedBox(width: 380, child: IntakePreviewPanel()),
       ],
     );
   }
@@ -324,8 +323,9 @@ class _NarrowIntakeBodyState extends ConsumerState<_NarrowIntakeBody> {
         return;
       }
       if (widget.drafts.isEmpty) {
-        final draftId =
-            await ref.read(caseDraftsProvider.notifier).createDraft();
+        final draftId = await ref
+            .read(caseDraftsProvider.notifier)
+            .createDraft();
         if (!mounted) {
           return;
         }
@@ -364,8 +364,9 @@ class _NarrowIntakeBodyState extends ConsumerState<_NarrowIntakeBody> {
               height: height * 0.5,
               decoration: BoxDecoration(
                 color: AppColors.bar,
-                borderRadius:
-                    const BorderRadius.vertical(top: Radius.circular(16)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(16),
+                ),
                 border: const Border(
                   top: BorderSide(color: AppColors.panelMuted),
                 ),
@@ -385,9 +386,8 @@ class _NarrowIntakeBodyState extends ConsumerState<_NarrowIntakeBody> {
           Positioned.fill(
             child: GestureDetector(
               key: const Key('intake-draft-list-scrim'),
-              onTap: () => ref
-                  .read(intakeDraftListOpenProvider.notifier)
-                  .state = false,
+              onTap: () =>
+                  ref.read(intakeDraftListOpenProvider.notifier).state = false,
               child: Container(color: Colors.black.withValues(alpha: 0.5)),
             ),
           ),
@@ -418,9 +418,9 @@ class _NarrowIntakeBodyState extends ConsumerState<_NarrowIntakeBody> {
                 child: _DraftList(
                   drafts: widget.drafts,
                   selectedId: editingDraftId,
-                  onAfterSelect: () => ref
-                      .read(intakeDraftListOpenProvider.notifier)
-                      .state = false,
+                  onAfterSelect: () =>
+                      ref.read(intakeDraftListOpenProvider.notifier).state =
+                          false,
                 ),
               ),
             ),

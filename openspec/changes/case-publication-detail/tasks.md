@@ -299,7 +299,13 @@ one prevents a defect that actually shipped into a draft.
   1. **`DossierPresentation` is not implemented.** The design's `CaseDossierContent` signature names it, but the design never defines it anywhere — there is no enum, no values, no semantics. Its evident purpose (compact vs. expanded spacing) has no consumer until Unit 7 builds the expanded page. Adding it now would ship an untested branch. **Deferred to Unit 7**, which is where `expanded` gets both a second value and a test.
   2. **`CaseDossierPanelMode` renamed `CaseDossierMode`.** It is now carried by the content as well as the panel, so a "Panel"-prefixed name on a content parameter would misdescribe it.
   3. **Map chrome is gated by `mode`, not by nullable callbacks.** Preview must suppress back, star, share, follow *and* recenter as a set; per-callback nullability would have made that four independent decisions that can disagree.
-- [ ] **4.8 GREEN — Preserve host ownership.** Inject actions from side panel/home/preview and remove only duplicated preview source rendering.
+- [x] **4.8 GREEN — Preserve host ownership** *(sub-unit 4c)*. `IntakePreviewPanel` now composes `CaseDossierPanel(mode: preview, relatedCases: const [], sourceGroups: …)` and its own `_LinkGroup` list and `_groupLinksByKind` are gone. The draft's links become source groups rendered by the shared source cards — the same ones a published case gets — instead of a second list appended underneath. It also passes an empty `relatedCases` so the panel stops deriving related cases for a draft from the published catalog.
+
+  **The grouping is now a pure function**, `previewSourceGroups` in `lib/features/cases/presentation/intake/preview_source_groups.dart`, with `test/preview_source_groups_test.dart` (14 tests). The three fragile behaviours design §9.3 warns about are properties of the *derivation*, not of the painting, and testing them through a widget tree only adds ways to fail for unrelated reasons.
+
+  **`test/intake_preview_panel_test.dart` migrated, not deleted.** Its `intake-preview-link-group-*` key assertions had no target left — there is no bespoke renderer to key. They became tree-order assertions over headings and link titles, which is what the grouping actually looks like to a reader. Its `groups unset and "other"…` test now also asserts `'OTRO'` is *absent*, so the relabel cannot silently regress. Added `the preview shows no map chrome`, which is the chain assertion moved here from 4.4.
+
+  **Two hosts deliberately not migrated.** `situation_side_panel.dart` and `home_page.dart` are pure map hosts: migrating them would mean writing `mode: CaseDossierMode.map` — the default — and changing nothing else. D12 makes that migration optional, and the plan's value was in the intake host, which genuinely changes behaviour. Same for `test/intake_narrow_layout_test.dart:452`, which design §12 explicitly permits leaving as-is. Ceremony is not evidence.
 - [x] **4.9 Observe GREEN** *(4b)*. 36/36 focused, first run. Full suite **301/301** including the 18 characterization tests, still untouched; `flutter analyze` clean.
 - [x] **4.10 TRIANGULATE** *(4b)*. Seven mutations, each isolated and reverted:
 
@@ -314,9 +320,23 @@ one prevents a defect that actually shipped into a draft.
   | M7 | panel ignores a host `onReturnToMap` | 2 tests | A host callback replaces the default map write instead of running alongside it |
 
   Every one of the 36 dies under at least one probe. The absence assertions carry presence twins (`preview mode still renders the editorial identity`, `an override renders its own sources`) so "renders nothing" cannot pass for "suppresses the chrome".
-- [ ] **4.11 REFACTOR and verify** full tests/analyze.
-- [ ] **4.12 Apply the line-budget gate to each sub-unit separately.** The only enforced threshold is the one in Execution Rules: 1500 or more stops the unit. The per-row figures are forecasts, not gates — exceeding a forecast is a signal to re-plan, not a stop. If 4a-2 measures 1500 or more, the legal slice is to rename the nine subwidgets public first; slicing by section group while they are private does not compile (design §9.2).
-- [ ] **4.13 Review and deliver each sub-unit** as `refactor(casos): extrae el contenido compartido del expediente` (4a), `feat(casos): configura el panel de expediente por contexto` (4b), and `refactor(casos): migra los hosts al panel configurable` (4c).
+- [x] **4.11 REFACTOR and verify.** Per sub-unit. 4c: `dart format` on the touched files only; `flutter test` **316/316**, `SUITE_EXIT=0`; `flutter analyze` `ANALYZE_EXIT=0`.
+
+  4c triangulation, each mutation isolated and reverted:
+
+  | # | Mutation | Failing tests | Proves |
+  |---|---|---|---|
+  | N1 | iterate `link.kind` directly instead of `link.kind ?? other` | 8 across both files | An untyped link is not silently dropped from the preview |
+  | N2 | label the bucket with `kind.label` (`'Otro'`) | 3 | An unclassified link is not presented as a real type |
+  | N3 | trim the title like the exporter does | *a padded title survives verbatim* | Preview and export stay deliberately different |
+  | N4 | `IntakePreviewPanel` passes `mode: map` | *the preview shows no map chrome* | The mode survives the whole host chain |
+  | N5 | `IntakePreviewPanel` passes no `sourceGroups` | 3 | The groups actually reach the shared renderer |
+
+  One test name was corrected during this pass: `renders no link groups when the draft has no links` had been rewritten to use a draft *with* a link, so the name no longer described it. It is now `a single link still gets its own group heading`, the presence twin of the empty-draft test below it.
+- [x] **4.12 Apply the line-budget gate to each sub-unit separately.** Measured, all under the 1500 ceiling: **4a-1** 423 · **4a-2** 1,318 · **4b** 303 changed + 455 new = 758 · **4c** 388 changed + 186 new = 574. The renaming escape hatch below was never needed: the atomic move kept all ten subwidgets private.
+
+  Original wording follows. The only enforced threshold is the one in Execution Rules: 1500 or more stops the unit. The per-row figures are forecasts, not gates — exceeding a forecast is a signal to re-plan, not a stop. If 4a-2 measures 1500 or more, the legal slice is to rename the nine subwidgets public first; slicing by section group while they are private does not compile (design §9.2).
+- [x] **4.13 Review and deliver each sub-unit.** `3be1c15` (4a-1), `43646d5` (4a-2), `555f937` (4b), and 4c as `refactor(casos): migra la previsualización al panel configurable`. Original wording: `refactor(casos): extrae el contenido compartido del expediente` (4a), `feat(casos): configura el panel de expediente por contexto` (4b), and `refactor(casos): migra los hosts al panel configurable` (4c).
 
 ## Unit 5 — Activate the Seven-Section Chapter Editor
 

@@ -36,10 +36,7 @@ final List<CaseFormSection> kCaseFormSections = <CaseFormSection>[
     title: 'Cronología',
     builder: (context) => const TimelineSection(),
   ),
-  CaseFormSection(
-    title: 'Enlaces',
-    builder: (context) => const LinksSection(),
-  ),
+  CaseFormSection(title: 'Enlaces', builder: (context) => const LinksSection()),
   CaseFormSection(
     title: 'Fotografías',
     builder: (context) => const PhotosSection(),

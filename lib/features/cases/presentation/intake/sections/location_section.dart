@@ -130,11 +130,7 @@ class _LocationSectionState extends ConsumerState<LocationSection> {
               edit((current) => current.copyWith(regionOrCity: value)),
         ),
         const SizedBox(height: 14),
-        _FineTuning(
-          draft: draft,
-          placeRevision: _placeRevision,
-          onEdit: edit,
-        ),
+        _FineTuning(draft: draft, placeRevision: _placeRevision, onEdit: edit),
       ],
     );
   }

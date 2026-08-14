@@ -6,11 +6,9 @@ import '../../../../../core/layout/breakpoints.dart';
 /// flexible (`Expanded`) cuando la fila cabe en línea.
 class IntakeFieldSlot {
   const IntakeFieldSlot.fixed(this.child, {required this.width})
-      : isFlexible = false;
+    : isFlexible = false;
 
-  const IntakeFieldSlot.flexible(this.child)
-      : width = null,
-        isFlexible = true;
+  const IntakeFieldSlot.flexible(this.child) : width = null, isFlexible = true;
 
   final Widget child;
   final double? width;

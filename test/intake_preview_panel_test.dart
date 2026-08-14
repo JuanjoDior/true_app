@@ -36,8 +36,12 @@ Future<ProviderContainer> _pumpPreview(
   addTearDown(container.dispose);
 
   await container.read(caseDraftsProvider.future);
-  final draftId = await container.read(caseDraftsProvider.notifier).createDraft();
-  await container.read(caseDraftsProvider.notifier).updateDraft(
+  final draftId = await container
+      .read(caseDraftsProvider.notifier)
+      .createDraft();
+  await container
+      .read(caseDraftsProvider.notifier)
+      .updateDraft(
         CaseDraft(
           draftId: draftId,
           title: 'Caso agrupado',
@@ -61,6 +65,22 @@ Future<ProviderContainer> _pumpPreview(
   return container;
 }
 
+/// Los textos que la previsualización pinta, en orden de árbol.
+///
+/// Sustituye a las claves `intake-preview-link-group-*` que llevaba el widget
+/// borrado en la Unit 4c. Ya no hay un renderizador propio al que ponerle
+/// claves: los enlaces los pinta el expediente compartido, así que lo que se
+/// afirma es el orden en que aparecen encabezado y enlaces, que es
+/// exactamente el agrupamiento visible para quien lo lee.
+List<String> _visibleTexts(WidgetTester tester, Set<String> wanted) {
+  return tester
+      .widgetList<Text>(find.byType(Text))
+      .map((text) => text.data)
+      .whereType<String>()
+      .where(wanted.contains)
+      .toList(growable: false);
+}
+
 void main() {
   testWidgets('groups preview links by their typed kind', (tester) async {
     await _pumpPreview(tester, const [
@@ -81,70 +101,95 @@ void main() {
       ),
     ]);
 
-    final podcastGroup =
-        find.byKey(const Key('intake-preview-link-group-podcast'));
-    final videoGroup = find.byKey(const Key('intake-preview-link-group-video'));
-
-    expect(podcastGroup, findsOneWidget);
-    expect(videoGroup, findsOneWidget);
-
-    // Los dos podcasts viven juntos en su grupo.
+    // Los dos podcasts quedan entre su encabezado y el siguiente; el vídeo,
+    // detrás del suyo. Eso ES el agrupamiento.
     expect(
-      find.descendant(of: podcastGroup, matching: find.text('Serial')),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(
-        of: podcastGroup,
-        matching: find.text('Crimen en el bosque'),
-      ),
-      findsOneWidget,
-    );
-    // Y el vídeo queda fuera de ese grupo, en el suyo.
-    expect(
-      find.descendant(of: podcastGroup, matching: find.text('Documental')),
-      findsNothing,
-    );
-    expect(
-      find.descendant(of: videoGroup, matching: find.text('Documental')),
-      findsOneWidget,
+      _visibleTexts(tester, {
+        'PODCAST',
+        'Serial',
+        'Crimen en el bosque',
+        'VÍDEO',
+        'Documental',
+      }),
+      orderedEquals(const [
+        'PODCAST',
+        'Serial',
+        'Crimen en el bosque',
+        'VÍDEO',
+        'Documental',
+      ]),
     );
   });
 
-  testWidgets('groups unset and "other" links under a single unclassified group',
-      (tester) async {
+  testWidgets(
+    'groups unset and "other" links under a single unclassified group',
+    (tester) async {
+      await _pumpPreview(tester, const [
+        DraftLink(title: 'Sin tipo', url: 'https://example.com/a'),
+        DraftLink(
+          title: 'Marcado como otro',
+          url: 'https://example.com/b',
+          kind: DraftLinkKind.other,
+        ),
+      ]);
+
+      // Un solo encabezado para los dos, y dice "Sin clasificar" y no "Otro".
+      expect(
+        _visibleTexts(tester, {
+          'SIN CLASIFICAR',
+          'OTRO',
+          'Sin tipo',
+          'Marcado como otro',
+        }),
+        orderedEquals(const [
+          'SIN CLASIFICAR',
+          'Sin tipo',
+          'Marcado como otro',
+        ]),
+      );
+    },
+  );
+
+  testWidgets('a single link still gets its own group heading', (
+    tester,
+  ) async {
     await _pumpPreview(tester, const [
-      DraftLink(title: 'Sin tipo', url: 'https://example.com/a'),
       DraftLink(
-        title: 'Marcado como otro',
-        url: 'https://example.com/b',
-        kind: DraftLinkKind.other,
+        title: 'Serial',
+        url: 'https://example.com/serial',
+        kind: DraftLinkKind.podcast,
       ),
     ]);
 
-    final otherGroup = find.byKey(const Key('intake-preview-link-group-other'));
-
-    expect(otherGroup, findsOneWidget);
+    // Gemelo de presencia del test de abajo: sin él, "no se pinta ningún
+    // grupo nunca" pasaría el caso vacío sin probar nada.
     expect(
-      find.descendant(of: otherGroup, matching: find.text('Sin tipo')),
-      findsOneWidget,
-    );
-    expect(
-      find.descendant(of: otherGroup, matching: find.text('Marcado como otro')),
-      findsOneWidget,
+      _visibleTexts(tester, {'PODCAST'}),
+      orderedEquals(const ['PODCAST']),
     );
   });
 
-  testWidgets('renders no link groups when the draft has no links',
-      (tester) async {
+  testWidgets('renders nothing but the dossier when the draft has no links', (
+    tester,
+  ) async {
     await _pumpPreview(tester, const []);
 
-    for (final kind in DraftLinkKind.values) {
-      expect(
-        find.byKey(Key('intake-preview-link-group-${kind.name}')),
-        findsNothing,
-      );
-    }
+    expect(
+      _visibleTexts(tester, {
+        for (final kind in DraftLinkKind.values) kind.label.toUpperCase(),
+        'SIN CLASIFICAR',
+      }),
+      isEmpty,
+    );
+  });
+
+  testWidgets('the preview shows no map chrome', (tester) async {
+    await _pumpPreview(tester, const []);
+
+    // La cadena completa: IntakePreviewPanel → CaseDossierPanel(preview) →
+    // CaseDossierContent. Si algún eslabón perdiera el modo, volvería a
+    // aparecer el cromo del mapa dentro del formulario de intake.
+    expect(find.text('VOLVER AL MAPA'), findsNothing);
   });
 
   testWidgets('renders each draft photo with its caption', (tester) async {
@@ -168,8 +213,9 @@ void main() {
     expect(find.text('Fachada del edificio'), findsOneWidget);
   });
 
-  testWidgets('omits the photo section when the draft has no photos',
-      (tester) async {
+  testWidgets('omits the photo section when the draft has no photos', (
+    tester,
+  ) async {
     await _pumpPreview(tester, const []);
 
     expect(find.byKey(const Key('case-photos')), findsNothing);

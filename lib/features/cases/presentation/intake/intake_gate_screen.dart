@@ -59,8 +59,10 @@ class _IntakeGateScreenState extends ConsumerState<IntakeGateScreen> {
                 const SizedBox(height: 8),
                 Text(
                   'Introduce la clave compartida para continuar.',
-                  style:
-                      SituationStyles.sans(size: 13, color: AppColors.textSub),
+                  style: SituationStyles.sans(
+                    size: 13,
+                    color: AppColors.textSub,
+                  ),
                 ),
                 const SizedBox(height: 20),
                 TextField(
@@ -68,9 +70,13 @@ class _IntakeGateScreenState extends ConsumerState<IntakeGateScreen> {
                   controller: _controller,
                   obscureText: true,
                   onSubmitted: (_) => _submit(),
-                  style:
-                      SituationStyles.sans(size: 14, color: AppColors.textBody),
-                  decoration: const InputDecoration(hintText: 'Clave compartida'),
+                  style: SituationStyles.sans(
+                    size: 14,
+                    color: AppColors.textBody,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'Clave compartida',
+                  ),
                 ),
                 if (_error != null) ...[
                   const SizedBox(height: 10),

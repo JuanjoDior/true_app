@@ -53,7 +53,9 @@ class _LocationPickerMapState extends ConsumerState<LocationPickerMap> {
               mapController: _map,
               options: MapOptions(
                 initialCenter: point ?? config.initialCenter,
-                initialZoom: point == null ? config.initialZoom : config.focusZoom,
+                initialZoom: point == null
+                    ? config.initialZoom
+                    : config.focusZoom,
                 minZoom: config.minZoom,
                 maxZoom: config.maxZoom,
                 onTap: (_, latLng) => widget.onPointSelected(latLng),

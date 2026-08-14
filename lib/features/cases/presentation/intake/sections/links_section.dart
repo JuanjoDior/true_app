@@ -45,12 +45,16 @@ class LinksSection extends ConsumerWidget {
                   TextFormField(
                     key: Key('intake-field-link-title-$i'),
                     initialValue: draft.links[i].title,
-                    decoration:
-                        const InputDecoration(labelText: 'Título del enlace'),
+                    decoration: const InputDecoration(
+                      labelText: 'Título del enlace',
+                    ),
                     onChanged: (value) => replaceLink(
                       i,
-                      (link) =>
-                          DraftLink(title: value, url: link.url, kind: link.kind),
+                      (link) => DraftLink(
+                        title: value,
+                        url: link.url,
+                        kind: link.kind,
+                      ),
                     ),
                   ),
                 ),
@@ -64,8 +68,11 @@ class LinksSection extends ConsumerWidget {
                     ),
                     onChanged: (value) => replaceLink(
                       i,
-                      (link) =>
-                          DraftLink(title: link.title, url: value, kind: link.kind),
+                      (link) => DraftLink(
+                        title: link.title,
+                        url: value,
+                        kind: link.kind,
+                      ),
                     ),
                   ),
                 ),
@@ -77,10 +84,7 @@ class LinksSection extends ConsumerWidget {
                     decoration: const InputDecoration(labelText: 'Tipo'),
                     items: [
                       for (final kind in DraftLinkKind.values)
-                        DropdownMenuItem(
-                          value: kind,
-                          child: Text(kind.label),
-                        ),
+                        DropdownMenuItem(value: kind, child: Text(kind.label)),
                     ],
                     onChanged: (value) {
                       if (value != null) {
@@ -116,9 +120,8 @@ class LinksSection extends ConsumerWidget {
           key: const Key('intake-add-link-button'),
           onPressed: () => notifier.editDraft(
             draft.draftId,
-            (current) => current.copyWith(
-              links: [...current.links, const DraftLink()],
-            ),
+            (current) =>
+                current.copyWith(links: [...current.links, const DraftLink()]),
           ),
           icon: const Icon(Icons.add, size: 16),
           label: const Text('Añadir enlace'),

@@ -22,7 +22,10 @@ class PhotosSection extends ConsumerWidget {
 
     // Todas las mutaciones parten de la lista vigente, no de la capturada en
     // este `build`: editar dos campos seguidos no debe perder el primero.
-    void replacePhoto(int index, DraftPhoto Function(DraftPhoto current) update) {
+    void replacePhoto(
+      int index,
+      DraftPhoto Function(DraftPhoto current) update,
+    ) {
       notifier.editDraft(draft.draftId, (current) {
         if (index >= current.photos.length) {
           return current;
@@ -51,8 +54,7 @@ class PhotosSection extends ConsumerWidget {
                     ),
                     onChanged: (value) => replacePhoto(
                       i,
-                      (photo) =>
-                          DraftPhoto(url: value, caption: photo.caption),
+                      (photo) => DraftPhoto(url: value, caption: photo.caption),
                     ),
                   ),
                 ),

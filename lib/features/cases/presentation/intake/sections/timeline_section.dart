@@ -89,10 +89,7 @@ class TimelineSection extends ConsumerWidget {
                     decoration: const InputDecoration(labelText: 'Tipo'),
                     items: [
                       for (final kind in CaseTimelineKind.values)
-                        DropdownMenuItem(
-                          value: kind,
-                          child: Text(kind.label),
-                        ),
+                        DropdownMenuItem(value: kind, child: Text(kind.label)),
                     ],
                     onChanged: (value) {
                       if (value != null) {
