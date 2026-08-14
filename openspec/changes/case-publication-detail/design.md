@@ -22,7 +22,7 @@ This change extends the existing versioned-JSON publication circuit with four fi
 | D4 | Update chapters through `CaseDraftsNotifier.editDraft` transformations and serialize draft-store writes so rapid edits cannot persist an older snapshot after a newer one. |
 | D5 | Replace `MaterialApp.home` with `MaterialApp.router`, a small custom `RouteInformationParser`, and a `RouterDelegate`. Keep Flutter’s default hash URL strategy. |
 | D6 | The app route controller is the only source of routed slug state. `selectedCaseIdProvider` remains exclusively the Situation Room map selection. |
-| D7 | Extract `CaseDossierContent` as the single editorial renderer while preserving the host chain: `IntakePreviewPanel` composes a preview-configured `CaseDossierPanel`, and `CaseDossierPanel` composes `CaseDossierContent`. Map and preview hosts supply panel configuration, callbacks, and source overrides; only the expanded route composes `CaseDossierContent` directly. |
+| D7 | Extract `CaseDossierContent` as the single implementation of each **shared** editorial block, preserving the host chain: `IntakePreviewPanel` composes a preview-configured `CaseDossierPanel`, and `CaseDossierPanel` composes `CaseDossierContent`. Map and preview hosts supply panel configuration, callbacks, and source overrides; only the expanded route composes `CaseDossierContent` directly. **Corrected 2026-08-13:** this decision previously required the expanded page to show *the same* content as the compact panel. It does not. The expanded page is a **superset** — it reuses the shared blocks and adds page-only structure the compact surfaces never show. The rule is "no duplicated renderer", not "same content". |
 | D8 | Derive the directory from the existing `casesProvider`, sorted by year descending, title ascending, then slug as a total-order fallback. |
 | D9 | Present the directory as an adaptive modal surface over the Situation Room; it does not replace the map and does not create a second catalog route. |
 | D10 | Distinguish catalog loading, catalog error, unknown slug, and valid dossier states without changing the active hash implicitly. |
@@ -709,6 +709,35 @@ heading, no duplicate section, and normal legacy rendering.
 
 Add `lib/features/home/presentation/case_detail_page.dart` using `Scaffold`, `SafeArea`, page return action, one vertical scroll surface, centered desktop reading width, compact mobile padding, responsive metadata, horizontally scrollable photo strips as appropriate, and reachable related-case controls. It must not depend on a desktop-only row or oversized test viewport.
 
+### 10.1 Visual target
+
+The maintainer prepared a full visual design for this page — «Ficha de Caso» in
+the Claude Design project *Rediseño plataforma true crime*. It is the agreed
+destination for the expanded page and this cycle builds toward it, but **only as
+far as the current data model reaches**.
+
+What this cycle takes from it: the hero block (status chips, large serif title,
+location and coordinates line, lead summary), a stat strip derived from data the
+case already carries, the reading typography, the sources list with per-source
+kind chips, related cases, and a compact locator.
+
+What this cycle does **not** take from it, because the data does not exist:
+evidence entries, hypotheses with pro/contra and documentary support, a
+technical fact sheet, investigation stages, and the "what is known / what
+remains open" lists. Each of those is a new entity needing a draft field, an
+intake editor, persistence, export, catalog decoding and rendering — together
+roughly the size of this whole cycle. They belong to a follow-on change, and
+that change depends on `CaseDossierContent` existing first.
+
+The design also implies a tabbed information architecture. This cycle ships the
+page as a single scrolling surface, which is what the reachability scenarios in
+`specs/expanded-case-dossier/spec.md` assert. Tabs are a presentation change to
+decide with the follow-on content, not a silent substitution now: a tabbed page
+needs per-tab reachability assertions, which the current scenarios do not have.
+
+Application chrome in the mockup — global search, follow-the-case, avatar, the
+left icon rail — is out of scope here and some of it has no backend to stand on.
+
 ## 11. Published-case directory
 
 ### 11.1 Presentation
@@ -793,7 +822,7 @@ after refactoring.
 | Catalog tolerance | `test/local_cases_repository_chapters_test.dart` | Optional malformed chapter breaks case or core error is hidden. |
 | Intake editor | `test/chapters_section_test.dart` | Four fixed fields, no free action, or edit/clear behavior is absent. |
 | Live preview and panel chain | `test/intake_chapter_preview_test.dart` | Current changes are not shown once/in order through `IntakePreviewPanel → CaseDossierPanel → CaseDossierContent`, or preview mode leaks map chrome. |
-| Dossier extraction and source override | `test/case_dossier_content_test.dart` | Sections duplicate/omit, grouped preview sources render alongside projected sources, or hosts diverge. |
+| Dossier extraction and source override | `test/case_dossier_content_test.dart` | A shared block is duplicated or wrongly omitted, grouped preview sources render alongside projected sources, or a host re-implements a shared block instead of composing it. Hosts showing *different amounts* of content is expected, not a failure. |
 | Host navigation | `test/dossier_host_navigation_test.dart` | Map and route callbacks cannot remain independent. |
 | Route parser | `test/app_route_parser_test.dart` | Parse/restore symmetry is absent. |
 | Routed states | `test/case_detail_page_test.dart` | Loading/error/not-found/legacy/known states are not distinguished. |

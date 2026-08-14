@@ -2,32 +2,37 @@
 
 ## Purpose
 
-Provide a reading-oriented public case page that composes the same dossier content used by the compact Situation Room panel and intake preview while keeping each host's navigation and contextual actions separate.
+Provide a reading-oriented public case page. It reuses the editorial blocks the compact Situation Room panel and intake preview already render, and it is free to add page-only structure and content that those compact surfaces do not have.
 
 ## Requirements
 
-### Requirement: Single Shared Dossier Content
+### Requirement: No Duplicated Editorial Renderer
 
-The system MUST define dossier editorial content once and compose that shared content in the compact `CaseDossierPanel`, intake preview, and expanded public page.
+The system MUST define each shared editorial block once and compose it in every host that shows it. The shared set is case metadata, summary, photos, timeline, sources, related cases, and meaningful editorial chapters. Each applicable block MUST appear no more than once within a single rendered host.
 
-The shared content MUST present applicable case metadata, summary, photos, timeline, sources, related cases, and meaningful editorial chapters consistently. Each applicable content section MUST appear no more than once in a rendered dossier context.
+**The expanded page is a superset, not a mirror.** An earlier version of this specification required all three hosts to present *the same* content; that was wrong and is corrected here. `CaseDossierPanel` stays the compact map-context and preview surface and shows the compact subset. The expanded page composes the same shared blocks — it MUST NOT re-implement them — and MAY add page-only structure and content that the compact surfaces never show. Adding to the expanded page is not a violation; re-implementing a shared block is.
 
-`CaseDossierPanel` MUST remain the compact map-context and preview surface. The expanded page MUST compose the same shared content without copying the compact panel's editorial renderer or duplicating its content.
+#### Scenario: A shared block has one implementation
 
-#### Scenario: All dossier hosts share the same case content
+- GIVEN summary, photos, timeline, sources, related cases and chapters are rendered by both the compact panel and the expanded page
+- WHEN the presentation composition is inspected
+- THEN each of those blocks resolves to a single shared implementation
+- AND the expanded page maintains no second independent implementation of any of them
 
-- GIVEN a case contains metadata, summary, photos, timeline entries, sources, related cases, and all four meaningful chapters
-- WHEN the case is rendered in the compact panel, intake preview, and expanded page
-- THEN each host presents the same applicable editorial data
-- AND chapters appear in fixed editorial order
-- AND every applicable section appears exactly once within each host
+#### Scenario: The expanded page may show more than the compact panel
 
-#### Scenario: Composition has no duplicate editorial renderer
+- GIVEN the expanded page renders page-only structure that the compact panel does not
+- WHEN both are rendered for the same case
+- THEN the compact panel shows only its compact subset
+- AND the expanded page additionally shows its page-only structure
+- AND that difference is not treated as a defect
 
-- GIVEN the compact panel, intake preview, and expanded page are part of the delivered application
-- WHEN their presentation composition is inspected
-- THEN they compose the same shared dossier content contract
-- AND the expanded page does not maintain a second independent implementation of the editorial sections
+#### Scenario: Shared blocks stay consistent where both hosts show them
+
+- GIVEN a case with meaningful content in all four chapters
+- WHEN it is rendered in the compact panel, the intake preview and the expanded page
+- THEN every host that shows chapters shows them in the fixed editorial order
+- AND no host shows an applicable block twice
 
 ### Requirement: Optional Content Omission and Legacy Presentation
 

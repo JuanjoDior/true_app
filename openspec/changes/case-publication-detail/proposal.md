@@ -72,7 +72,7 @@ A maintainer continues publishing through the existing clipboard-to-asset-to-com
 
 ### Shared dossier presentation
 
-- Extract or compose reusable dossier content so the compact `CaseDossierPanel`, intake preview, and expanded public page present the same case content consistently.
+- Extract reusable dossier content so each shared editorial block has one implementation, composed by the compact `CaseDossierPanel`, the intake preview and the expanded public page. The expanded page is a **superset**: it reuses those blocks and adds page-only structure the compact surfaces do not show. The rule is no duplicated renderer, not identical content.
 - Retain compact panel actions and map-context behavior in `CaseDossierPanel`.
 - Allow route/page contexts to open related cases through route navigation without requiring a map gesture.
 - Do not replace the Situation Room map as the primary spatial discovery surface.
@@ -103,6 +103,9 @@ A maintainer continues publishing through the existing clipboard-to-asset-to-com
 - Rich-text editing, uploads, arbitrary chapter types, or free-form additional chapters.
 - A new ranking algorithm, backend search, pagination service, or independent catalog source.
 - Replacing or duplicating `CaseDossierPanel`.
+- The five content types the «Ficha de Caso» design adds beyond the current model — evidence entries, hypotheses with pro/contra and documentary support, a technical fact sheet, investigation stages, and the "what is known / what remains open" lists. They are the agreed destination but need their own change: each is a new entity spanning draft, intake editor, persistence, export, catalog decoding and rendering. See design §10.1.
+- A tabbed information architecture for the expanded page. This cycle ships a single scrolling surface; tabs ride with the follow-on content change, because they need per-tab reachability assertions the current scenarios do not have.
+- Application chrome from that design: global search, follow-the-case, user avatar, left icon rail.
 - Changes to what `intake-responsive` delivered, **except** two edits to `test/intake_narrow_layout_test.dart` (committed in `c351fac`): its section-registry expectation, which registering the seventh section genuinely forces (unit 5), and optionally its `CaseDossierPanel` construction, which unit 4c may migrate to explicit configuration. Both are named in design §12 and confined to those units; no other edit to that file is in scope.
 
 ## Dependencies

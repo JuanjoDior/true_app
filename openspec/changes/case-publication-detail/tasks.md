@@ -233,7 +233,7 @@ one prevents a defect that actually shipped into a draft.
 > `flutter analyze`, review and commit.
 
 - [ ] **4.1 CHARACTERIZE** existing panel, side-panel, mobile dossier, and intake preview behavior. GREEN characterization cannot prove new behavior.
-- [ ] **4.2 RED — Shared content.** Add `case_dossier_content_test.dart` for metadata, summary, chapters once/in order, photos, timeline, sources, related cases, optional omission, and legacy cases.
+- [ ] **4.2 RED — Shared content.** Add `case_dossier_content_test.dart` for metadata, summary, chapters once/in order, photos, timeline, sources, related cases, optional omission, and legacy cases. Assert **one implementation per shared block**, not identical output across hosts: the expanded page is a superset and may render more (design D7).
 - [ ] **4.3 RED — Source overrides and modes.** Prove null/empty/grouped override semantics and map/preview chrome separation.
 - [ ] **4.4 RED — Composition/callbacks.** Prove map callbacks and the required `IntakePreviewPanel → CaseDossierPanel(preview) → CaseDossierContent` chain.
 - [ ] **4.5 Observe RED** for missing contracts.

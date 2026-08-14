@@ -73,7 +73,7 @@ Split current dossier responsibilities conceptually into:
 
 - A reusable `CaseDossierContent`-like surface that renders editorial sections once, including chapters.
 - `CaseDossierPanel`, which retains compact/map-context actions and composes shared content.
-- The expanded dossier page, which supplies route/page chrome and composes the same content in a reading-oriented layout.
+- The expanded dossier page, which supplies route/page chrome, composes the shared blocks in a reading-oriented layout, and is free to add page-only structure the compact surfaces do not show.
 - `IntakePreviewPanel`, which keeps live preview parity through the shared surface.
 
 ### Related-case navigation
@@ -129,7 +129,7 @@ Strict TDD requires observed RED before GREEN for every new behavior.
 - Live preview updates after chapter editing.
 - Published list renders cases and navigates with the correct slug.
 - Mobile and desktop layouts expose list/page affordances without overflow.
-- Expanded page, compact panel, and preview compose the same content.
+- Expanded page, compact panel and preview compose the same shared blocks from one implementation; the expanded page may add page-only structure on top.
 - Unknown-slug behavior behind an injectable route/navigation adapter.
 
 Tests involving `flutter_map` must use bounded `pump` calls rather than `pumpAndSettle`.
