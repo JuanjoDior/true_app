@@ -122,8 +122,39 @@ Tres piezas que conviene conocer antes de tocar nada:
   acota a un rango, nunca fija su valor. Dos `expect` en un mismo `test` abortan
   en el primero, así que una mutación combinada sólo demuestra que la primera
   está viva. Lo único que demuestra que un test sirve es verlo fallar.
+- **`tester.enterText` bombea un frame por dentro**, así que NO sirve para probar
+  dos ediciones sin reconstrucción de por medio. Con un rebuild garantizado,
+  editar el estado vigente y editar la copia capturada en el `build` son
+  indistinguibles y el test pasa contra las dos implementaciones. Yo escribí uno
+  así creyendo que cazaba justo ese defecto. Para reproducir el escenario real
+  hay que disparar los `onChanged` a mano y sin bombear:
+  `tester.widget<EditableText>(find.descendant(of: find.byKey(k), matching:
+  find.byType(EditableText))).onChanged!(valor)`. Es alcanzable en producción
+  porque `editDraft` publica el estado de forma síncrona pero el widget no se
+  reconstruye hasta el frame siguiente.
+- **`onMapReady` de `flutter_map` no significa "el mapa está en pantalla"**, sólo
+  que el controlador está enlazado. Se dispara aunque el mapa esté offstage — por
+  ejemplo con la Sala tapada por la ruta de un expediente — mientras su visor
+  interactivo sólo se inicializa al pintarse. Mover la cámara en ese hueco revienta
+  con `LateInitializationError`. Cualquier `move`/`fitCamera` reactivo tiene que
+  comprobar tamaño, no sólo el flag de listo: ver `_canMoveCamera` en
+  `situation_map_stage.dart`. Volverá a morder con cada ruta nueva que tape la Sala.
+- **Un parámetro que sólo usan los tests y que sustituye una entrada de producción
+  crea un camino que ningún test recorre: el del usuario.** `TrueCrimeApp` aceptaba
+  `initialLocation` para fijar la ruta en tests y sembraba con él un
+  `routeInformationProvider` SIEMPRE. En producción valía null, así que la app
+  ignoraba la barra de direcciones y **ningún enlace directo funcionaba**. Los 431
+  tests pasaban porque todos pasan `initialLocation`. Regla: cuando un parámetro
+  así exista, escribir un test explícito de que OMITIRLO deja la fuente real en su
+  sitio, con su gemelo de presencia.
+- **Hay defectos que sólo existen en la composición.** Dos de los tres fallos de
+  producción del ciclo `case-publication-detail` eran invisibles para cualquier
+  test de widget aislado: hacía falta montar la aplicación entera, y para el
+  arranque real hacía falta navegador. Un test que monte `TrueCrimeApp` completo
+  vale por veinte que monten piezas.
 - En **Git Bash**, anteponer `MSYS_NO_PATHCONV=1` a los comandos con rutas que
-  empiezan por `/`.
+  empiezan por `/`. Aplica a `flutter build web --base-href "/true_app/"`, que sin
+  eso falla convirtiendo la ruta.
 
 ## Pendiente
 
@@ -132,8 +163,10 @@ Tres piezas que conviene conocer antes de tocar nada:
 | ~~El formulario sólo funciona en escritorio~~ | **Resuelto** (agosto 2026, ciclo `intake-responsive`). Layout estrecho por debajo de 1024px con hojas superpuestas, y el `<meta name="viewport">` que hacía falta para que el navegador móvil lo activara |
 | ~~Comprobar en un dispositivo real~~ | **Hecho** (12 de agosto de 2026). El mantenedor abrió el despliegue público desde un teléfono y confirmó **las dos** pantallas: el formulario de alta y la Sala de Situación |
 | ~~El ciclo `intake-responsive` sigue abierto~~ | **Archivado** el 13 de agosto de 2026 con `blockers: 0`, 11/11 requisitos y 24/24 escenarios. Fundó `openspec/specs/` con los dominios `responsive-breakpoints` e `intake-responsive-layout`. El registro completo está en `openspec/changes/archive/2026-08-13-intake-responsive/`. El "deadlock" de Gentle AI ([#2997](https://github.com/Gentleman-Programming/gentle-ai/issues/2997)) **no era un bug**: faltaba atar la revisión aprobada al change con `gentle-ai review bind-sdd` |
+| ~~`SituationTopBar` desborda~~ | **Resuelto** (14 de agosto de 2026, ciclo `case-publication-detail`). Subir `topBarFull` de 980 a 1040 para que cupiera el acceso al directorio lo curó en todos los anchos medidos, y ocultar el atajo `⌘K` en compacto arregló el tramo estrecho. La lista `overflowingWidths` de `situation_breakpoints_test.dart` quedó **vacía**: cualquier desbordamiento a cualquier ancho es ahora una regresión. Coste declarado: entre 980 y 1040 las métricas de la barra ya no se ven |
 | La banda 1024–1199px | Ahí la columna del formulario es tan estrecha que **todas** las filas se apilan, en pantallas que técnicamente son escritorio. Anticipado en `design.md:9`, ausente del proposal, sin test |
-| `SituationTopBar` desborda | En dos bandas de ancho medidas (980 y 1030–1080). Preexistente, fijado como está, candidato a change propio |
+| Layout compacto del detalle y el directorio | Sin verificar en navegador. `resize_window` no llega al viewport de Flutter (`window.innerWidth` se queda clavado), así que sólo hay cobertura automática a 500 y 360px. Es la misma clase de ceguera que ya costó dos veces: **pendiente de abrir el despliegue en un teléfono de verdad** |
+| `createDraft` puede colisionar ids | Deriva el id de `DateTime.now().millisecondsSinceEpoch`; dos creaciones en el mismo milisegundo comparten `draftId`. Real, fuera del alcance de la Unit 3, sin unidad propia todavía |
 | `featuredRank` y `relevanceRank` | Edición manual en el asset |
 | Error en consola al arrancar | `updates_ticker.dart:46`, sin efecto visible |
 
