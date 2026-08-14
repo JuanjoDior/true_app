@@ -14,12 +14,34 @@ import '../domain/case_timeline_event.dart';
 /// Reemplazos de caracteres acentuados y ligaduras habituales en castellano
 /// y en los idiomas de los casos ya publicados.
 const Map<String, String> _diacritics = {
-  'á': 'a', 'à': 'a', 'ä': 'a', 'â': 'a', 'ã': 'a', 'å': 'a',
-  'é': 'e', 'è': 'e', 'ë': 'e', 'ê': 'e',
-  'í': 'i', 'ì': 'i', 'ï': 'i', 'î': 'i',
-  'ó': 'o', 'ò': 'o', 'ö': 'o', 'ô': 'o', 'õ': 'o', 'ø': 'o',
-  'ú': 'u', 'ù': 'u', 'ü': 'u', 'û': 'u',
-  'ñ': 'n', 'ç': 'c', 'ß': 'ss', 'æ': 'ae',
+  'á': 'a',
+  'à': 'a',
+  'ä': 'a',
+  'â': 'a',
+  'ã': 'a',
+  'å': 'a',
+  'é': 'e',
+  'è': 'e',
+  'ë': 'e',
+  'ê': 'e',
+  'í': 'i',
+  'ì': 'i',
+  'ï': 'i',
+  'î': 'i',
+  'ó': 'o',
+  'ò': 'o',
+  'ö': 'o',
+  'ô': 'o',
+  'õ': 'o',
+  'ø': 'o',
+  'ú': 'u',
+  'ù': 'u',
+  'ü': 'u',
+  'û': 'u',
+  'ñ': 'n',
+  'ç': 'c',
+  'ß': 'ss',
+  'æ': 'ae',
 };
 
 /// Recorta la precisión de una coordenada a cinco decimales, algo más de un
@@ -148,6 +170,12 @@ Map<String, dynamic> draftToCaseJson(
     // Las fotos aún no se pintan en el expediente publicado, pero viajan en
     // el export para no perder el trabajo ya hecho en el borrador.
     if (photos.isNotEmpty) 'photos': photos,
+    // Única excepción deliberada al recorte que aplica el resto del
+    // exportador: los capítulos son prosa editorial y su sangría y sus saltos
+    // de línea son intencionados [diseño §4.3]. `toJson` ya devuelve sólo los
+    // significativos y en orden editorial.
+    if (draft.chapters.orderedMeaningful.isNotEmpty)
+      'chapters': draft.chapters.toJson(),
   };
 }
 
@@ -157,6 +185,7 @@ String encodeDraftAsCaseJson(
   CaseDraft draft, {
   Set<String> takenSlugs = const {},
 }) {
-  return const JsonEncoder.withIndent('  ')
-      .convert(draftToCaseJson(draft, takenSlugs: takenSlugs));
+  return const JsonEncoder.withIndent(
+    '  ',
+  ).convert(draftToCaseJson(draft, takenSlugs: takenSlugs));
 }

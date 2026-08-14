@@ -160,18 +160,25 @@ one prevents a defect that actually shipped into a draft.
 
 **Finish state:** published JSON supports chapters without changing the asset or manual workflow.
 
-- [ ] **2.1 RED — Export/read-back.** Add `test/case_publication_chapters_test.dart` for ordered meaningful export, empty omission, verbatim content, and `TrueCrimeCase.fromJson(draftToCaseJson(...))`.
-- [ ] **2.2 RED — Catalog tolerance.** Add `test/local_cases_repository_chapters_test.dart` for legacy entries, valid chapters around malformed optional entries, unsupported/duplicates, and malformed core errors.
-- [ ] **2.3 Observe RED** from missing published-model/export support.
-- [ ] **2.4 GREEN — Published model.** Add default-empty tolerant chapters to `TrueCrimeCase`.
-- [ ] **2.5 GREEN — Exporter.** Export only meaningful ordered chapters; omit `chapters` when empty.
-- [ ] **2.6 Preserve fail-fast core errors.** Never silently omit a malformed core case.
-- [ ] **2.7 Prove manual boundary.** Export MUST NOT write the catalog, deploy, or add a backend.
-- [ ] **2.8 Observe GREEN** on focused tests.
-- [ ] **2.9 TRIANGULATE** mixed legacy/chapter-bearing fixtures.
-- [ ] **2.10 REFACTOR and verify** full tests/analyze.
-- [ ] **2.11 Apply line-budget gate.** Include fixtures and tests.
-- [ ] **2.12 Review and deliver** as `feat(casos): publica capítulos con compatibilidad de catálogo`.
+- [x] **2.1 RED — Export/read-back.** `test/case_publication_chapters_test.dart`, 9 tests.
+- [x] **2.2 RED — Catalog tolerance.** `test/local_cases_repository_chapters_test.dart`, 14 tests.
+- [x] **2.3 Observe RED.** Recorded as a **compile failure**: `The getter 'chapters' isn't defined for the type 'TrueCrimeCase'`. Not credited to any assertion line.
+- [x] **2.4 GREEN — Published model.** `TrueCrimeCase.chapters` defaulting to `const CaseChapters()` and decoded through the tolerant codec.
+- [x] **2.5 GREEN — Exporter.** `draftToCaseJson` emits `chapters` only when something is meaningful, in editorial order, and **verbatim** — the one deliberate exception to the trimming every other exported field gets. A test pins the exception by checking `summary` is still trimmed in the same call.
+- [x] **2.6 Preserve fail-fast core errors.** Two tests assert `parseCasesJson` throws on a malformed core field, one of them with valid chapters alongside, so tolerance cannot leak outward. Proven alive by mutation M2.
+- [x] **2.7 Prove manual boundary.** Structural, not a test: `case_exporter.dart` imports only `dart:convert` and three domain files. It has no repository, asset, file or network dependency, so it cannot write the catalog or deploy. Asserting "no write happened" in a test would be an assertion that cannot fail.
+- [x] **2.8 Observe GREEN** on the focused tests: 20/20 at that point.
+- [x] **2.9 TRIANGULATE.** Added a mixed-catalog group — one legacy case and one chapter-bearing case in the same payload — plus a test that parses the **real** `assets/data/cases.json`, which turns red the day the addition stops being additive. Mutation evidence, each isolated and reverted:
+
+  | # | Mutation | Failing test | Proves |
+  |---|---|---|---|
+  | M1 | exporter always emits `chapters` | both *omits the member…* — `Expected false, Actual <true>` | A chapterless export stays byte-identical |
+  | M2 | make core `year` tolerant | both *malformed core field…* — `Expected throws TypeError` | The tolerance boundary holds; a broken case fails loudly instead of vanishing |
+  | M3 | published model ignores `chapters` | 6 decoding tests, none of the boundary ones | Chapter decoding is wired, and the boundary tests are independent of it |
+
+- [x] **2.10 REFACTOR and verify.** `dart format`; `flutter test` 236/236; `flutter analyze` clean after fixing one `use_null_aware_elements` info the formatter surfaced in the new fixture.
+- [x] **2.11 Apply line-budget gate.** Measured `git diff --numstat cf2293b`: **409 changed lines** against a 1500 ceiling.
+- [x] **2.12 Review and deliver** as `feat(casos): publica capítulos con compatibilidad de catálogo`.
 
 **Rollback:** leave Unit 1 dormant draft data intact; restore previous published/export behavior and keep `assets/data/cases.json` unchanged.
 

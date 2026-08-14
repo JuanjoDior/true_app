@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 
 import 'case_category.dart';
+import 'case_chapter.dart';
 import 'case_photo.dart';
 import 'coordinates_label.dart';
 import 'case_source.dart';
@@ -29,6 +30,7 @@ class TrueCrimeCase {
     this.victim,
     this.timeline = const <CaseTimelineEvent>[],
     this.photos = const <CasePhoto>[],
+    this.chapters = const CaseChapters(),
   });
 
   final String id;
@@ -61,6 +63,11 @@ class TrueCrimeCase {
 
   /// Fotografías del caso, alojadas fuera y referenciadas por URL.
   final List<CasePhoto> photos;
+
+  /// Capítulos editoriales de formato largo. Aditivo: las entradas del
+  /// catálogo anteriores a este campo decodifican a una colección vacía y no
+  /// necesitan migración.
+  final CaseChapters chapters;
 
   LatLng get location => LatLng(latitude, longitude);
 
@@ -106,13 +113,19 @@ class TrueCrimeCase {
       statusLabel: json['statusLabel'] as String?,
       victim: json['victim'] as String?,
       timeline: (json['timeline'] as List<dynamic>? ?? const [])
-          .map((event) =>
-              CaseTimelineEvent.fromJson(event as Map<String, dynamic>))
+          .map(
+            (event) =>
+                CaseTimelineEvent.fromJson(event as Map<String, dynamic>),
+          )
           .toList(growable: false),
       photos: (json['photos'] as List<dynamic>? ?? const [])
           .map((photo) => CasePhoto.tryFromJson(photo as Map<String, dynamic>))
           .nonNulls
           .toList(growable: false),
+      // Tolerante por entrada: un capítulo malformado se ignora solo. Los
+      // campos core de arriba siguen siendo estrictos a propósito, para que un
+      // caso roto falle en alto en vez de desaparecer del catálogo.
+      chapters: CaseChapters.fromJson(json['chapters']),
     );
   }
 }
