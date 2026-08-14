@@ -188,17 +188,31 @@ one prevents a defect that actually shipped into a draft.
 
 **Finish state:** dormant chapter edits persist in order and reach preview data without a visible editor.
 
-- [ ] **3.1 RED — Serialized mutations.** Add delayed fake-store tests proving adversarial completion cannot overwrite newer combined values.
-- [ ] **3.2 RED — Queue recovery.** Prove one failed save reports its error while later mutations still persist.
-- [ ] **3.3 RED — Preview projection.** Prove meaningful chapters, order, and clearing reach `draftPreviewCaseProvider`.
-- [ ] **3.4 Observe RED** from stale-write and missing-projection behavior.
-- [ ] **3.5 GREEN — Persistence queue.** Serialize create/update/edit/delete snapshots while publishing latest state synchronously and keeping queue usable after failure.
-- [ ] **3.6 GREEN — Projection.** Project chapters without exposing an intake field.
-- [ ] **3.7 Observe GREEN** on the same focused tests.
-- [ ] **3.8 TRIANGULATE** operation ordering, rapid edits, clearing, and failure recovery.
-- [ ] **3.9 REFACTOR and verify** full tests/analyze.
-- [ ] **3.10 Apply line-budget gate.** Split at 1500 or more lines.
-- [ ] **3.11 Review and deliver** as `fix(casos): serializa la persistencia de borradores`.
+- [x] **3.1 RED — Serialized mutations.** `test/case_draft_serialized_persistence_test.dart`. `_StaggeredStore` makes the **first** save slow (60 ms) and the second instant, which is the adversarial completion order. **Every assertion reads `store.committed` / `store.lastCommitted`, never in-memory state**: the notifier publishes `state` synchronously before the `await`, so the in-memory half already passes today and crediting the RED to it would falsify the evidence. What the race loses is the disk.
+- [x] **3.2 RED — Queue recovery.** Two tests: the caller sees the `StateError`, and a mutation enqueued while that failure is still in flight still persists.
+- [x] **3.3 RED — Preview projection.** `test/draft_preview_chapters_test.dart`, 5 tests.
+- [x] **3.4 Observe RED.** Real assertion failures, not compile errors: `the last write to land carries both edits` → `Expected <1970> / Actual <null>` (the stale save clobbered the newer one) and `a delete that lands late does not resurrect the draft` → `Expected: not contains 'draft-b' / Actual: ['draft-a', 'draft-b']`. The race is real and reproducible.
+- [x] **3.5 GREEN — Persistence queue.** `CaseDraftsNotifier._persist` chains every snapshot behind `_writes`. The returned future carries the failure to the caller; `_writes` stores a neutralized copy so one failed write cannot poison the queue. All four mutations route through it.
+- [x] **3.6 GREEN — Projection.** `chapters: draft.chapters` in `draftPreviewCaseProvider`. Deliberately **no placeholder**, unlike `title`/`country`/`regionOrCity` around it: an empty chapter is omitted, never invented.
+- [x] **3.7 Observe GREEN.** 11/11 on the focused files.
+- [x] **3.8 TRIANGULATE.** Each mutation isolated and reverted:
+
+  | # | Mutation | Failing tests | Proves |
+  |---|---|---|---|
+  | M1 | `_persist` calls the store directly, no chaining | all 4 race tests — `Expected <1970>`, `Expected ['Primero','Segundo'] ordered`, `not contains 'draft-b'`, `length of <2>` | The queue is what orders the writes |
+  | M2 | `_writes = write` (keep the failure in the chain) | *a later mutation still persists after an earlier one failed* | One failed save does not poison the queue |
+  | M3 | `_persist` returns the neutralized future | *a failed save surfaces its error* | The recovery of M2 does not swallow the error |
+  | M4 | drop `chapters:` from the projection | 4 of the 5 preview tests | Chapters actually cross into the preview |
+  | M5 | give chapterless drafts a `'Por redactar'` placeholder | *a draft without chapters previews without them*, and only that one | The no-placeholder rule is pinned |
+
+  **M4 exposed three vacuous assertions of my own.** `omits a whitespace-only chapter`, `clearing a chapter removes it`, and `a draft without chapters previews without them` all asserted bare `isEmpty` — which is also true when no projection exists at all. The first two now carry a meaningful chapter alongside the empty one and assert the surviving set, so M4 kills them. The third is genuinely about emptiness and is instead pinned by M5. This is the project's signature defect (Anti-regression rule 1) caught by mutation rather than by review.
+
+  **Not fixed, logged:** `createDraft` derives its id from `DateTime.now().millisecondsSinceEpoch`, so two creates inside the same millisecond collide on `draftId`. Out of scope for D4 (serialization), real defect, belongs to its own unit.
+- [x] **3.9 REFACTOR and verify.** `dart format` on the three touched files only, never `lib/` wide (that reformats ~46 unrelated files); `flutter test` **247/247**, `SUITE_EXIT=0`; `flutter analyze` `ANALYZE_EXIT=0`, "No issues found!".
+- [x] **3.10 Apply line-budget gate.** From start SHA `182003a`: 40 changed lines in `lib` plus 205 + 129 new test lines = **374** against the 1500 ceiling.
+- [x] **3.11 Review and deliver** as `fix(casos): serializa la persistencia de borradores`.
+
+**Rollback:** revert `_persist` to a direct `await _store.saveDrafts(...)` and drop the projection line; Units 1–2 stay intact and dormant.
 
 ## Unit 4 — Shared Dossier Content and Host Contracts
 

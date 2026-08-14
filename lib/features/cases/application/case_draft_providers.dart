@@ -35,13 +35,33 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
 
   CaseDraftsStore get _store => ref.read(caseDraftsStoreProvider);
 
+  /// Última escritura encolada. Cada guardado nuevo se encadena detrás.
+  Future<void> _writes = Future<void>.value();
+
+  /// Encola [snapshot] detrás de lo que ya estuviera pendiente.
+  ///
+  /// El estado se publica de forma síncrona, pero el disco no. Sin cola, dos
+  /// mutaciones seguidas salen a la vez y la que tarde más aterriza la última,
+  /// dejando escrita la instantánea VIEJA: una edición que se pierde, o un
+  /// borrado al que le resucita el borrador. Encadenándolas, el orden en que
+  /// aterrizan es el orden en que se pidieron [diseño D4].
+  ///
+  /// El fallo se propaga a quien llamó, pero no envenena la cola: `_writes`
+  /// guarda la versión neutralizada para que la siguiente mutación siga
+  /// pudiendo escribir.
+  Future<void> _persist(List<CaseDraft> snapshot) {
+    final write = _writes.then((_) => _store.saveDrafts(snapshot));
+    _writes = write.catchError((Object _) {});
+    return write;
+  }
+
   /// Crea un borrador vacío y lo persiste de inmediato.
   Future<String> createDraft() async {
     final drafts = state.value ?? const <CaseDraft>[];
     final draftId = 'draft-${DateTime.now().millisecondsSinceEpoch}';
     final updated = [...drafts, CaseDraft(draftId: draftId)];
     state = AsyncData(updated);
-    await _store.saveDrafts(updated);
+    await _persist(updated);
     return draftId;
   }
 
@@ -53,7 +73,7 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
         if (existing.draftId == draft.draftId) draft else existing,
     ];
     state = AsyncData(updated);
-    await _store.saveDrafts(updated);
+    await _persist(updated);
   }
 
   /// Aplica un cambio sobre el borrador **tal y como está ahora**, en vez de
@@ -77,7 +97,7 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
         if (existing.draftId == draftId) update(existing) else existing,
     ];
     state = AsyncData(updated);
-    await _store.saveDrafts(updated);
+    await _persist(updated);
   }
 
   /// Elimina un borrador y lo quita del almacenamiento local.
@@ -87,14 +107,14 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
         .where((draft) => draft.draftId != draftId)
         .toList(growable: false);
     state = AsyncData(updated);
-    await _store.saveDrafts(updated);
+    await _persist(updated);
   }
 }
 
 final caseDraftsProvider =
     AsyncNotifierProvider<CaseDraftsNotifier, List<CaseDraft>>(
-  CaseDraftsNotifier.new,
-);
+      CaseDraftsNotifier.new,
+    );
 
 /// Borrador que se está editando en el workspace de intake (null = ninguno).
 final editingDraftIdProvider = StateProvider<String?>((ref) => null);
@@ -150,8 +170,14 @@ final draftPreviewCaseProvider = Provider<TrueCrimeCase?>((ref) {
     latitude: draft.latitude ?? 0,
     longitude: draft.longitude ?? 0,
     summary: draft.summary ?? '',
+    // A diferencia del resto de campos, los capítulos NO llevan placeholder: un
+    // capítulo vacío se omite en vez de inventarle texto. El filtrado por
+    // contenido significativo ya lo hace `CaseChapters`.
+    chapters: draft.chapters,
     tags: draft.tags,
-    victim: draft.victim?.trim().isNotEmpty ?? false ? draft.victim!.trim() : null,
+    victim: draft.victim?.trim().isNotEmpty ?? false
+        ? draft.victim!.trim()
+        : null,
     // Sólo se previsualizan los hitos que ya dicen algo.
     timeline: [
       for (final event in draft.timeline)
