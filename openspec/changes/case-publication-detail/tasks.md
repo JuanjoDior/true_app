@@ -375,17 +375,33 @@ one prevents a defect that actually shipped into a draft.
 
 **Finish state:** tested routing infrastructure exists, but `TrueCrimeApp` still uses `MaterialApp.home`.
 
-- [ ] **6.1 RED — Parse/restore.** Add parser tests for root, exact case route, encoding, invalid segments, and unknown URI preservation.
-- [ ] **6.2 RED — Controller/page stack.** Add tests for root/detail/unknown stacks, open/return, `setNewRoutePath`, and restoration without duplicate history.
-- [ ] **6.3 RED — State separation.** Prove routes never access map selection, and that the router never reads or writes `workspaceProvider` (design §7.3). Root restoration must add no history entry and must not clear the map selection.
-- [ ] **6.4 Observe RED** while navigation package is absent.
-- [ ] **6.5 GREEN — Add navigation package** with route model, parser, controller, delegate, and navigation contract.
-- [ ] **6.6 Keep it dormant.** Do not edit `TrueCrimeApp`, activate placeholders, call `usePathUrlStrategy`, or use `dart:html`.
-- [ ] **6.7 Observe GREEN** on parser/router tests.
-- [ ] **6.8 TRIANGULATE** encoded/unknown routes, repeated restoration, a deep link applied while `workspaceProvider` holds `Workspace.intake`, and preserved map selection.
-- [ ] **6.9 REFACTOR and verify** full tests/analyze and unchanged public behavior.
-- [ ] **6.10 Apply line-budget gate.** Split at 1500 or more.
-- [ ] **6.11 Review and deliver** as `feat(navegacion): prepara las rutas hash de expedientes`.
+- [x] **6.1 RED — Parse/restore.** `test/app_route_parser_test.dart`, 18 tests: root, exact case route, percent-encoding both ways, trailing slash, empty slug, extra segments, unknown-URI preservation, two full round trips, and value equality of the three path types.
+- [x] **6.2 RED — Controller/page stack.** `test/app_router_delegate_test.dart`, 15 tests over the real `MaterialApp.router`.
+- [x] **6.3 RED — State separation.** `test/app_navigation_boundary_test.dart`, 10 tests.
+
+  **These read the source files, deliberately.** The rule to hold is an *absence*: the router must not write `workspaceProvider` or touch map selection. An absence is not proven by exercising the router and observing that nothing happened — that passes just as well when the writing path simply was not taken in that test. It is proven by showing the code cannot reach those symbols at all.
+- [x] **6.4 Observe RED.** Compile failure — `lib/app/navigation/` does not exist. Recorded as a compile RED.
+- [x] **6.5 GREEN — Add navigation package.** Five files, 261 lines: `app_route_path.dart` (sealed, value equality), `app_route_information_parser.dart`, `app_route_controller.dart`, `app_router_delegate.dart`, `app_navigation.dart`.
+
+  **The delegate takes its pages by injection** (`situationRoomBuilder`, `caseDetailBuilder`, `routeNotFoundBuilder`). Not ceremony: it is what lets this unit ship and test the whole page stack without knowing `CaseDetailPage` yet — that arrives in Unit 7 — and without leaving dead placeholder widgets waiting to be activated. Unit 7 supplies the real builders.
+
+  The detail page stacks **above** the root, never in its place, which is what makes a deep link render the dossier with intake underneath and makes returning reveal whatever was already there.
+- [x] **6.6 Keep it dormant.** `TrueCrimeApp` untouched — asserted by two boundary tests, one for the absence of `MaterialApp.router` and its presence twin for `home:`, so deleting the file would not pass. No `dart:html`, no `usePathUrlStrategy`.
+- [x] **6.7 Observe GREEN.** 46/46 focused.
+- [x] **6.8 TRIANGULATE.** Five probes, each isolated and reverted:
+
+  | # | Probe | Failing tests | Proves |
+  |---|---|---|---|
+  | Q1 | restore the slug unencoded | 2 | A slug containing `/` cannot invent a segment and break its own route |
+  | Q2 | accept `length >= 2` segments | *a deeper case route is unknown* | `/casos/a/b` does not open case `a` |
+  | Q3 | controller notifies on an unchanged route | 2 history tests | Back/Forward do not grow history on their own and jam the Back button |
+  | Q4 | detail page replaces the root instead of stacking | 2 | The root survives underneath, so returning reveals what was already there |
+  | Q5 | controller imports Riverpod and writes `workspaceProvider` | 4 boundary tests | The state boundary is enforced, not merely intended |
+
+  The boundary tests originally failed on my own comments — they searched raw text, and the files explain *why* the router must not touch `workspaceProvider`. The rule forbids reaching those symbols, not naming them, so the check now strips comment lines first, with a guard test (`the comment filter does not swallow real code`) so a broken filter cannot turn every prohibition green.
+- [x] **6.9 REFACTOR and verify.** `dart format`; `flutter test` **383/383**, `SUITE_EXIT=0`; `flutter analyze` `ANALYZE_EXIT=0` after renaming one override parameter to satisfy `avoid_renaming_method_parameters`. Public behaviour unchanged: nothing outside `lib/app/navigation/` was modified.
+- [x] **6.10 Apply line-budget gate.** 0 changed lines plus 261 new source + 470 new test = **731** against the 1500 ceiling.
+- [x] **6.11 Review and deliver** as `feat(navegacion): prepara las rutas hash de expedientes`.
 
 ## Unit 7 — Activate Complete Hash Routing and Expanded Detail
 
