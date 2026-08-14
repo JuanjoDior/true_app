@@ -282,7 +282,14 @@ one prevents a defect that actually shipped into a draft.
 - [ ] **4.3 RED — Source overrides and modes.** Prove null/empty/grouped override semantics and map/preview chrome separation.
 - [ ] **4.4 RED — Composition/callbacks.** Prove map callbacks and the required `IntakePreviewPanel → CaseDossierPanel(preview) → CaseDossierContent` chain.
 - [ ] **4.5 Observe RED** for missing contracts.
-- [ ] **4.6 GREEN — Add contracts.** Add chapter labels, `DossierSourceGroup`, and `CaseDossierContent`.
+- [x] **4.6a GREEN — Extract the renderer** *(sub-unit 4a-2)*. `CaseDossierContent` in a new `case_dossier_content.dart`, carrying the whole composition plus all ten private subwidgets in **one atomic move**. It is a plain `StatelessWidget`: it reads and writes no state, receives `related` already resolved, and returns actions through `onBack` / `onRelatedTap` / `onCenter`. `CaseDossierPanel` shrinks from 636 lines to 34 — the host that binds those callbacks to `selectedCaseIdProvider` and `mapRecenterTickProvider`.
+
+  **The move had to be atomic and that is Dart, not taste.** The ten subwidgets are library-private; moving them piecemeal would leave the panel referencing symbols it can no longer see. Moving them *together with* the composition leaves no reference behind, so they stay private in their new home and nothing had to be made public.
+
+  **Constructor unchanged, zero call sites touched** — `git status` shows only the panel modified and the new file added. `chapters` rendering is **not** here; it belongs to 4b.
+
+  Verified: `flutter test` **265/265** including the 18 characterization tests, untouched; `flutter analyze` clean. The net was re-proven against the *moved* wiring, not just the old one: dropping `onCenter` in `CaseDossierContent` kills *centering bumps the recenter tick* and nothing else. Measured 18 + 620 changed lines in the tracked file plus 680 new = **1,318** against the 1500 ceiling, inside the 1,150-1,320 forecast.
+- [ ] **4.6b GREEN — Add contracts.** Chapter labels and `DossierSourceGroup` (4b).
 - [ ] **4.7 GREEN — Refactor panel.** Add map/preview modes, callbacks, source overrides, and shared composition.
 - [ ] **4.8 GREEN — Preserve host ownership.** Inject actions from side panel/home/preview and remove only duplicated preview source rendering.
 - [ ] **4.9 Observe GREEN** on new and characterization tests.
