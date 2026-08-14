@@ -278,10 +278,12 @@ one prevents a defect that actually shipped into a draft.
   **A vacuous assertion caught in the act.** `omits the victim block when there is none` used `find.textContaining('VÍCTIMA(S)')`, which can never match: the block is a `Text.rich`, invisible to the finder without `findRichText: true`. It was passing for the wrong reason. Its positive twin failed first and exposed it — which is why every omission assertion in this file now has a presence twin over the same finder.
 
   **Forecast exceeded, deliberately.** 423 lines against a 200-300 forecast. Per 4.12 the forecast is not a gate; the 1500 ceiling is, and it is untouched. The overrun is fixtures and the presence/absence twinning above, both of which the net needs.
-- [ ] **4.2 RED — Shared content.** Add `case_dossier_content_test.dart` for metadata, summary, chapters once/in order, photos, timeline, sources, related cases, optional omission, and legacy cases. Assert **one implementation per shared block**, not identical output across hosts: the expanded page is a superset and may render more (design D7).
-- [ ] **4.3 RED — Source overrides and modes.** Prove null/empty/grouped override semantics and map/preview chrome separation.
-- [ ] **4.4 RED — Composition/callbacks.** Prove map callbacks and the required `IntakePreviewPanel → CaseDossierPanel(preview) → CaseDossierContent` chain.
-- [ ] **4.5 Observe RED** for missing contracts.
+- [x] **4.2 RED — Shared content** *(sub-unit 4b)*. `test/case_dossier_content_test.dart`, 24 tests. `CaseDossierContent` needs no Riverpod, so it mounts bare — no container, no overrides. That is what 4a-2 bought.
+- [x] **4.3 RED — Source overrides and modes.** Same file. Pins the three-state override: `null` = "use the published sources", a non-null list = "I own the sources", and **an empty list is still an override** — the distinction that stops the preview rendering its links twice.
+- [x] **4.4 RED — Composition/callbacks.** `test/case_dossier_panel_config_test.dart`, 12 tests: four proving an unconfigured panel behaves exactly as today (D12), the rest proving explicit configuration wins.
+
+  **Planning defect found and corrected.** As written, 4.4 also required proving the `IntakePreviewPanel → CaseDossierPanel(preview) → CaseDossierContent` chain. `IntakePreviewPanel` passing `mode: preview` is **4c** work (4c owns that file), so that assertion cannot go green in 4b and no sub-unit may reach its commit gate with a knowingly red test. The chain half moves to 4c; 4b proves `CaseDossierPanel(preview) → CaseDossierContent` only. This is the same defect class as the earlier 4.2-in-4a misassignment.
+- [x] **4.5 Observe RED.** Compile failure — `CaseDossierMode`, `DossierSourceGroup` and `relatedCases` do not exist. Recorded as a compile RED, not credited to any assertion line.
 - [x] **4.6a GREEN — Extract the renderer** *(sub-unit 4a-2)*. `CaseDossierContent` in a new `case_dossier_content.dart`, carrying the whole composition plus all ten private subwidgets in **one atomic move**. It is a plain `StatelessWidget`: it reads and writes no state, receives `related` already resolved, and returns actions through `onBack` / `onRelatedTap` / `onCenter`. `CaseDossierPanel` shrinks from 636 lines to 34 — the host that binds those callbacks to `selectedCaseIdProvider` and `mapRecenterTickProvider`.
 
   **The move had to be atomic and that is Dart, not taste.** The ten subwidgets are library-private; moving them piecemeal would leave the panel referencing symbols it can no longer see. Moving them *together with* the composition leaves no reference behind, so they stay private in their new home and nothing had to be made public.
@@ -289,11 +291,29 @@ one prevents a defect that actually shipped into a draft.
   **Constructor unchanged, zero call sites touched** — `git status` shows only the panel modified and the new file added. `chapters` rendering is **not** here; it belongs to 4b.
 
   Verified: `flutter test` **265/265** including the 18 characterization tests, untouched; `flutter analyze` clean. The net was re-proven against the *moved* wiring, not just the old one: dropping `onCenter` in `CaseDossierContent` kills *centering bumps the recenter tick* and nothing else. Measured 18 + 620 changed lines in the tracked file plus 680 new = **1,318** against the 1500 ceiling, inside the 1,150-1,320 forecast.
-- [ ] **4.6b GREEN — Add contracts.** Chapter labels and `DossierSourceGroup` (4b).
-- [ ] **4.7 GREEN — Refactor panel.** Add map/preview modes, callbacks, source overrides, and shared composition.
+- [x] **4.6b GREEN — Add contracts.** `dossier_source_group.dart` (21 lines) and `case_chapter_presentation.dart` (16 lines). The chapter labels live in presentation next to `case_category_presentation.dart` and `case_status_presentation.dart`, not in the domain: the chapter *type* is a fact about the case, its *heading* is an editorial decision that must be changeable without touching published data or the codec. Labels chosen here (no spec pins them), in Spanish like the rest of the UI: Antecedentes / Los hechos / La investigación / Estado actual.
+- [x] **4.7 GREEN — Refactor panel.** `CaseDossierMode`, chapter rendering between summary and photos, the source override, and six optional panel parameters whose defaults reproduce today's behaviour exactly.
+
+  **Three deviations from design §9.2, recorded rather than silently applied:**
+
+  1. **`DossierPresentation` is not implemented.** The design's `CaseDossierContent` signature names it, but the design never defines it anywhere — there is no enum, no values, no semantics. Its evident purpose (compact vs. expanded spacing) has no consumer until Unit 7 builds the expanded page. Adding it now would ship an untested branch. **Deferred to Unit 7**, which is where `expanded` gets both a second value and a test.
+  2. **`CaseDossierPanelMode` renamed `CaseDossierMode`.** It is now carried by the content as well as the panel, so a "Panel"-prefixed name on a content parameter would misdescribe it.
+  3. **Map chrome is gated by `mode`, not by nullable callbacks.** Preview must suppress back, star, share, follow *and* recenter as a set; per-callback nullability would have made that four independent decisions that can disagree.
 - [ ] **4.8 GREEN — Preserve host ownership.** Inject actions from side panel/home/preview and remove only duplicated preview source rendering.
-- [ ] **4.9 Observe GREEN** on new and characterization tests.
-- [ ] **4.10 TRIANGULATE** override states, legacy/partial chapters, callbacks, preview suppression, and group order.
+- [x] **4.9 Observe GREEN** *(4b)*. 36/36 focused, first run. Full suite **301/301** including the 18 characterization tests, still untouched; `flutter analyze` clean.
+- [x] **4.10 TRIANGULATE** *(4b)*. Seven mutations, each isolated and reverted:
+
+  | # | Mutation | Failing tests | Proves |
+  |---|---|---|---|
+  | M1 | chapters rendered reversed | *renders the four chapters in the fixed editorial order* | Editorial order is enforced, not accidental |
+  | M2 | every chapter slot rendered, meaningful or not | 3 filtering tests | Empty and whitespace chapters leave no orphan heading |
+  | M3 | override **adds to** the published sources instead of replacing them | 6 tests across both files | The rule that stops the preview showing its links twice |
+  | M4 | empty groups not omitted | *a group with no sources is omitted* | No heading without cards under it |
+  | M5 | `_showsMapChrome` always true | 4 preview-chrome tests | Preview really drops back/recenter/follow |
+  | M6 | panel ignores a supplied `relatedCases` | 3 tests | The override reaches the renderer, empty list included |
+  | M7 | panel ignores a host `onReturnToMap` | 2 tests | A host callback replaces the default map write instead of running alongside it |
+
+  Every one of the 36 dies under at least one probe. The absence assertions carry presence twins (`preview mode still renders the editorial identity`, `an override renders its own sources`) so "renders nothing" cannot pass for "suppresses the chrome".
 - [ ] **4.11 REFACTOR and verify** full tests/analyze.
 - [ ] **4.12 Apply the line-budget gate to each sub-unit separately.** The only enforced threshold is the one in Execution Rules: 1500 or more stops the unit. The per-row figures are forecasts, not gates — exceeding a forecast is a signal to re-plan, not a stop. If 4a-2 measures 1500 or more, the legal slice is to rename the nine subwidgets public first; slicing by section group while they are private does not compile (design §9.2).
 - [ ] **4.13 Review and deliver each sub-unit** as `refactor(casos): extrae el contenido compartido del expediente` (4a), `feat(casos): configura el panel de expediente por contexto` (4b), and `refactor(casos): migra los hosts al panel configurable` (4c).

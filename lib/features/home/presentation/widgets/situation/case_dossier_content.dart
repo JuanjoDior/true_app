@@ -8,11 +8,20 @@ import '../../../../cases/domain/case_source.dart';
 import '../../../../cases/domain/case_timeline_event.dart';
 import '../../../../cases/domain/true_crime_case.dart';
 import '../../../../cases/presentation/case_category_presentation.dart';
+import '../../../../cases/presentation/case_chapter_presentation.dart';
 import '../../../../cases/presentation/case_status_presentation.dart';
+import 'dossier_source_group.dart';
 import 'situation_styles.dart';
 
-/// Renderizado del expediente: cabecera, métricas, resumen, fotografías,
-/// cronología, fuentes y casos relacionados.
+/// En qué contexto se está leyendo el expediente.
+///
+/// No cambia el contenido editorial, sólo el cromo que lo rodea: el modo mapa
+/// ofrece volver al mapa, seguir el caso y recentrar; la previsualización no
+/// ofrece nada de eso porque no hay mapa detrás al que volver.
+enum CaseDossierMode { map, preview }
+
+/// Renderizado del expediente: cabecera, métricas, resumen, capítulos,
+/// fotografías, cronología, fuentes y casos relacionados.
 ///
 /// **No lee ni escribe estado.** Recibe los casos relacionados ya resueltos y
 /// devuelve las acciones por callback, así que no depende de Riverpod ni del
@@ -23,40 +32,72 @@ class CaseDossierContent extends StatelessWidget {
   const CaseDossierContent({
     super.key,
     required this.crimeCase,
-    required this.related,
-    required this.onBack,
-    required this.onRelatedTap,
-    required this.onCenter,
+    required this.relatedCases,
+    required this.mode,
+    this.onReturnToMap,
+    this.onCenterMap,
+    this.onOpenRelatedCase,
+    this.sourceGroups,
   });
 
   final TrueCrimeCase crimeCase;
 
   /// Casos relacionados ya resueltos por el host.
-  final List<RelatedCase> related;
+  final List<RelatedCase> relatedCases;
+
+  final CaseDossierMode mode;
 
   /// Volver atrás desde la cabecera. Qué signifique "atrás" es del host.
-  final VoidCallback onBack;
-
-  /// Abrir el caso relacionado cuyo id se pasa.
-  final void Function(String caseId) onRelatedTap;
+  final VoidCallback? onReturnToMap;
 
   /// Centrar el caso en el lienzo del host.
-  final VoidCallback onCenter;
+  final VoidCallback? onCenterMap;
+
+  /// Abrir el caso relacionado que se pasa. Se entrega el caso entero, no su
+  /// id, porque el host ya lo tiene delante y volver a buscarlo sería trabajo
+  /// tirado.
+  final ValueChanged<TrueCrimeCase>? onOpenRelatedCase;
+
+  /// Fuentes aportadas por el host, agrupadas.
+  ///
+  /// `null` significa "no tengo, usa las del caso publicado". Una lista, aunque
+  /// esté VACÍA, significa "yo mando las fuentes": en ese caso las del caso
+  /// publicado no se pintan. Esa distinción es la que evita que la
+  /// previsualización enseñe los enlaces dos veces [diseño §9.3].
+  final List<DossierSourceGroup>? sourceGroups;
+
+  bool get _showsMapChrome => mode == CaseDossierMode.map;
+
+  /// Los grupos que de verdad se pintan: los vacíos no dejan un encabezado
+  /// huérfano detrás.
+  List<DossierSourceGroup> get _visibleGroups => [
+    for (final group in sourceGroups ?? const <DossierSourceGroup>[])
+      if (group.sources.isNotEmpty) group,
+  ];
 
   @override
   Widget build(BuildContext context) {
+    final chapters = crimeCase.chapters.orderedMeaningful;
+
     return Column(
       key: const Key('detail-panel'),
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _Header(crimeCase: crimeCase, onBack: onBack),
+        _Header(
+          crimeCase: crimeCase,
+          onReturnToMap: _showsMapChrome ? onReturnToMap : null,
+          showsMapChrome: _showsMapChrome,
+        ),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _StatsGrid(crimeCase: crimeCase, connections: related.length),
+                _StatsGrid(
+                  crimeCase: crimeCase,
+                  connections: relatedCases.length,
+                ),
                 const SizedBox(height: 18),
                 Text(
                   crimeCase.summary,
@@ -66,6 +107,23 @@ class CaseDossierContent extends StatelessWidget {
                     height: 1.65,
                   ),
                 ),
+                // Los capítulos van justo detrás del resumen: son la lectura
+                // larga de lo que el resumen cuenta en tres líneas. Sólo los
+                // significativos, y siempre en orden editorial, sea cual sea
+                // el orden en que se escribieron [spec: expanded-case-dossier].
+                for (final chapter in chapters) ...[
+                  const SizedBox(height: 22),
+                  SituationSectionLabel(chapter.type.label),
+                  const SizedBox(height: 10),
+                  Text(
+                    chapter.content,
+                    style: SituationStyles.sans(
+                      size: 13,
+                      color: AppColors.textSub2,
+                      height: 1.7,
+                    ),
+                  ),
+                ],
                 if (crimeCase.photos.isNotEmpty) ...[
                   const SizedBox(height: 22),
                   const SituationSectionLabel('Fotografías'),
@@ -78,21 +136,35 @@ class CaseDossierContent extends StatelessWidget {
                   const SizedBox(height: 13),
                   _Timeline(events: crimeCase.timeline),
                 ],
-                if (crimeCase.sources.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  const SituationSectionLabel('Fuentes citadas'),
-                  const SizedBox(height: 12),
-                  for (final source in crimeCase.sources)
-                    _SourceCard(source: source),
-                ],
-                if (related.isNotEmpty) ...[
+                // Un override sustituye a las fuentes publicadas, no se suma a
+                // ellas. Por eso se mira `sourceGroups`, y no `_visibleGroups`:
+                // una lista vacía sigue siendo un override.
+                if (sourceGroups == null) ...[
+                  if (crimeCase.sources.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    const SituationSectionLabel('Fuentes citadas'),
+                    const SizedBox(height: 12),
+                    for (final source in crimeCase.sources)
+                      _SourceCard(source: source),
+                  ],
+                ] else
+                  for (final group in _visibleGroups) ...[
+                    const SizedBox(height: 8),
+                    SituationSectionLabel(group.label),
+                    const SizedBox(height: 12),
+                    // La misma tarjeta que un caso publicado: el agrupado
+                    // cambia el encabezado, no el renderizador.
+                    for (final source in group.sources)
+                      _SourceCard(source: source),
+                  ],
+                if (relatedCases.isNotEmpty) ...[
                   const SizedBox(height: 18),
                   const SituationSectionLabel('Casos relacionados'),
                   const SizedBox(height: 12),
-                  for (final r in related)
+                  for (final r in relatedCases)
                     _RelatedCard(
                       related: r,
-                      onTap: () => onRelatedTap(r.crimeCase.id),
+                      onTap: () => onOpenRelatedCase?.call(r.crimeCase),
                     ),
                 ],
                 const SizedBox(height: 8),
@@ -100,17 +172,25 @@ class CaseDossierContent extends StatelessWidget {
             ),
           ),
         ),
-        _Footer(onCenter: onCenter),
+        if (_showsMapChrome) _Footer(onCenter: onCenterMap),
       ],
     );
   }
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.crimeCase, required this.onBack});
+  const _Header({
+    required this.crimeCase,
+    required this.onReturnToMap,
+    required this.showsMapChrome,
+  });
 
   final TrueCrimeCase crimeCase;
-  final VoidCallback onBack;
+  final VoidCallback? onReturnToMap;
+
+  /// Volver al mapa, destacar y compartir. Fuera del mapa no significan nada,
+  /// así que la previsualización se queda sólo con la identidad editorial.
+  final bool showsMapChrome;
 
   @override
   Widget build(BuildContext context) {
@@ -119,61 +199,63 @@ class _Header extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: MouseRegion(
-                  cursor: SystemMouseCursors.click,
-                  child: GestureDetector(
-                    onTap: onBack,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.arrow_back,
-                          size: 13,
-                          color: AppColors.textSoft,
-                        ),
-                        const SizedBox(width: 7),
-                        Flexible(
-                          child: Text(
-                            'VOLVER AL MAPA',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: SituationStyles.mono(
-                              size: 10,
-                              weight: FontWeight.w600,
-                              color: AppColors.textSoft,
-                              letterSpacing: 1,
+          if (showsMapChrome) ...[
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: MouseRegion(
+                    cursor: SystemMouseCursors.click,
+                    child: GestureDetector(
+                      onTap: onReturnToMap,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.arrow_back,
+                            size: 13,
+                            color: AppColors.textSoft,
+                          ),
+                          const SizedBox(width: 7),
+                          Flexible(
+                            child: Text(
+                              'VOLVER AL MAPA',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: SituationStyles.mono(
+                                size: 10,
+                                weight: FontWeight.w600,
+                                color: AppColors.textSoft,
+                                letterSpacing: 1,
+                              ),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.star_border_rounded,
-                    size: 16,
-                    color: AppColors.textMuted,
-                  ),
-                  SizedBox(width: 10),
-                  Icon(
-                    Icons.ios_share_rounded,
-                    size: 14,
-                    color: AppColors.textMuted,
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
+                const SizedBox(width: 8),
+                const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.star_border_rounded,
+                      size: 16,
+                      color: AppColors.textMuted,
+                    ),
+                    SizedBox(width: 10),
+                    Icon(
+                      Icons.ios_share_rounded,
+                      size: 14,
+                      color: AppColors.textMuted,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+          ],
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -617,7 +699,7 @@ class _RelatedCard extends StatelessWidget {
 class _Footer extends StatelessWidget {
   const _Footer({required this.onCenter});
 
-  final VoidCallback onCenter;
+  final VoidCallback? onCenter;
 
   @override
   Widget build(BuildContext context) {
