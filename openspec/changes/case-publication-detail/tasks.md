@@ -261,7 +261,23 @@ one prevents a defect that actually shipped into a draft.
 > Each of 4a/4b/4c runs its own budget gate, focused tests, `flutter test`,
 > `flutter analyze`, review and commit.
 
-- [ ] **4.1 CHARACTERIZE** existing panel, side-panel, mobile dossier, and intake preview behavior. GREEN characterization cannot prove new behavior.
+- [x] **4.1 CHARACTERIZE** *(sub-unit 4a-1)*. `test/case_dossier_characterization_test.dart`, 18 tests, GREEN from the first run — they prove nothing new, they are the net that catches whatever the 4a-2 move breaks. They assert **observable behaviour only** (labels, order, omissions, actions, composition) and never a private type: a test naming `_Header` would break on a *correct* move, which is the opposite of what a characterization is for.
+
+  Pinned: the four conditional sections and their order; header title/location/victim/status-label precedence; the stats grid's connection count; back-to-map clearing the selection; a related card selecting its case; `Centrar` bumping `mapRecenterTickProvider`; source host vs. full URL; and `IntakePreviewPanel` hosting `CaseDossierPanel` rather than owning a second renderer.
+
+  **Proven falsifiable, because a characterization that cannot die protects nothing.** Probes, each isolated and reverted:
+
+  | # | Probe | Kills | Leaves alive |
+  |---|---|---|---|
+  | P0 | `CaseDossierPanel.build` returns `SizedBox.shrink()` | 14 of 18 | the 4 absence/composition assertions |
+  | P1 | timeline section rendered unconditionally | *a case with nothing renders none of them* | — |
+  | P2 | victim block rendered unconditionally | *omits the victim block when there is none* | — |
+  | P3 | `IntakePreviewPanel` renders a `Text` instead of the panel | *an editing draft is previewed through CaseDossierPanel* | — |
+  | P4 | `draftPreviewCaseProvider` falls back to a placeholder draft | *without an editing draft it invites to pick one* | — |
+
+  **A vacuous assertion caught in the act.** `omits the victim block when there is none` used `find.textContaining('VÍCTIMA(S)')`, which can never match: the block is a `Text.rich`, invisible to the finder without `findRichText: true`. It was passing for the wrong reason. Its positive twin failed first and exposed it — which is why every omission assertion in this file now has a presence twin over the same finder.
+
+  **Forecast exceeded, deliberately.** 423 lines against a 200-300 forecast. Per 4.12 the forecast is not a gate; the 1500 ceiling is, and it is untouched. The overrun is fixtures and the presence/absence twinning above, both of which the net needs.
 - [ ] **4.2 RED — Shared content.** Add `case_dossier_content_test.dart` for metadata, summary, chapters once/in order, photos, timeline, sources, related cases, optional omission, and legacy cases. Assert **one implementation per shared block**, not identical output across hosts: the expanded page is a superset and may render more (design D7).
 - [ ] **4.3 RED — Source overrides and modes.** Prove null/empty/grouped override semantics and map/preview chrome separation.
 - [ ] **4.4 RED — Composition/callbacks.** Prove map callbacks and the required `IntakePreviewPanel → CaseDossierPanel(preview) → CaseDossierContent` chain.
