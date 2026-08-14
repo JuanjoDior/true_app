@@ -56,11 +56,17 @@ class _TrueCrimeAppState extends State<TrueCrimeApp> {
       theme: AppTheme.buildTheme(),
       routerDelegate: _delegate,
       routeInformationParser: AppRouteInformationParser(),
-      routeInformationProvider: PlatformRouteInformationProvider(
-        initialRouteInformation: RouteInformation(
-          uri: Uri.parse(widget.initialLocation ?? '/'),
+      // `null` significa "usa el de la plataforma", que es el que lee la barra
+      // de direcciones de verdad. Pasar uno propio SIEMPRE hacía que la
+      // aplicación desplegada arrancara en `/` ignorando la URL, así que
+      // cualquier enlace directo a un expediente aterrizaba en la Sala con el
+      // hash borrado. Sólo se sustituye cuando un test fija la ruta.
+      routeInformationProvider: switch (widget.initialLocation) {
+        null => null,
+        final location => PlatformRouteInformationProvider(
+          initialRouteInformation: RouteInformation(uri: Uri.parse(location)),
         ),
-      ),
+      },
     );
   }
 }

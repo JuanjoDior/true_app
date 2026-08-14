@@ -523,6 +523,31 @@ Original task text:
 
 **Finish state:** automated, structural, built-host, deployed, and browser evidence agree. Unit 9 changes no source.
 
+**Unit 9 — local half complete, deployed half pending authorisation.**
+
+**9.12 IS VIOLATED, and that is the headline.** Unit 9 was to change no source. Browser verification found a real defect, so one source file changed and **Unit 7 is reopened** by its own rule.
+
+**The defect: no deep link worked in the built app.** `TrueCrimeApp` always passed an explicit `routeInformationProvider` seeded from `initialLocation ?? '/'`. `initialLocation` exists only for tests, so in production the app ignored the address bar and started at `/`: opening `#/casos/zodiac` landed on the Situation Room with the hash wiped. **All 431 tests passed** because every one of them passes `initialLocation` — the parameter added for testability was the thing hiding the bug. Fixed by passing `null` (use the platform's provider) unless a test supplies a location, with two new tests: one asserting `routeInformationProvider` is null by default and its presence twin. Suite now **472/472**.
+
+This is the second production defect this cycle that only the composition could reveal, after the map crash in Unit 7. Widget tests could not have found either.
+
+- [x] **9.1 Confirm final scope.** Tree clean, `assets/data/cases.json` untouched since `182003a` (verified with `git log` on the path), nine commits.
+- [x] **9.2 Run `flutter test` and `flutter analyze`.** 472/472, `TEST_EXIT=0`; analyze `No issues found!`, `ANALYZE_EXIT=0`.
+- [x] **9.3 Build web** with `/true_app/` base href. `BUILD_EXIT=0`. (Git Bash rewrites `/true_app/` into a Windows path; `MSYS_NO_PATHCONV=1` is required.)
+- [x] **9.4 Read `build/web/index.html`.** `<base href="/true_app/">` at line 17, `<meta name="viewport" content="width=device-width, initial-scale=1.0">` at line 28. The workflow builds with `--base-href "/${GITHUB_REPOSITORY#*/}/"` and publishes `path: build/web`.
+- [x] **9.5 Record structural route proof.** Parser and restorer present; **zero** matches for `dart:html`, `usePathUrlStrategy` or `setUrlStrategy` in code across all of `lib`; lookup is `crimeCase.slug == slug`; the only mentions of `workspaceProvider` inside `lib/app/navigation/` are three `///` documentation lines, no code.
+- [ ] **9.6 Confirm exact deployment SHA.** **BLOCKED — awaiting maintainer authorisation to push.** Nothing is pushed and no deployment claim is made.
+- [x] **9.7 Prove direct entry/refresh in a real browser.** Chrome, release build served from `build/web` under `/true_app/` with no rewrite rule — the same condition Pages provides. `#/casos/zodiac` renders the full expanded dossier (badges, title, victims, year/connections/coords, summary, verified timeline, cited sources, related cases). **This is the step that caught the defect above**; the first attempt landed on the Situation Room with the hash erased.
+- [x] **9.8 Prove history.** Root → directory → `#/casos/zodiac` → related → `#/casos/goldenstate` → Back, Back → Forward, Forward. Recorded hash at each step: `''` → `#/casos/zodiac` → `#/casos/goldenstate` → `#/casos/zodiac` → `''` → `#/casos/zodiac` → `#/casos/goldenstate`. Exact, no duplicate entries.
+- [x] **9.9 Prove unknown slug.** `#/casos/este-caso-no-existe` keeps its hash verbatim, renders "Ese expediente no existe", substitutes no case, and offers the return action.
+- [ ] **9.10 Prove responsive directory/detail.** **PARTIAL, declared not fabricated.** Wide desktop verified: the directory opens from the rail and lists every case year-descending, with the two 2007 cases correctly tie-broken by title. **Compact mobile NOT verified in-browser**: `resize_window` does not reach Flutter's viewport in this setup — `window.innerWidth` stays at 1920 regardless. Coverage for compact comes from automated tests at 500px and 360px only.
+- [x] **9.11 Smoke-check map preservation.** After routing and directory use, the Situation Room returns intact: map, all 15 markers, filters, focus panel, timeline, no exceptions.
+- [x] **9.12 Confirm zero source lines.** **NOT met** — see above. One file changed, Unit 7 reopened, evidence re-recorded.
+- [x] **9.13 Hand off verification evidence.** Recorded above with commands and observed values. **No PASS is inferred from widget tests**: two entry-point clicks (top-bar directory button, and the detail page's return action) could not be actuated by coordinate against Flutter's canvas. They are covered by widget tests and are **not** claimed as browser-verified, nor claimed broken.
+- [ ] **9.14 Fail safely.** Nothing fabricated; the two gaps and the blocked deployment are recorded as gaps.
+
+Original task text:
+
 - [ ] **9.1 Confirm final scope** and unchanged catalog unless separately authorized.
 - [ ] **9.2 Run `flutter test` and `flutter analyze`.**
 - [ ] **9.3 Build web** with `/true_app/` base href.

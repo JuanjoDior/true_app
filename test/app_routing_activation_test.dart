@@ -99,6 +99,60 @@ Future<ProviderContainer> _pumpApp(
 }
 
 void main() {
+  group('la ruta real del navegador manda', () {
+    testWidgets('without an initialLocation the platform route is used', (
+      tester,
+    ) async {
+      // ESTE TEST NACIÓ DE UN FALLO EN NAVEGADOR REAL, no de una idea.
+      //
+      // `initialLocation` existe sólo para los tests. Al pasar un
+      // `routeInformationProvider` explícito SIEMPRE, la aplicación desplegada
+      // ignoraba la barra de direcciones y arrancaba en `/`: cualquier enlace
+      // directo aterrizaba en la Sala de Situación con el hash borrado. Los 431
+      // tests pasaban porque todos pasan `initialLocation`.
+      //
+      // `null` aquí significa "usa el de la plataforma", que es el que lee la
+      // URL de verdad.
+      final container = ProviderContainer(
+        overrides: [
+          casesRepositoryProvider.overrideWithValue(const _StubRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const TrueCrimeApp(),
+        ),
+      );
+
+      final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+      expect(app.routeInformationProvider, isNull);
+    });
+
+    testWidgets('with an initialLocation the test route wins', (tester) async {
+      // Gemelo del anterior: sin él, "nunca hay provider" pasaría el primero y
+      // dejaría los otros trece tests sin forma de fijar una ruta.
+      final container = ProviderContainer(
+        overrides: [
+          casesRepositoryProvider.overrideWithValue(const _StubRepository()),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: const TrueCrimeApp(initialLocation: '/casos/known-case'),
+        ),
+      );
+
+      final app = tester.widget<MaterialApp>(find.byType(MaterialApp));
+      expect(app.routeInformationProvider, isNotNull);
+    });
+  });
+
   group('el router es dueño de las rutas', () {
     testWidgets('the root shows the Situation Room', (tester) async {
       await _pumpApp(tester);
