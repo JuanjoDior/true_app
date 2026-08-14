@@ -133,16 +133,24 @@ one prevents a defect that actually shipped into a draft.
 
 **Finish state:** chapter data round-trips through drafts without an authoring surface.
 
-- [ ] **1.1 RED — Chapter codec.** Add `test/case_chapter_codec_test.dart` for exactly four types, fixed order, whitespace meaningfulness with verbatim preservation, absent/null/non-array input, malformed entries, unsupported types, and duplicate policy.
-- [ ] **1.2 RED — Draft compatibility.** Add `test/case_draft_chapters_test.dart` for legacy JSON, chapter round-trip, empty omission, and preservation of existing fields.
-- [ ] **1.3 Observe RED** from missing domain/draft behavior.
-- [ ] **1.4 GREEN — Domain.** Add `case_chapter.dart` with fixed enum, immutable value objects, tolerant codec, ordering, `contentFor`, and `withContent`.
-- [ ] **1.5 GREEN — Draft.** Add default-empty chapters and additive JSON handling to `CaseDraft`.
-- [ ] **1.6 Observe GREEN** on the same focused tests.
-- [ ] **1.7 TRIANGULATE** malformed-entry, duplicate, ordering, and whitespace vectors.
-- [ ] **1.8 REFACTOR and verify** with `flutter test` and `flutter analyze`.
-- [ ] **1.9 Apply line-budget gate.** Split at 1500 or more lines.
-- [ ] **1.10 Review and deliver** as `feat(casos): incorpora el modelo de capítulos editoriales`.
+- [x] **1.1 RED — Chapter codec.** `test/case_chapter_codec_test.dart`, 30 focused tests. Deliberately one assertion each: with several `expect`s in one body the first failure aborts the rest, which would make mutation attribution dishonest.
+- [x] **1.2 RED — Draft compatibility.** `test/case_draft_chapters_test.dart`, 13 tests covering legacy JSON, round trip, omission and field preservation.
+- [x] **1.3 Observe RED.** Recorded as a **compile failure**, not credited to any assertion line: `Error when reading 'lib/features/cases/domain/case_chapter.dart'` plus `Undefined name 'CaseChapterType'`. The type did not exist yet.
+- [x] **1.4 GREEN — Domain.** `lib/features/cases/domain/case_chapter.dart`: fixed four-value enum, `CaseChapter`, `CaseChapters` with four named slots (so a repeated or reordered type is unrepresentable), tolerant non-throwing `fromJson`, `orderedMeaningful`, `contentFor`, `withContent`.
+- [x] **1.5 GREEN — Draft.** `CaseDraft.chapters` defaulting to `const CaseChapters()`, decoded through the tolerant codec, and omitted from `toJson` when nothing is meaningful.
+- [x] **1.6 Observe GREEN** on the same focused tests: 40/40 at that point.
+- [x] **1.7 TRIANGULATE.** Found a real gap while triangulating: `withResolvedPlace` rebuilds the draft field by field, so it silently dropped chapters. Added `chapters` there and to `copyWith`, plus three tests. Mutation evidence, each isolated and reverted:
+
+  | # | Mutation | Failing test | Proves |
+  |---|---|---|---|
+  | M1 | drop `chapters` from `withResolvedPlace` | *withResolvedPlace keeps the chapters* — `Expected 'Antes', Actual <null>` | Resolving a map location cannot wipe authored chapters |
+  | M2 | remove the `accepted.containsKey` guard | *keeps the first accepted entry when a type repeats* — `Expected 'Primera', Actual 'Segunda'` | First accepted wins, not last |
+  | M3 | let an ignored entry occupy its slot | *a blank earlier entry…* and *a malformed earlier entry…* — both `Expected 'Real', Actual ''` | An ignored entry does not consume its type slot |
+  | M4 | always emit the `chapters` member | both *toJson omits the member…* — `Expected false, Actual <true>` | A chapterless draft serialises byte-identical to before |
+
+- [x] **1.8 REFACTOR and verify.** `dart format` on the four touched files; `flutter test` 213/213 (170 baseline + 43 new); `flutter analyze` clean.
+- [x] **1.9 Apply line-budget gate.** Measured `git diff --numstat 75ac968`: 151 + 18/5 + 299 + 141 = **614 changed lines**, against a 1500 ceiling. No split needed.
+- [x] **1.10 Review and deliver** as `feat(casos): incorpora el modelo de capítulos editoriales`.
 
 **Rollback:** restore the original draft schema and remove only dormant chapter types/tests.
 

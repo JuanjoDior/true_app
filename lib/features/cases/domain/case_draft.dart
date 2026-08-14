@@ -1,4 +1,5 @@
 import 'case_category.dart';
+import 'case_chapter.dart';
 import 'case_status.dart';
 import 'case_timeline_event.dart';
 import 'resolved_place.dart';
@@ -24,6 +25,7 @@ class CaseDraft {
     this.timeline = const <DraftTimelineEvent>[],
     this.links = const <DraftLink>[],
     this.photos = const <DraftPhoto>[],
+    this.chapters = const CaseChapters(),
   });
 
   /// Identidad local estable del borrador, independiente del título.
@@ -59,6 +61,10 @@ class CaseDraft {
   /// (política "sin backend, sin CMS") [Diseño #14].
   final List<DraftPhoto> photos;
 
+  /// Capítulos editoriales de formato largo. Aditivo: los borradores guardados
+  /// antes de existir este campo decodifican a una colección vacía.
+  final CaseChapters chapters;
+
   CaseDraft copyWith({
     String? title,
     CaseCategory? category,
@@ -75,6 +81,7 @@ class CaseDraft {
     List<DraftTimelineEvent>? timeline,
     List<DraftLink>? links,
     List<DraftPhoto>? photos,
+    CaseChapters? chapters,
   }) {
     return CaseDraft(
       draftId: draftId,
@@ -93,6 +100,7 @@ class CaseDraft {
       timeline: timeline ?? this.timeline,
       links: links ?? this.links,
       photos: photos ?? this.photos,
+      chapters: chapters ?? this.chapters,
     );
   }
 
@@ -118,6 +126,7 @@ class CaseDraft {
       timeline: timeline,
       links: links,
       photos: photos,
+      chapters: chapters,
     );
   }
 
@@ -143,8 +152,10 @@ class CaseDraft {
       victim: json['victim'] as String?,
       tags: (json['tags'] as List<dynamic>? ?? const []).cast<String>(),
       timeline: (json['timeline'] as List<dynamic>? ?? const [])
-          .map((event) =>
-              DraftTimelineEvent.fromJson(event as Map<String, dynamic>))
+          .map(
+            (event) =>
+                DraftTimelineEvent.fromJson(event as Map<String, dynamic>),
+          )
           .toList(growable: false),
       links: (json['links'] as List<dynamic>? ?? const [])
           .map((link) => DraftLink.fromJson(link as Map<String, dynamic>))
@@ -152,6 +163,7 @@ class CaseDraft {
       photos: (json['photos'] as List<dynamic>? ?? const [])
           .map((photo) => DraftPhoto.fromJson(photo as Map<String, dynamic>))
           .toList(growable: false),
+      chapters: CaseChapters.fromJson(json['chapters']),
     );
   }
 
@@ -173,6 +185,9 @@ class CaseDraft {
       'timeline': timeline.map((event) => event.toJson()).toList(),
       'links': links.map((link) => link.toJson()).toList(),
       'photos': photos.map((photo) => photo.toJson()).toList(),
+      // Se omite entero cuando no hay nada significativo, para que un borrador
+      // sin capítulos sea byte a byte como antes de que existieran.
+      if (chapters.orderedMeaningful.isNotEmpty) 'chapters': chapters.toJson(),
     };
   }
 }
@@ -292,9 +307,7 @@ class DraftLink {
     return DraftLink(
       title: json['title'] as String?,
       url: json['url'] as String?,
-      kind: kind is String
-          ? DraftLinkKind.fromJson(kind)
-          : DraftLinkKind.other,
+      kind: kind is String ? DraftLinkKind.fromJson(kind) : DraftLinkKind.other,
     );
   }
 
