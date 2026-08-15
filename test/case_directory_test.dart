@@ -99,6 +99,38 @@ Future<ProviderContainer> _pumpHome(
   return container;
 }
 
+final _longArchive = [
+  for (var i = 0; i < 60; i++)
+    _crimeCase(slug: 'caso-$i', year: 1900 + i, title: 'Caso $i'),
+];
+
+/// Arrastra con un gesto REAL hasta que [target] aparece.
+///
+/// **Nunca `jumpTo` ni `scrollUntilVisible`.** El primero llama a `forcePixels`
+/// y el segundo mueve con `Scrollable.ensureVisible`: los dos se saltan la
+/// física y pasan igual contra un `NeverScrollableScrollPhysics`. Lo que
+/// demuestran es que el contenido existe, no que se pueda alcanzar. La spec lo
+/// declara inadmisible por escrito, y con razón.
+///
+/// El bucle aquí sí es legítimo — lo que estaba mal en `scrollUntilVisible` no
+/// era iterar, era de dónde salía el movimiento. Aquí sale de `dragFrom`, que
+/// pasa por la física como el dedo de una persona.
+///
+/// La condición es de EXISTENCIA y no de posición porque el directorio usa
+/// `ListView.builder`: los elementos lejanos no están construidos todavía. En
+/// el expediente, que es un `SingleChildScrollView`, la condición correcta es
+/// la contraria — allí todo se construye de golpe y hay que mirar la posición.
+Future<void> _dragUntilFound(
+  WidgetTester tester,
+  Finder target, {
+  int maxDrags = 40,
+}) async {
+  for (var i = 0; i < maxDrags && target.evaluate().isEmpty; i++) {
+    await tester.dragFrom(const Offset(250, 450), const Offset(0, -280));
+    await tester.pump();
+  }
+}
+
 Future<void> _openDirectory(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('open-case-directory')));
   await _settle(tester);
@@ -331,10 +363,7 @@ void main() {
       await _pumpHome(
         tester,
         size: _mobile,
-        repository: _StubRepository([
-          for (var i = 0; i < 60; i++)
-            _crimeCase(slug: 'caso-$i', year: 1900 + i, title: 'Caso $i'),
-        ]),
+        repository: _StubRepository(_longArchive),
       );
       await _openDirectory(tester);
 
@@ -348,8 +377,32 @@ void main() {
           .position;
 
       // Precondición de no-vacuidad: sin nada que desplazar, "se puede
-      // desplazar" no significaría nada.
+      // desplazar" no significaría nada. Pero por sí sola tampoco prueba que se
+      // ALCANCE nada — eso lo hace el test de abajo, arrastrando.
       expect(position.maxScrollExtent, greaterThan(0));
+    });
+
+    testWidgets('dragging reaches a case near the end of a long archive', (
+      tester,
+    ) async {
+      await _pumpHome(
+        tester,
+        size: _mobile,
+        repository: _StubRepository(_longArchive),
+      );
+      await _openDirectory(tester);
+
+      // El más antiguo: con orden descendente por año, el último de la lista.
+      final last = find.text('Caso 0');
+      // Precondición honesta AQUÍ y sólo aquí: `ListView.builder` no ha
+      // construido los elementos lejanos, así que su ausencia significa algo.
+      // En un `SingleChildScrollView` esta misma línea sería una aserción que
+      // no puede fallar.
+      expect(last, findsNothing);
+
+      await _dragUntilFound(tester, last);
+
+      expect(last, findsOneWidget);
     });
   });
 }

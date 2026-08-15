@@ -434,7 +434,10 @@ Original task list follows.
   | R1 | look up by `id` instead of `slug` | 8 across three files | Slug identity, not id identity |
   | R2 | catalog error renders the not-found key | 2 | A broken archive is never reported as a deleted case |
   | R3 | related navigation uses `id` | *opening a related case routes to its slug* | Public URLs are slug-addressed |
-  | R5 | page uses `compact` presentation | the whole file hangs on infinite constraints | `expanded` is what makes the page composable inside a scroll |
+  | R4 | page uses `compact` presentation | the whole file hangs on infinite constraints | `expanded` is what makes the page composable inside a scroll |
+
+  (Numbered R1–R4. An earlier draft of this table skipped R4; there was never a
+  fifth probe, and renumbering is the honest fix rather than inventing one.)
 
   The boundary probe from Unit 6 (Q5) still covers the router/`workspaceProvider` separation and was not repeated.
 - [x] **7.11b RED — Return from a deep link while intake is open.** `returning from that deep link reveals the intake underneath`, with `returning from a deep link with no intake shows the map` as its twin so "always shows intake" cannot pass both. `the deep link does not rewrite the workspace` asserts the provider directly.
@@ -445,22 +448,22 @@ Original task list follows.
 
 Original task text:
 
-- [ ] **7.1 RED — Slug lookup.** Test loading/error/exact match/missing slug and no map-provider access. **The match tests MUST use a hand-built fixture where `id != slug`** (for example `id: 'legacy-7'`, `slug: 'known-case'`) and MUST assert that the `id` value does *not* resolve. Every case in the real catalog has `id == slug`, so a real or exported fixture cannot tell slug lookup from ID lookup and proves nothing.
-- [ ] **7.2 RED — All detail states.** Add `case_detail_page_test.dart` for loading, catalog error, unknown slug, known legacy/chapter case, expanded shared content, return, and related slug navigation.
-- [ ] **7.3 RED — Responsive reading.** Prove realistic compact/wide scrolling, reachable actions, and no blocking overflow.
-- [ ] **7.4 Observe RED** before provider/page implementation.
-- [ ] **7.5 GREEN — Complete detail surface.** Add slug provider and `CaseDetailPage` with all states and direct expanded shared composition.
-- [ ] **7.6 GREEN — Route-specific navigation.** Wire related and return actions; keep generic unknown syntax distinct and map state unchanged.
-- [ ] **7.7 Observe detail GREEN before root activation.** App root remains old.
-- [ ] **7.8 RED — Application activation.** Convert `TrueCrimeApp` to a `StatefulWidget` so controller and delegate are created once; it is a `StatelessWidget` today (`true_crime_app.dart:6`) and "create once" is otherwise impossible. Mount it and require Router ownership for all routes and restoration, while proving the router still never writes `workspaceProvider`.
-- [ ] **7.9 GREEN — Activate complete graph.** Switch to `MaterialApp.router`, creating controller/delegate once.
-- [ ] **7.10 Observe router GREEN** across parser/router/provider/detail/host tests.
-- [ ] **7.11 TRIANGULATE** slug identity against an `id != slug` fixture, no map prerequisite, A→B routes/history, root restoration, and legacy presentation.
-- [ ] **7.11b RED — Return from a deep link while intake is open.** Design §7.4 now specifies that the root reveals whatever `workspaceProvider` already held. Assert it directly: with `workspaceProvider` holding `Workspace.intake`, apply a case deep link, then return; the root MUST show `IntakeWorkspaceScreen`, not the Situation Room. This replaced a removed guarantee and would otherwise ship unasserted.
-- [ ] **7.12 Verify structural boundaries.** Confirm no `dart:html`/path strategy and inspect `web/index.html` plus deployment workflow at their boundary.
-- [ ] **7.13 REFACTOR and verify** full tests/analyze.
-- [ ] **7.14 Apply line-budget gate.** Forecast maximum 360; split at 1500.
-- [ ] **7.15 Review and deliver** as `feat(navegacion): activa el detalle público por hash`.
+> - **7.1 RED — Slug lookup.** Test loading/error/exact match/missing slug and no map-provider access. **The match tests MUST use a hand-built fixture where `id != slug`** (for example `id: 'legacy-7'`, `slug: 'known-case'`) and MUST assert that the `id` value does *not* resolve. Every case in the real catalog has `id == slug`, so a real or exported fixture cannot tell slug lookup from ID lookup and proves nothing.
+> - **7.2 RED — All detail states.** Add `case_detail_page_test.dart` for loading, catalog error, unknown slug, known legacy/chapter case, expanded shared content, return, and related slug navigation.
+> - **7.3 RED — Responsive reading.** Prove realistic compact/wide scrolling, reachable actions, and no blocking overflow.
+> - **7.4 Observe RED** before provider/page implementation.
+> - **7.5 GREEN — Complete detail surface.** Add slug provider and `CaseDetailPage` with all states and direct expanded shared composition.
+> - **7.6 GREEN — Route-specific navigation.** Wire related and return actions; keep generic unknown syntax distinct and map state unchanged.
+> - **7.7 Observe detail GREEN before root activation.** App root remains old.
+> - **7.8 RED — Application activation.** Convert `TrueCrimeApp` to a `StatefulWidget` so controller and delegate are created once; it is a `StatelessWidget` today (`true_crime_app.dart:6`) and "create once" is otherwise impossible. Mount it and require Router ownership for all routes and restoration, while proving the router still never writes `workspaceProvider`.
+> - **7.9 GREEN — Activate complete graph.** Switch to `MaterialApp.router`, creating controller/delegate once.
+> - **7.10 Observe router GREEN** across parser/router/provider/detail/host tests.
+> - **7.11 TRIANGULATE** slug identity against an `id != slug` fixture, no map prerequisite, A→B routes/history, root restoration, and legacy presentation.
+> - **7.11b RED — Return from a deep link while intake is open.** Design §7.4 now specifies that the root reveals whatever `workspaceProvider` already held. Assert it directly: with `workspaceProvider` holding `Workspace.intake`, apply a case deep link, then return; the root MUST show `IntakeWorkspaceScreen`, not the Situation Room. This replaced a removed guarantee and would otherwise ship unasserted.
+> - **7.12 Verify structural boundaries.** Confirm no `dart:html`/path strategy and inspect `web/index.html` plus deployment workflow at their boundary.
+> - **7.13 REFACTOR and verify** full tests/analyze.
+> - **7.14 Apply line-budget gate.** Forecast maximum 360; split at 1500.
+> - **7.15 Review and deliver** as `feat(navegacion): activa el detalle público por hash`.
 
 ## Unit 8 — Published-Case Directory
 
@@ -503,25 +506,58 @@ Original task text:
 
 Original task text:
 
-- [ ] **8.1 RED — Ordering/reuse.** Test every loaded case, year-desc/title-asc/slug-asc order, legacy cases, and no independent load.
-- [ ] **8.2 RED — States/navigation.** Test loading/error/retry/empty/list, modal close, and exact slug navigation.
-- [ ] **8.3 RED — Responsive access.** Test three topologies, not two: rail-less mobile below 880, **desktop-without-rail between 880 and 1099** (`breakpoints.dart:13,22` — `_DesktopBody` with `showRail: false`, so the rail icon entry point does not exist there), and desktop with rail at 1100 or above. Each must expose a reachable entry point, scroll, navigate, and show no blocking overflow.
-- [ ] **8.4 RED — Map preservation.** Prove directory actions do not alter filters, selection, recenter, markers, or compact dossier.
-- [ ] **8.5 Observe RED** with bounded pumps.
-- [ ] **8.6 GREEN — Derived provider.** Derive complete ordered directory only from `casesProvider`.
-- [ ] **8.7 GREEN — Adaptive directory.** Add mobile safe-area bottom sheet and constrained wide modal.
-- [ ] **8.8 GREEN — Entry points.** Activate rail icon, rail-less map-stage control, and shared home navigation.
-- [ ] **8.9 Observe GREEN** on focused tests.
-- [ ] **8.10 TRIANGULATE** ordering fallback, excluded ranks, legacy inclusion, scrolling, slug navigation, and map preservation.
-- [ ] **8.11 REFACTOR and verify** full tests/analyze.
-- [ ] **8.12 Apply line-budget gate.** Split at 1500 or more.
-- [ ] **8.13 Review and deliver** as `feat(casos): añade el directorio público de expedientes`.
+> - **8.1 RED — Ordering/reuse.** Test every loaded case, year-desc/title-asc/slug-asc order, legacy cases, and no independent load.
+> - **8.2 RED — States/navigation.** Test loading/error/retry/empty/list, modal close, and exact slug navigation.
+> - **8.3 RED — Responsive access.** Test three topologies, not two: rail-less mobile below 880, **desktop-without-rail between 880 and 1099** (`breakpoints.dart:13,22` — `_DesktopBody` with `showRail: false`, so the rail icon entry point does not exist there), and desktop with rail at 1100 or above. Each must expose a reachable entry point, scroll, navigate, and show no blocking overflow.
+> - **8.4 RED — Map preservation.** Prove directory actions do not alter filters, selection, recenter, markers, or compact dossier.
+> - **8.5 Observe RED** with bounded pumps.
+> - **8.6 GREEN — Derived provider.** Derive complete ordered directory only from `casesProvider`.
+> - **8.7 GREEN — Adaptive directory.** Add mobile safe-area bottom sheet and constrained wide modal.
+> - **8.8 GREEN — Entry points.** Activate rail icon, rail-less map-stage control, and shared home navigation.
+> - **8.9 Observe GREEN** on focused tests.
+> - **8.10 TRIANGULATE** ordering fallback, excluded ranks, legacy inclusion, scrolling, slug navigation, and map preservation.
+> - **8.11 REFACTOR and verify** full tests/analyze.
+> - **8.12 Apply line-budget gate.** Split at 1500 or more.
+> - **8.13 Review and deliver** as `feat(casos): añade el directorio público de expedientes`.
 
 ## Unit 9 — Verification, Deployment, and Browser Proof
 
 **Depends on:** Units 1–8 committed.
 
 **Finish state:** automated, structural, built-host, deployed, and browser evidence agree. Unit 9 changes no source.
+
+## Remediation after `sdd-verify` — 15 August 2026
+
+`sdd-verify` returned **FAIL with 3 CRITICAL**. Not one of them was an
+implementation defect: every requirement was implemented and the deployment was
+real. All three were **evidence quality**, and all three were the same species —
+**the exact defect this whole cycle was built to eliminate, committed by me while
+writing the tests that were supposed to catch it.**
+
+| # | What was wrong | Fix |
+|---|---|---|
+| C-1 | `case_detail_page_test.dart` scrolled with `position.jumpTo`, which calls `forcePixels` and bypasses `applyBoundaryConditions` / `applyPhysicsToUserOffset`. It passed against a dead scroll. The specs declare programmatic helpers inadmissible **in writing**, and I used one anyway | Replaced with `_dragUntilVisible`, a real `dragFrom` gesture |
+| C-2 | "Expanded dossier is usable on desktop" was **UNTESTED**. All four responsive tests used `Size(360, 780)`; the harness default of 2400 height never overflows, so no test ever exercised a desktop window | New `lectura en escritorio` group at 1440×900: no overflow, bounded reading column, real scroll, reachable return |
+| C-3 | The directory asserted `maxScrollExtent > 0` and stopped there — half an assertion. Nothing proved anything was *reachable*, at either layer, since 9.10's declared gap lands on the same scenario | New `dragging reaches a case near the end of a long archive`, with a `ListView.builder`-appropriate absence precondition |
+
+**Both fixes were proven by probe**, which is the point: injecting
+`NeverScrollableScrollPhysics` into `CaseDetailPage` kills two tests, and into the
+directory's `ListView.builder` kills one. Under the old `jumpTo` version those
+same probes passed green.
+
+One precondition subtlety worth keeping: `findsNothing` before scrolling is
+**honest in the directory and dishonest in the dossier**. The directory is a
+`ListView.builder` and genuinely has not built distant rows; the dossier is a
+`SingleChildScrollView` and builds everything at once, so there the precondition
+must look at *position*. Same words, opposite meaning, depending on the widget.
+
+Also corrected from verify's WARNINGs: the commit count in 9.1 (said nine, was
+eleven), the false clean-tree claim in that same row, and the Unit 7 probe table
+skipping R4.
+
+**No production source changed.** Remediation was test-only.
+
+---
 
 **Unit 9 — complete. Deployed and verified against the live site.**
 
@@ -540,7 +576,7 @@ Original task text:
 
 This is the second production defect this cycle that only the composition could reveal, after the map crash in Unit 7. Widget tests could not have found either.
 
-- [x] **9.1 Confirm final scope.** Tree clean, `assets/data/cases.json` untouched since `182003a` (verified with `git log` on the path), nine commits.
+- [x] **9.1 Confirm final scope.** `assets/data/cases.json` untouched since `182003a` (verified with `git log` on the path). Eleven commits at the time of the browser pass; the count grew afterwards with the remediation below. **Correction:** this row originally read "nine commits" and claimed a clean tree — both were wrong, and `sdd-verify` caught them.
 - [x] **9.2 Run `flutter test` and `flutter analyze`.** 472/472, `TEST_EXIT=0`; analyze `No issues found!`, `ANALYZE_EXIT=0`.
 - [x] **9.3 Build web** with `/true_app/` base href. `BUILD_EXIT=0`. (Git Bash rewrites `/true_app/` into a Windows path; `MSYS_NO_PATHCONV=1` is required.)
 - [x] **9.4 Read `build/web/index.html`.** `<base href="/true_app/">` at line 17, `<meta name="viewport" content="width=device-width, initial-scale=1.0">` at line 28. The workflow builds with `--base-href "/${GITHUB_REPOSITORY#*/}/"` and publishes `path: build/web`.
@@ -553,26 +589,30 @@ This is the second production defect this cycle that only the composition could 
 - [x] **9.11 Smoke-check map preservation.** After routing and directory use, the Situation Room returns intact: map, all 15 markers, filters, focus panel, timeline, no exceptions.
 - [x] **9.12 Confirm zero source lines.** **NOT met** — see above. One file changed, Unit 7 reopened, evidence re-recorded.
 - [x] **9.13 Hand off verification evidence.** Recorded above with commands and observed values. **No PASS is inferred from widget tests**: two entry-point clicks (top-bar directory button, and the detail page's return action) could not be actuated by coordinate against Flutter's canvas. They are covered by widget tests and are **not** claimed as browser-verified, nor claimed broken.
-- [ ] **9.14 Fail safely.** Nothing fabricated; the two gaps and the blocked deployment are recorded as gaps.
+- [x] **9.14 Fail safely.** Nothing fabricated. The two verification gaps are recorded as gaps, and 9.10 stays **unchecked on purpose** — it is the one thing this cycle could not prove, and checking it to tidy the list would be exactly the falsification this task exists to prevent.
 
 Original task text:
 
-- [ ] **9.1 Confirm final scope** and unchanged catalog unless separately authorized.
-- [ ] **9.2 Run `flutter test` and `flutter analyze`.**
-- [ ] **9.3 Build web** with `/true_app/` base href.
-- [ ] **9.4 Read `build/web/index.html`** for base href and viewport; confirm workflow publishes build output.
-- [ ] **9.5 Record structural route proof:** parser/restorer, default hash strategy, no `dart:html`/path strategy, exact slug lookup, map separation.
-- [ ] **9.6 Confirm exact deployment SHA** through approved direct-main gate and successful Pages workflow.
-- [ ] **9.7 Prove deployed direct entry/refresh** in a real browser, recording browser/version, SHA, URL, hash, and title.
-- [ ] **9.8 Prove deployed history:** Situation Room → A → B → Back twice → Forward twice, recording hash/content each step.
-- [ ] **9.9 Prove unknown slug:** hash preserved, no substituted case, return to Situation Room.
-- [ ] **9.10 Prove responsive directory/detail** on compact mobile and wide desktop with scrolling and actions.
-- [ ] **9.11 Smoke-check map preservation** after route/directory use.
-- [ ] **9.12 Confirm zero source lines.** Any corrective edit reopens its owning unit and evidence.
-- [ ] **9.13 Hand off complete verification evidence** without inferring PASS from widget tests.
-- [ ] **9.14 Fail safely.** Preserve failure and execute approved rollback instead of fabricating acceptance.
+> - **9.1 Confirm final scope** and unchanged catalog unless separately authorized.
+> - **9.2 Run `flutter test` and `flutter analyze`.**
+> - **9.3 Build web** with `/true_app/` base href.
+> - **9.4 Read `build/web/index.html`** for base href and viewport; confirm workflow publishes build output.
+> - **9.5 Record structural route proof:** parser/restorer, default hash strategy, no `dart:html`/path strategy, exact slug lookup, map separation.
+> - **9.6 Confirm exact deployment SHA** through approved direct-main gate and successful Pages workflow.
+> - **9.7 Prove deployed direct entry/refresh** in a real browser, recording browser/version, SHA, URL, hash, and title.
+> - **9.8 Prove deployed history:** Situation Room → A → B → Back twice → Forward twice, recording hash/content each step.
+> - **9.9 Prove unknown slug:** hash preserved, no substituted case, return to Situation Room.
+> - **9.10 Prove responsive directory/detail** on compact mobile and wide desktop with scrolling and actions.
+> - **9.11 Smoke-check map preservation** after route/directory use.
+> - **9.12 Confirm zero source lines.** Any corrective edit reopens its owning unit and evidence.
+> - **9.13 Hand off complete verification evidence** without inferring PASS from widget tests.
+> - **9.14 Fail safely.** Preserve failure and execute approved rollback instead of fabricating acceptance.
 
 ## Rollback Verification Checkpoints
+
+**Estos NO son trabajo pendiente.** Son el plan de retirada, y quedan sin marcar
+porque no hubo rollback: el ciclo se entregó y está desplegado. Se marcarían sólo
+si alguna vez hay que deshacerlo.
 
 Only after explicit rollback approval, revert source units in strict reverse order:
 

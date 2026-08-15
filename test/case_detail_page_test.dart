@@ -108,6 +108,32 @@ Future<_RecordingNavigation> _pumpDetail(
   return navigation;
 }
 
+/// Arrastra con un gesto REAL hasta que [target] entra en pantalla.
+///
+/// **Nunca `jumpTo` ni `ensureVisible`.** Los dos llegan al final por la vía
+/// programática: `jumpTo` llama a `forcePixels` y se salta
+/// `applyBoundaryConditions` y `applyPhysicsToUserOffset`, así que pasan igual
+/// contra un `NeverScrollableScrollPhysics`. Un test que usa uno de ellos
+/// demuestra que el contenido existe, no que se pueda alcanzar. La spec lo
+/// declara inadmisible por escrito y tiene razón: es la misma familia que el
+/// defecto de `scrollUntilVisible`.
+///
+/// El tope existe para que un scroll muerto falle por aserción y no cuelgue.
+Future<void> _dragUntilVisible(
+  WidgetTester tester,
+  Finder target, {
+  double viewportHeight = 780,
+  int maxDrags = 20,
+}) async {
+  for (var i = 0; i < maxDrags; i++) {
+    if (tester.getRect(target).top < viewportHeight) {
+      return;
+    }
+    await tester.dragFrom(const Offset(180, 400), const Offset(0, -300));
+    await tester.pump();
+  }
+}
+
 void main() {
   group('cargando', () {
     testWidgets('shows a progress indicator while the catalog loads', (
@@ -389,13 +415,101 @@ void main() {
       // muerto y no probaría nada.
       expect(tester.getRect(end).top, greaterThan(780));
 
-      final position = tester
-          .state<ScrollableState>(find.byType(Scrollable).first)
-          .position;
-      position.jumpTo(position.maxScrollExtent);
-      await tester.pump();
+      await _dragUntilVisible(tester, end);
 
       expect(tester.getRect(end).top, lessThan(780));
+    });
+  });
+
+  group('lectura en escritorio', () {
+    // Los cuatro tests de arriba montan a 360x780. Un expediente largo en una
+    // pantalla ancha es un caso distinto y estaba SIN PROBAR: la altura del
+    // arnés por defecto (2400) nunca desborda, así que ningún test tocaba este
+    // camino.
+    const desktop = Size(1440, 900);
+
+    testWidgets('a long case does not overflow on a desktop window', (
+      tester,
+    ) async {
+      await _pumpDetail(
+        tester,
+        slug: 'known-case',
+        size: desktop,
+        repository: _StubRepository([
+          _crimeCase(
+            chapters: CaseChapters(
+              background: 'Antes. ' * 200,
+              events: 'Hechos. ' * 200,
+              investigation: 'Pistas. ' * 200,
+              currentStatus: 'Ahora. ' * 200,
+            ),
+          ),
+        ]),
+      );
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('the reading column is bounded, not stretched to the window', (
+      tester,
+    ) async {
+      await _pumpDetail(
+        tester,
+        slug: 'known-case',
+        size: desktop,
+        repository: _StubRepository([
+          _crimeCase(chapters: CaseChapters(background: 'Antes. ' * 200)),
+        ]),
+      );
+
+      // Una columna de prosa a 1440px se escanea, no se lee. El ancho de
+      // lectura es una decisión, y sin este test se perdería en silencio.
+      expect(
+        tester.getSize(find.byKey(const Key('detail-panel'))).width,
+        lessThan(desktop.width),
+      );
+    });
+
+    testWidgets('a long case still scrolls on a desktop window', (
+      tester,
+    ) async {
+      await _pumpDetail(
+        tester,
+        slug: 'known-case',
+        size: desktop,
+        repository: _StubRepository([
+          _crimeCase(
+            chapters: CaseChapters(
+              background: 'Antes. ' * 400,
+              currentStatus: 'El final del expediente',
+            ),
+          ),
+        ]),
+      );
+      final end = find.text('El final del expediente');
+      expect(tester.getRect(end).top, greaterThan(desktop.height));
+
+      await _dragUntilVisible(tester, end, viewportHeight: desktop.height);
+
+      expect(tester.getRect(end).top, lessThan(desktop.height));
+    });
+
+    testWidgets('the return action stays reachable on a desktop window', (
+      tester,
+    ) async {
+      await _pumpDetail(
+        tester,
+        slug: 'known-case',
+        size: desktop,
+        repository: _StubRepository([
+          _crimeCase(chapters: CaseChapters(background: 'Antes. ' * 400)),
+        ]),
+      );
+
+      expect(
+        tester.getRect(find.byKey(const Key('case-detail-return'))).top,
+        lessThan(desktop.height),
+      );
     });
   });
 }
