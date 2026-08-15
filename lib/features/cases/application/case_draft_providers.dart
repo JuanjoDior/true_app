@@ -12,6 +12,7 @@ import '../domain/case_source.dart';
 import '../domain/case_status.dart';
 import '../domain/case_timeline_event.dart';
 import '../domain/true_crime_case.dart';
+import 'drafts_backup.dart';
 
 /// Store de borradores, sobreescribible en tests (mismo patrón que
 /// `casesRepositoryProvider`).
@@ -96,6 +97,19 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
       for (final existing in drafts)
         if (existing.draftId == draftId) update(existing) else existing,
     ];
+    state = AsyncData(updated);
+    await _persist(updated);
+  }
+
+  /// Incorpora los borradores de una copia de seguridad.
+  ///
+  /// **Funde, no reemplaza.** Un borrador que sólo existe en este equipo se
+  /// conserva, así que restaurar una copia vieja nunca destruye el trabajo
+  /// posterior. Lo que coincide por `draftId` se sustituye por la versión de la
+  /// copia, que es lo que uno espera al decir "restaurar".
+  Future<void> importDrafts(List<CaseDraft> incoming) async {
+    final drafts = state.value ?? const <CaseDraft>[];
+    final updated = mergeDrafts(current: drafts, incoming: incoming);
     state = AsyncData(updated);
     await _persist(updated);
   }

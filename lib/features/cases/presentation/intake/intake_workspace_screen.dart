@@ -9,6 +9,7 @@ import '../../application/cases_providers.dart';
 import '../../application/draft_validator.dart';
 import '../../domain/case_draft.dart';
 import 'case_form_section.dart';
+import 'drafts_backup_button.dart';
 import 'export_case_button.dart';
 import 'intake_gate_screen.dart';
 import 'intake_preview_panel.dart';
@@ -149,6 +150,7 @@ class _WorkspaceTopBar extends ConsumerWidget {
                   ref.read(intakePreviewOpenProvider.notifier).state = !ref
                       .read(intakePreviewOpenProvider),
             ),
+            const DraftsBackupButton(compact: true),
             const ExportCaseButton(compact: true),
             IconButton(
               key: const Key('intake-new-draft-button'),
@@ -162,6 +164,8 @@ class _WorkspaceTopBar extends ConsumerWidget {
               },
             ),
           ] else ...[
+            const DraftsBackupButton(),
+            const SizedBox(width: 8),
             const ExportCaseButton(),
             const SizedBox(width: 8),
             TextButton.icon(
