@@ -116,16 +116,24 @@ final _longArchive = [
 /// era iterar, era de dónde salía el movimiento. Aquí sale de `dragFrom`, que
 /// pasa por la física como el dedo de una persona.
 ///
-/// La condición es de EXISTENCIA y no de posición porque el directorio usa
-/// `ListView.builder`: los elementos lejanos no están construidos todavía. En
-/// el expediente, que es un `SingleChildScrollView`, la condición correcta es
-/// la contraria — allí todo se construye de golpe y hay que mirar la posición.
+/// Se arrastra mientras el objetivo no exista **o** exista pero siga fuera de
+/// pantalla, porque construido no es lo mismo que visible: `ListView.builder`
+/// construye un poco más allá del borde (`cacheExtent`), así que parar en cuanto
+/// aparece probaría que se llegó a construir, no que se pueda leer.
+///
+/// Aquí la ausencia SÍ significa algo, y es propio de este widget: el directorio
+/// es un `ListView.builder` y de verdad no ha construido las filas lejanas. En
+/// el expediente, que es un `SingleChildScrollView`, todo existe desde el primer
+/// frame y `findsNothing` sería una aserción que no puede fallar.
 Future<void> _dragUntilFound(
   WidgetTester tester,
   Finder target, {
   int maxDrags = 40,
 }) async {
-  for (var i = 0; i < maxDrags && target.evaluate().isEmpty; i++) {
+  bool offScreen() =>
+      target.evaluate().isEmpty || tester.getRect(target).top >= _mobile.height;
+
+  for (var i = 0; i < maxDrags && offScreen(); i++) {
     await tester.dragFrom(const Offset(250, 450), const Offset(0, -280));
     await tester.pump();
   }
@@ -402,7 +410,8 @@ void main() {
 
       await _dragUntilFound(tester, last);
 
-      expect(last, findsOneWidget);
+      // Visible, no sólo construido.
+      expect(tester.getRect(last).top, lessThan(_mobile.height));
     });
   });
 }
