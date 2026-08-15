@@ -164,13 +164,34 @@ class ConnectionLabel extends StatelessWidget {
 }
 
 /// Tooltip permanente del caso seleccionado, junto a su marcador.
+///
+/// Con [onTap] es además la puerta al expediente: quien marca un punto en el
+/// mapa y ve el nombre del caso espera poder pulsarlo. Sin [onTap] sigue siendo
+/// una etiqueta y no finge ser pulsable — nada de cursor de mano sobre algo que
+/// no lleva a ninguna parte.
 class SelectedMarkerTooltip extends StatelessWidget {
-  const SelectedMarkerTooltip({super.key, required this.crimeCase});
+  const SelectedMarkerTooltip({super.key, required this.crimeCase, this.onTap});
 
   final TrueCrimeCase crimeCase;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final card = _card();
+    if (onTap == null) {
+      return card;
+    }
+    return MouseRegion(
+      cursor: SystemMouseCursors.click,
+      child: GestureDetector(
+        key: const Key('selected-marker-tooltip'),
+        onTap: onTap,
+        child: card,
+      ),
+    );
+  }
+
+  Widget _card() {
     return Container(
       decoration: BoxDecoration(
         color: AppColors.bgDeep.withValues(alpha: 0.94),

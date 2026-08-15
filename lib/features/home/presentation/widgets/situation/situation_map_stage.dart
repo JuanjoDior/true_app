@@ -3,6 +3,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:latlong2/latlong.dart';
 
+import '../../../../../app/navigation/app_navigation_scope.dart';
 import '../../../../../core/config/map_config.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../cases/application/cases_providers.dart';
@@ -82,6 +83,9 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
     final config = ref.watch(mapConfigProvider);
     final visibleCases = ref.watch(filteredCasesProvider).value ?? const [];
     final selected = ref.watch(selectedCaseProvider).value;
+    // Nulo en composiciones parciales de test; ahí el tooltip se queda en
+    // etiqueta en vez de reventar.
+    final navigation = AppNavigationScope.maybeOf(context);
     final related = selected == null
         ? const <RelatedCase>[]
         : ref.watch(relatedCasesProvider(selected.id));
@@ -200,7 +204,16 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
                           padding: const EdgeInsets.only(left: 18),
                           child: Align(
                             alignment: Alignment.centerLeft,
-                            child: SelectedMarkerTooltip(crimeCase: selected),
+                            child: SelectedMarkerTooltip(
+                              crimeCase: selected,
+                              // Se navega por SLUG: es la dirección pública del
+                              // caso. La selección del mapa NO se toca — la
+                              // ficha se apila encima y al volver el mapa sigue
+                              // como estaba [diseño §7.4].
+                              onTap: navigation == null
+                                  ? null
+                                  : () => navigation.openCase(selected.slug),
+                            ),
                           ),
                         ),
                       ),
