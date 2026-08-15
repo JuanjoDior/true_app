@@ -1,4 +1,4 @@
-# Traspaso — 14 de agosto de 2026
+# Traspaso — 15 de agosto de 2026
 
 Estado en vuelo. Si retomás el proyecto, **leé esto y luego
 `PROJECT_CONTEXT.md`**: aquí está lo que quedó a medias, allí lo que no cambia.
@@ -9,69 +9,68 @@ Estado en vuelo. Si retomás el proyecto, **leé esto y luego
 
 | | |
 |---|---|
-| Rama | `main`, limpia y publicada |
-| Último commit | `56f6ec3` |
+| Rama | `main` |
 | Desplegado | https://juanjodior.github.io/true_app/ · SHA `89cb790` · Pages run 31833902940 `success` |
-| Tests | **472 en verde**, `flutter analyze` limpio |
-| Ciclo SDD | `case-publication-detail` — **implementado y desplegado, SIN ARCHIVAR** |
+| Tests | **477 en verde**, `flutter analyze` limpio |
+| Ciclo `case-publication-detail` | **CERRADO Y ARCHIVADO** el 15 de agosto de 2026 |
+
+El comportamiento desplegado está al día: desde `89cb790` no ha cambiado ni una
+línea de `lib/`, `web/` ni `assets/` — sólo tests y documentación.
 
 ---
 
-## Lo primero que hay que hacer
+## No hay nada a medias
 
-**Archivar el ciclo `case-publication-detail`.** Está completo y en producción,
-pero el change sigue abierto en `openspec/changes/`. Antes de abrir nada nuevo,
-cerrar éste.
+El ciclo cerró con `sdd-verify` en **PASS**, 0 CRITICAL, 0 bloqueos, **23/23
+requisitos y 48/48 escenarios**. El archivo está en
+`openspec/changes/archive/2026-08-15-case-publication-detail/` con su
+`archive-report.md`, y las cuatro capacidades nuevas viven ya en
+`openspec/specs/`:
 
-Dos cosas que el archive tiene que tener en cuenta y no puede pasar por alto:
+- `case-editorial-chapters`
+- `case-publication-route`
+- `expanded-case-dossier`
+- `published-case-directory`
 
-1. **La Unit 7 está formalmente REABIERTA.** La regla 9.12 decía que la Unit 9 no
-   tocaría código fuente. Lo tocó: la verificación en navegador encontró que
-   ningún enlace directo funcionaba y hubo que arreglarlo (`89cb790`). Por su
-   propia regla, eso reabre la unidad que lo introdujo. Está declarado en
-   `tasks.md`; no lo tapes al archivar.
-2. **Dos lagunas de verificación declaradas, no fabricadas.** El layout compacto
-   no se verificó en navegador, y dos clics contra el canvas de Flutter no se
-   pudieron accionar por coordenada. Están cubiertos por tests de widget y NO se
-   afirman como probados en navegador. Tampoco se afirman rotos.
+Junto a las dos del ciclo anterior (`intake-responsive-layout`,
+`responsive-breakpoints`). Seis en total.
 
-Si el gate de Gentle AI se atasca: el "deadlock" de agosto **no era un bug**.
-Hace falta (a) un candidato que revisar y (b) `gentle-ai review bind-sdd`.
+**No hace falta arrancar nada para "terminar" nada.** Lo siguiente es empezar de
+cero cuando el mantenedor quiera.
 
 ---
 
-## Qué se entregó en este ciclo
+## Lo siguiente, cuando se quiera
 
-Nueve unidades, once commits, de `e1e350d` a `56f6ec3`.
+**Las cinco entidades del diseño de Claude Design «Ficha de Caso»**: evidencias,
+hipótesis con pro/contra, ficha técnica, etapas de investigación, y lo que se
+sabe / sigue abierto. Más la arquitectura por pestañas.
 
-- **Capítulos editoriales**: cuatro tipos fijos y opcionales (Antecedentes, Los
-  hechos, La investigación, Estado actual), con códec tolerante, exportación e
-  ida y vuelta hasta el caso publicado. Séptima sección del formulario, detrás de
-  Fotografías, sin botones de añadir ni reordenar — el orden es contrato.
-- **Un solo renderizador de expediente**: `CaseDossierContent`, sin estado, que
-  usan el panel compacto, la previsualización y la página ampliada. `CaseDossierPanel`
-  pasó de 636 líneas a 34.
-- **Rutas hash públicas**: cada caso en `/#/casos/<slug>`, compartible y
-  recargable. Historial correcto, slug desconocido con hash conservado.
-- **Directorio del archivo**: todo lo publicado, año descendente, alcanzable en
-  las tres topologías.
-- **Persistencia serializada** de borradores: una escritura vieja ya no pisa a una
-  nueva.
+Está delimitado por escrito en el `design.md` archivado, §10.1: este ciclo
+construyó hacia ese diseño «sólo hasta donde llega el modelo de datos actual».
+Cada entidad nueva necesita campo en el borrador, editor, persistencia,
+exportación, decodificación y renderizado — el propio diseño lo estima en
+«roughly the size of this whole cycle».
+
+La infraestructura ya está puesta: ese ciclo **dependía de que
+`CaseDossierContent` existiera primero**, y ahora existe. La página ampliada lo
+compone con `DossierPresentation.expanded`. Las pestañas se decidieron
+explícitamente para después, porque necesitan aserciones de alcance por pestaña
+que las specs actuales no tienen.
 
 ---
 
-## Lo siguiente, cuando se archive
+## Deuda abierta, heredada del ciclo cerrado
 
-El ciclo nuevo que el mantenedor ya tiene decidido: **las cinco entidades del
-diseño de Claude Design "Ficha de Caso"** — evidencias, hipótesis, ficha técnica,
-estado de investigación, y lo que se sabe / sigue abierto — más las pestañas de
-IA. La página ampliada (`case_detail_page.dart`) ya está construida para
-recibirlas: compone `CaseDossierContent` con `DossierPresentation.expanded` y le
-pone su propia caja y ancho de lectura.
+Nada de esto bloquea. Todo está en el `archive-report.md` con detalle.
 
-Corrección de premisa importante, del propio mantenedor: **la página ampliada NO
-es un espejo del panel compacto.** Es un superconjunto. La regla es "no duplicar
-renderizador", no "mismo contenido".
+| Qué | Por qué sigue abierto |
+|---|---|
+| **Móvil compacto sin verificar en navegador** | La tarea 9.10 quedó **sin marcar a propósito**. `resize_window` no llega al viewport de Flutter (`window.innerWidth` se queda clavado). Sólo hay cobertura automática a 500 y 360px. **Es la misma clase de ceguera que ya costó dos veces**: pendiente de abrir el despliegue en un teléfono de verdad |
+| **Dos clics no accionables contra el canvas** | El botón de directorio de la barra y el «Volver al archivo» de la ficha. Cubiertos por tests de widget. Ni verificados en navegador ni declarados rotos |
+| **Unit 7 formalmente reabierta** | La regla 9.12 decía que la Unit 9 no tocaría código. Lo tocó, porque la verificación en navegador encontró que ningún enlace directo funcionaba |
+| **Unit 7 excedió el techo** | 1.566 líneas contra 1.500. Declarado con el motivo por el que no se podía partir más |
+| **`createDraft` puede colisionar ids** | Deriva el id de `DateTime.now().millisecondsSinceEpoch`. Dos creaciones en el mismo milisegundo comparten `draftId`. Real, fuera de alcance, candidato a ciclo propio |
 
 ---
 
@@ -82,18 +81,23 @@ renderizador", no "mismo contenido".
 1. El mapa reventaba con cualquier enlace directo (`onMapReady` se dispara
    offstage). Lo cazó un test que monta la app entera.
 2. Ningún enlace directo funcionaba en el build (`initialLocation` pisaba la
-   barra de direcciones). Lo cazó abrir Chrome.
+   barra de direcciones). Lo cazó abrir Chrome. **El parámetro añadido para
+   poder testear era exactamente lo que tapaba el fallo.**
 3. La barra superior ya desbordaba en varias bandas. Se curó de rebote.
 
-**Y dos tests míos que no podían fallar**, cazados por mutación — uno de ellos
-escrito precisamente creyendo que cazaba el defecto firma del proyecto.
+**Y `sdd-verify` devolvió FAIL con 3 CRITICAL en su primera pasada** — todos de
+calidad de evidencia, todos de la misma familia que el defecto que este ciclo
+existía para erradicar: `position.jumpTo` saltándose la física del scroll, un
+ancho de escritorio sin probar, y media aserción que demostraba que el contenido
+existía pero nunca que se alcanzara. Corregido sólo en tests, y **probado con
+sondas de mutación que el verificador reprodujo por su cuenta**.
 
-De ahí la disciplina que sigue este repo y que conviene mantener: **cada unidad
-lleva sus sondas de mutación registradas en `tasks.md`**, con qué mató cada una.
-No es ceremonia. Una red que no has visto romperse no sabés si sostiene algo.
+De ahí la disciplina que conviene mantener: **cada unidad lleva sus sondas
+registradas**, y una revisión independiente vale más que cualquier suite verde.
+Una suite verde es exactamente lo que también produce un scroll muerto.
 
 Las trampas técnicas concretas están todas en `PROJECT_CONTEXT.md`, sección
-"Trampas conocidas". Leerla antes de escribir el primer test ahorra un día.
+«Trampas conocidas». Leerla antes de escribir el primer test ahorra un día.
 
 ---
 
@@ -103,5 +107,6 @@ Las trampas técnicas concretas están todas en `PROJECT_CONTEXT.md`, sección
 - Comentarios de código en castellano, explicando el porqué.
 - Interfaz en castellano.
 - Un `expect` por test: dos abortan en el primero y esconden el segundo.
-- Techo de 1500 líneas por unidad. Si se pasa, se declara — la Unit 7 llegó a
-  1.566 y está escrito por qué no se podía partir más.
+- **Nunca `jumpTo`, `ensureVisible` ni `scrollUntilVisible` como prueba de
+  alcance.** Gesto real con `dragFrom`, con precondición de no-vacuidad.
+- Techo de 1500 líneas por unidad. Si se pasa, se declara.
