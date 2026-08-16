@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../application/case_draft_providers.dart';
 import '../../application/drafts_backup.dart';
+import '../../data/drafts_file_transfer.dart';
 import '../../domain/case_draft.dart';
 
 /// Copia de seguridad de TODOS los borradores, en las dos direcciones.
@@ -41,17 +42,12 @@ class DraftsBackupButton extends ConsumerWidget {
       );
     }
 
-    Future<void> restoreBackup() async {
+    /// Mete en el workspace el texto de una copia, venga de un fichero o del
+    /// portapapeles. Un único camino: si la lectura falla, falla igual en los
+    /// dos sitios y dice lo mismo.
+    Future<void> applyBackupText(String text) async {
       final messenger = ScaffoldMessenger.of(context);
-      final pasted = await showDialog<String>(
-        context: context,
-        builder: (_) => const _RestoreDialog(),
-      );
-      if (pasted == null) {
-        return;
-      }
-
-      final result = decodeDraftsBackup(pasted);
+      final result = decodeDraftsBackup(text);
       final error = result.error;
       if (error != null) {
         messenger.showSnackBar(SnackBar(content: Text(error)));
@@ -62,11 +58,46 @@ class DraftsBackupButton extends ConsumerWidget {
       messenger.showSnackBar(
         SnackBar(
           content: Text(
-            'Restaurados ${result.drafts.length} borradores. Los que ya tenías '
-            'siguen aquí.',
+            'Cargados ${result.drafts.length} casos. Los que ya tenías siguen '
+            'aquí.',
           ),
         ),
       );
+    }
+
+    Future<void> saveToFile() async {
+      final messenger = ScaffoldMessenger.of(context);
+      final saved = await ref
+          .read(draftsFileTransferProvider)
+          .save(
+            fileName: draftsBackupFileName(DateTime.now()),
+            contents: encodeDraftsBackup(drafts),
+          );
+      if (!saved) {
+        return;
+      }
+      messenger.showSnackBar(
+        const SnackBar(
+          content: Text('Trabajo guardado. Ya puedes enviar ese fichero.'),
+        ),
+      );
+    }
+
+    Future<void> loadFromFile() async {
+      final text = await ref.read(draftsFileTransferProvider).pickText();
+      if (text != null) {
+        await applyBackupText(text);
+      }
+    }
+
+    Future<void> restoreFromText() async {
+      final pasted = await showDialog<String>(
+        context: context,
+        builder: (_) => const _RestoreDialog(),
+      );
+      if (pasted != null) {
+        await applyBackupText(pasted);
+      }
     }
 
     return MenuAnchor(
@@ -88,17 +119,33 @@ class DraftsBackupButton extends ConsumerWidget {
               );
       },
       menuChildren: [
+        // Los ficheros van primero y con el nombre más llano posible: son el
+        // camino para quien sólo abre una URL y no sabe qué es un portapapeles
+        // ni un JSON.
+        MenuItemButton(
+          key: const Key('drafts-backup-save-file'),
+          leadingIcon: const Icon(Icons.download, size: 16),
+          onPressed: saveToFile,
+          child: const Text('Guardar mi trabajo en un fichero'),
+        ),
+        MenuItemButton(
+          key: const Key('drafts-backup-load-file'),
+          leadingIcon: const Icon(Icons.upload_file, size: 16),
+          onPressed: loadFromFile,
+          child: const Text('Cargar trabajo desde un fichero'),
+        ),
+        const Divider(height: 1),
         MenuItemButton(
           key: const Key('drafts-backup-copy'),
           leadingIcon: const Icon(Icons.copy_all, size: 16),
           onPressed: copyBackup,
-          child: const Text('Copiar todos mis borradores'),
+          child: const Text('Copiar como texto'),
         ),
         MenuItemButton(
           key: const Key('drafts-backup-restore'),
-          leadingIcon: const Icon(Icons.restore, size: 16),
-          onPressed: restoreBackup,
-          child: const Text('Restaurar desde una copia'),
+          leadingIcon: const Icon(Icons.content_paste, size: 16),
+          onPressed: restoreFromText,
+          child: const Text('Pegar un texto copiado'),
         ),
       ],
     );

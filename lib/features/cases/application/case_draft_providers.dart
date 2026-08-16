@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 
 import '../data/case_drafts_store.dart';
+import '../data/drafts_file_transfer.dart';
 import '../data/reverse_geocoder.dart';
 import '../domain/case_category.dart';
 import '../domain/case_draft.dart';
@@ -18,6 +19,12 @@ import 'drafts_backup.dart';
 /// `casesRepositoryProvider`).
 final caseDraftsStoreProvider = Provider<CaseDraftsStore>((ref) {
   return SharedPreferencesCaseDraftsStore();
+});
+
+/// Guardado y apertura de la copia como fichero, sobreescribible en tests: el
+/// selector de ficheros del sistema no existe dentro de un test de widget.
+final draftsFileTransferProvider = Provider<DraftsFileTransfer>((ref) {
+  return const FilePickerDraftsFileTransfer();
 });
 
 /// Traductor de coordenadas a lugar, sobreescribible en tests para no salir

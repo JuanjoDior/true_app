@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
 import 'package:true_app/features/cases/application/drafts_backup.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
+import 'package:true_app/features/cases/data/drafts_file_transfer.dart';
 import 'package:true_app/features/cases/domain/case_draft.dart';
 import 'package:true_app/features/cases/presentation/intake/drafts_backup_button.dart';
 
@@ -51,14 +52,46 @@ void _interceptClipboard(WidgetTester tester) {
   );
 }
 
+/// Selector de ficheros falso: el del sistema no existe dentro de un test.
+class _FakeFileTransfer implements DraftsFileTransfer {
+  String? savedName;
+  String? savedContents;
+
+  /// Lo que devolverá el selector. `null` = la persona cancela.
+  String? nextPick;
+  var cancelSave = false;
+
+  @override
+  Future<bool> save({
+    required String fileName,
+    required String contents,
+  }) async {
+    if (cancelSave) {
+      return false;
+    }
+    savedName = fileName;
+    savedContents = contents;
+    return true;
+  }
+
+  @override
+  Future<String?> pickText() async => nextPick;
+}
+
+late _FakeFileTransfer _files;
+
 Future<(ProviderContainer, _FakeStore)> _pumpButton(
   WidgetTester tester,
   List<CaseDraft> drafts,
 ) async {
   _interceptClipboard(tester);
+  _files = _FakeFileTransfer();
   final store = _FakeStore(drafts);
   final container = ProviderContainer(
-    overrides: [caseDraftsStoreProvider.overrideWithValue(store)],
+    overrides: [
+      caseDraftsStoreProvider.overrideWithValue(store),
+      draftsFileTransferProvider.overrideWithValue(_files),
+    ],
   );
   addTearDown(container.dispose);
   await container.read(caseDraftsProvider.future);
@@ -205,6 +238,113 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(store.saved.single.title, 'Local');
+    });
+  });
+
+  group('por fichero, que es como trabajará Iván', () {
+    testWidgets('saving writes every draft into the file', (tester) async {
+      await _pumpButton(tester, const [
+        CaseDraft(draftId: 'draft-a', title: 'A medias'),
+        CaseDraft(draftId: 'draft-b'),
+      ]);
+
+      await _openMenu(tester);
+      await tester.tap(find.byKey(const Key('drafts-backup-save-file')));
+      await tester.pumpAndSettle();
+
+      expect(decodeDraftsBackup(_files.savedContents!).drafts, hasLength(2));
+    });
+
+    testWidgets('the file is named with today\'s date', (tester) async {
+      // Guardar dos días seguidos no puede sobrescribir lo de ayer: quien
+      // descubre un error una semana después necesita la copia de entonces.
+      await _pumpButton(tester, const [CaseDraft(draftId: 'draft-a')]);
+
+      await _openMenu(tester);
+      await tester.tap(find.byKey(const Key('drafts-backup-save-file')));
+      await tester.pumpAndSettle();
+
+      expect(_files.savedName, draftsBackupFileName(DateTime.now()));
+    });
+
+    testWidgets('loading a file brings its drafts in', (tester) async {
+      final (_, store) = await _pumpButton(tester, const []);
+      _files.nextPick = encodeDraftsBackup(const [
+        CaseDraft(draftId: 'draft-de-ivan', title: 'Caso de Iván'),
+      ]);
+
+      await _openMenu(tester);
+      await tester.tap(find.byKey(const Key('drafts-backup-load-file')));
+      await tester.pumpAndSettle();
+
+      expect(store.saved.single.title, 'Caso de Iván');
+    });
+
+    testWidgets('loading keeps the work already on this machine', (
+      tester,
+    ) async {
+      final (_, store) = await _pumpButton(tester, const [
+        CaseDraft(draftId: 'draft-mio', title: 'Lo mío'),
+      ]);
+      _files.nextPick = encodeDraftsBackup(const [
+        CaseDraft(draftId: 'draft-de-ivan', title: 'Caso de Iván'),
+      ]);
+
+      await _openMenu(tester);
+      await tester.tap(find.byKey(const Key('drafts-backup-load-file')));
+      await tester.pumpAndSettle();
+
+      expect(
+        store.saved.map((draft) => draft.draftId),
+        containsAll(const ['draft-mio', 'draft-de-ivan']),
+      );
+    });
+
+    testWidgets('cancelling the file picker changes nothing', (tester) async {
+      final (_, store) = await _pumpButton(tester, const [
+        CaseDraft(draftId: 'draft-mio', title: 'Lo mío'),
+      ]);
+      _files.nextPick = null;
+
+      await _openMenu(tester);
+      await tester.tap(find.byKey(const Key('drafts-backup-load-file')));
+      await tester.pumpAndSettle();
+
+      expect(store.saved.single.title, 'Lo mío');
+    });
+
+    testWidgets('a file that is not a backup changes nothing', (tester) async {
+      final (_, store) = await _pumpButton(tester, const [
+        CaseDraft(draftId: 'draft-mio', title: 'Lo mío'),
+      ]);
+      _files.nextPick = 'esto es otra cosa';
+
+      await _openMenu(tester);
+      await tester.tap(find.byKey(const Key('drafts-backup-load-file')));
+      await tester.pumpAndSettle();
+
+      expect(store.saved.single.title, 'Lo mío');
+    });
+
+    testWidgets('the whole handover survives: save here, load there', (
+      tester,
+    ) async {
+      // Iván guarda y te manda el fichero; vos lo abrís en tu equipo.
+      await _pumpButton(tester, const [
+        CaseDraft(draftId: 'draft-a', title: 'Investigación de Iván'),
+      ]);
+      await _openMenu(tester);
+      await tester.tap(find.byKey(const Key('drafts-backup-save-file')));
+      await tester.pumpAndSettle();
+      final sent = _files.savedContents!;
+
+      final (_, yourStore) = await _pumpButton(tester, const []);
+      _files.nextPick = sent;
+      await _openMenu(tester);
+      await tester.tap(find.byKey(const Key('drafts-backup-load-file')));
+      await tester.pumpAndSettle();
+
+      expect(yourStore.saved.single.title, 'Investigación de Iván');
     });
   });
 

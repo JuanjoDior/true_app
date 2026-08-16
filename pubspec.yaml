@@ -40,6 +40,10 @@ dependencies:
   url_launcher: ^6.3.2
   shared_preferences: ^2.5.5
   http: ^1.6.0
+  # Guardar y abrir la copia de seguridad de los borradores como fichero. Es la
+  # única forma de traspasar trabajo entre equipos sin backend que resulte fácil
+  # para alguien que sólo abre una URL.
+  file_picker: ^12.0.0
 
 dev_dependencies:
   flutter_test:
