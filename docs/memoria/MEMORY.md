@@ -1,0 +1,6 @@
+- [Traspaso de agosto 2026](true-app-handoff-agosto-2026.md) — el estado en vuelo vive en HANDOFF.md del repo, corregido y portable; el usuario va rotando de asistente
+- [Preflight SDD y el gate del ledger](true-app-sdd-preflight.md) — auto/hybrid/single-pr/1000, y por qué cada verificación nueva pide un reset de mantenedor
+- [Los tests no ven el navegador](true-app-tests-no-ven-el-navegador.md) — la ceguera que ya costó dos bugs en producción, y por qué un test verde no prueba nada
+- [Tres defectos que 472 tests no vieron](true-app-tests-verdes-no-prueban.md) — onMapReady offstage, un parámetro sólo-para-tests que tapaba el fallo, y por qué hace falta montar la app entera
+- [scrollUntilVisible no prueba scroll](flutter-scrolluntilvisible-no-prueba-scroll.md) — se salta la física y pasa en verde con el scroll muerto; cómo probar alcance de verdad
+- [El deadlock era un bind que faltaba](gentle-ai-review-bind-sdd.md) — no era un bug del runtime: la revisión aprobada hay que atarla al change con `review bind-sdd`

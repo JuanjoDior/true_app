@@ -19,6 +19,30 @@ línea de `lib/`, `web/` ni `assets/` — sólo tests y documentación.
 
 ---
 
+## Continuar en otro equipo
+
+Todo lo necesario está **en el repo**. No hace falta traer nada más.
+
+```
+git clone https://github.com/JuanjoDior/true_app
+cd true_app
+flutter pub get
+flutter test          # deben pasar los 521
+flutter run -d chrome
+```
+
+Después, leer `HANDOFF.md` → `PROJECT_CONTEXT.md` → `docs/memoria/`.
+
+**Lo único que NO viaja son los borradores**, porque viven en el `localStorage`
+del navegador de cada equipo. Para llevártelos: en el formulario, **Copia de
+seguridad → Guardar mi trabajo en un fichero**, y en el equipo nuevo **Cargar
+trabajo desde un fichero**. Cargar funde, nunca reemplaza.
+
+**Sobre la memoria de los asistentes**: no te fíes de que sincronice. En agosto
+de 2026 había 21 observaciones atascadas sin poder replicarse por un campo que
+faltaba, y eso no avisa. Por eso `docs/memoria/` existe: la copia del repo es la
+que se puede dar por buena.
+
 ## No hay nada a medias
 
 El ciclo cerró con `sdd-verify` en **PASS**, 0 CRITICAL, 0 bloqueos, **23/23
