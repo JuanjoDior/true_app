@@ -46,6 +46,13 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
   /// Última escritura encolada. Cada guardado nuevo se encadena detrás.
   Future<void> _writes = Future<void>.value();
 
+  /// Distingue borradores creados en el mismo milisegundo: en web,
+  /// `DateTime.now()` tiene la resolución del reloj de JS (milisegundos), así
+  /// que dos toques rápidos en "nuevo borrador" pueden compartir timestamp.
+  /// El contador sólo crece, así que el id nunca se repite dentro de esta
+  /// pestaña — que es donde de verdad puede pasar.
+  int _sequence = 0;
+
   /// Encola [snapshot] detrás de lo que ya estuviera pendiente.
   ///
   /// El estado se publica de forma síncrona, pero el disco no. Sin cola, dos
@@ -64,9 +71,13 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
   }
 
   /// Crea un borrador vacío y lo persiste de inmediato.
-  Future<String> createDraft() async {
+  ///
+  /// [now] es un punto de entrada para tests deterministas; en producción
+  /// siempre es `DateTime.now()`.
+  Future<String> createDraft({DateTime? now}) async {
     final drafts = state.value ?? const <CaseDraft>[];
-    final draftId = 'draft-${DateTime.now().millisecondsSinceEpoch}';
+    final draftId =
+        'draft-${(now ?? DateTime.now()).millisecondsSinceEpoch}-${_sequence++}';
     final updated = [...drafts, CaseDraft(draftId: draftId)];
     state = AsyncData(updated);
     await _persist(updated);

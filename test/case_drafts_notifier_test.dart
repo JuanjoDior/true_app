@@ -37,6 +37,30 @@ void main() {
     expect(store.saved, hasLength(1));
   });
 
+  test('two drafts created in the same millisecond get different ids',
+      () async {
+    // `DateTime.now()` en web tiene resolución de milisegundo (el reloj de
+    // JS), así que dos toques rápidos en "nuevo borrador" pueden compartir
+    // timestamp. Con el mismo `now` fijo se reproduce ese instante exacto de
+    // forma determinista, sin depender de que el test corra rápido.
+    final store = _FakeCaseDraftsStore();
+    final container = ProviderContainer(
+      overrides: [caseDraftsStoreProvider.overrideWithValue(store)],
+    );
+    addTearDown(container.dispose);
+
+    await container.read(caseDraftsProvider.future);
+    final notifier = container.read(caseDraftsProvider.notifier);
+    final now = DateTime(2026, 9, 16, 12, 0, 0, 123);
+
+    final firstId = await notifier.createDraft(now: now);
+    final secondId = await notifier.createDraft(now: now);
+
+    expect(firstId, isNot(secondId));
+    final drafts = container.read(caseDraftsProvider).value!;
+    expect(drafts.map((draft) => draft.draftId).toSet(), hasLength(2));
+  });
+
   test('edits a field on the draft and autosaves without an explicit save',
       () async {
     final store = _FakeCaseDraftsStore();
