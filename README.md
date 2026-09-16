@@ -13,7 +13,7 @@ flutter pub get
 flutter run -d chrome
 ```
 
-Para pasar la suite: `flutter test` (19 archivos, 124 tests).
+Para pasar la suite: `flutter test` (49 archivos, 521 tests).
 
 ## Las dos mitades
 

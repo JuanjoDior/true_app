@@ -15,7 +15,7 @@ context: |
   validation, exporter), presentation/ (widgets).
   Two faces: the public "Sala de Situación" (lib/features/home) and the internal
   intake form (lib/features/cases/presentation/intake).
-  Testing: `flutter test` + `flutter analyze`. 140 tests, all green.
+  Testing: `flutter test` + `flutter analyze`. 521 tests, all green.
   Style: UI copy, code comments and commit messages in Spanish (conventional
   commits, no AI attribution). SDD artifacts and specs in English.
   Tests describe behavior, not implementation.
