@@ -47,16 +47,13 @@ Copiar y pegar de uno en uno deja de tener gracia ahí.
 |---------|--------|-------------|
 | Datos básicos | Título, categoría, año, estado | Sí |
 | Ubicación | Se marca en el mapa; país, ISO y municipio se rellenan solos | Sí |
-| Resumen y ficha | Resumen, víctimas, tags | No |
+| Resumen y ficha | Resumen, víctimas, tags, rango destacado, rango de relevancia | No |
 | Cronología | Hitos con fecha, qué ocurrió y tipo | No |
 | Enlaces | Fuentes externas tipadas | No |
 | Fotografías | Imágenes ya alojadas, por URL | No |
 
 Lo obligatorio es lo que el catálogo no admite vacío. El resto enriquece la
 ficha pero no bloquea.
-
-**Lo que todavía no captura:** `featuredRank` y `relevanceRank`, que deciden qué
-caso sale destacado y en qué orden aparece. Hoy se editan a mano en el asset.
 
 ## Cómo está montado
 
@@ -167,7 +164,7 @@ Tres piezas que conviene conocer antes de tocar nada:
 | ~~La banda 1024–1199px~~ | **Resuelto** (16 de septiembre de 2026). `Breakpoints.intakeThreePane` subió de 1024 a 1200: exactamente el punto en que a la columna del medio le quedan los 520px de `formRowStack` de sobra (1200 − 260 lista − 380 preview − 40 padding). Por debajo, el layout angosto — pensado para apilar — reemplaza al de tres columnas que apilaba igual pero sin sus afordancias. Fijado con dos tests exactos en el umbral (1199 vs 1200) en `test/intake_threepane_threshold_test.dart` |
 | ~~Layout compacto del detalle y el directorio~~ | **Hecho** (16 de septiembre de 2026). El mantenedor abrió el despliegue público desde un teléfono y confirmó **las dos** pantallas: la ficha de un caso individual y el directorio de casos publicados. Cierra la brecha que dejaba `resize_window` (no llega al viewport de Flutter), que sólo cubría 500 y 360px automáticos |
 | ~~`createDraft` puede colisionar ids~~ | **Resuelto** (16 de septiembre de 2026). Un contador `_sequence` que solo crece se suma al timestamp: `draft-<ms>-<secuencia>`. La colisión era grave y silenciosa: `editingDraftProvider` devuelve el primer match por id, así que el segundo borrador mostraba/editaba el primero, y borrar uno borraba los dos. `createDraft` acepta `now` opcional para reproducir el instante exacto en tests, sin depender de que el test corra rápido |
-| `featuredRank` y `relevanceRank` | Edición manual en el asset |
+| ~~`featuredRank` y `relevanceRank`~~ | **Hecho** (16 de septiembre de 2026). Dos campos numéricos opcionales en "Resumen y ficha" (`IntakeFieldRow`, se apilan por debajo de `formRowStack` como el resto del formulario), en `CaseDraft` y en el export. Sin validar: igual que el año, un valor no numérico simplemente no se guarda |
 | ~~Error en consola al arrancar~~ | **Resuelto** (16 de septiembre de 2026). El primer tick del `Ticker` puede llegar antes de que el `Scrollable` termine su primer layout: `hasClients` sólo dice que hay una posición enlazada, no que ya tenga dimensiones. Leer `viewportDimension` en ese hueco tiraba "Unexpected null value" (`TypeErrorImpl`). Guard añadido: `position.hasViewportDimension`. No se pudo reproducir en un widget test (la cola de frames sincrónica del harness de test no repite la carrera del navegador real) — verificado abriendo `flutter run -d chrome` antes y después del fix, mismo patrón que la ceguera del `<meta viewport>` |
 
 ## Convenciones

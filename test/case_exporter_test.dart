@@ -365,6 +365,27 @@ void main() {
     });
   });
 
+  group('featured and relevance ranks', () {
+    test('carries featuredRank and relevanceRank when present', () {
+      final draft = publishableDraft().copyWith(
+        featuredRank: 1,
+        relevanceRank: 4,
+      );
+
+      final restored = TrueCrimeCase.fromJson(draftToCaseJson(draft));
+
+      expect(restored.featuredRank, 1);
+      expect(restored.relevanceRank, 4);
+    });
+
+    test('omits featuredRank and relevanceRank keys when absent', () {
+      final json = draftToCaseJson(publishableDraft());
+
+      expect(json.containsKey('featuredRank'), isFalse);
+      expect(json.containsKey('relevanceRank'), isFalse);
+    });
+  });
+
   group('encodeDraftAsCaseJson', () {
     test('carries the collision guard through to the copied text', () {
       final text = encodeDraftAsCaseJson(

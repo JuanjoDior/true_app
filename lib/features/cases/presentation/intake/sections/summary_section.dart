@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../application/case_draft_providers.dart';
 import '../../../domain/case_draft.dart';
+import 'intake_field_row.dart';
 
 /// Sección "Resumen y ficha": el texto del caso, la descripción de las
 /// víctimas y los tags. Todo opcional, pero es lo que da cuerpo editorial al
@@ -58,6 +59,44 @@ class SummarySection extends ConsumerWidget {
           ),
           onChanged: (value) =>
               edit((current) => current.copyWith(tags: parseTags(value))),
+        ),
+        const SizedBox(height: 12),
+        IntakeFieldRow(
+          fields: [
+            IntakeFieldSlot.flexible(
+              TextFormField(
+                key: const Key('intake-field-featured-rank'),
+                initialValue: draft.featuredRank?.toString(),
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Rango destacado',
+                  hintText: '1 = destacado esta semana',
+                ),
+                onChanged: (value) {
+                  final parsed = int.tryParse(value);
+                  if (parsed != null) {
+                    edit((current) => current.copyWith(featuredRank: parsed));
+                  }
+                },
+              ),
+            ),
+            IntakeFieldSlot.flexible(
+              TextFormField(
+                key: const Key('intake-field-relevance-rank'),
+                initialValue: draft.relevanceRank?.toString(),
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(
+                  labelText: 'Rango de relevancia',
+                ),
+                onChanged: (value) {
+                  final parsed = int.tryParse(value);
+                  if (parsed != null) {
+                    edit((current) => current.copyWith(relevanceRank: parsed));
+                  }
+                },
+              ),
+            ),
+          ],
         ),
       ],
     );

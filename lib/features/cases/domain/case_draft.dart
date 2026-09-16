@@ -26,6 +26,8 @@ class CaseDraft {
     this.links = const <DraftLink>[],
     this.photos = const <DraftPhoto>[],
     this.chapters = const CaseChapters(),
+    this.featuredRank,
+    this.relevanceRank,
   });
 
   /// Identidad local estable del borrador, independiente del título.
@@ -65,6 +67,12 @@ class CaseDraft {
   /// antes de existir este campo decodifican a una colección vacía.
   final CaseChapters chapters;
 
+  /// Rango de destacado ("EN EL FOCO"): menor gana. `null` = no participa.
+  final int? featuredRank;
+
+  /// Orden de relevancia general del archivo. `null` = sin clasificar.
+  final int? relevanceRank;
+
   CaseDraft copyWith({
     String? title,
     CaseCategory? category,
@@ -82,6 +90,8 @@ class CaseDraft {
     List<DraftLink>? links,
     List<DraftPhoto>? photos,
     CaseChapters? chapters,
+    int? featuredRank,
+    int? relevanceRank,
   }) {
     return CaseDraft(
       draftId: draftId,
@@ -101,6 +111,8 @@ class CaseDraft {
       links: links ?? this.links,
       photos: photos ?? this.photos,
       chapters: chapters ?? this.chapters,
+      featuredRank: featuredRank ?? this.featuredRank,
+      relevanceRank: relevanceRank ?? this.relevanceRank,
     );
   }
 
@@ -127,6 +139,8 @@ class CaseDraft {
       links: links,
       photos: photos,
       chapters: chapters,
+      featuredRank: featuredRank,
+      relevanceRank: relevanceRank,
     );
   }
 
@@ -164,6 +178,8 @@ class CaseDraft {
           .map((photo) => DraftPhoto.fromJson(photo as Map<String, dynamic>))
           .toList(growable: false),
       chapters: CaseChapters.fromJson(json['chapters']),
+      featuredRank: json['featuredRank'] as int?,
+      relevanceRank: json['relevanceRank'] as int?,
     );
   }
 
@@ -188,6 +204,8 @@ class CaseDraft {
       // Se omite entero cuando no hay nada significativo, para que un borrador
       // sin capítulos sea byte a byte como antes de que existieran.
       if (chapters.orderedMeaningful.isNotEmpty) 'chapters': chapters.toJson(),
+      if (featuredRank != null) 'featuredRank': featuredRank,
+      if (relevanceRank != null) 'relevanceRank': relevanceRank,
     };
   }
 }

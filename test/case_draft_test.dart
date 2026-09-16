@@ -163,4 +163,29 @@ void main() {
     expect(restored.summary, isNull);
     expect(restored.links, isEmpty);
   });
+
+  test('round-trips featuredRank and relevanceRank through JSON', () {
+    const draft = CaseDraft(
+      draftId: 'draft-rangos',
+      featuredRank: 1,
+      relevanceRank: 3,
+    );
+
+    final restored = CaseDraft.fromJson(draft.toJson());
+
+    expect(restored.featuredRank, 1);
+    expect(restored.relevanceRank, 3);
+  });
+
+  test('omits featuredRank and relevanceRank keys when absent', () {
+    const draft = CaseDraft(draftId: 'draft-sin-rangos');
+
+    final json = draft.toJson();
+
+    expect(json.containsKey('featuredRank'), isFalse);
+    expect(json.containsKey('relevanceRank'), isFalse);
+    final restored = CaseDraft.fromJson(json);
+    expect(restored.featuredRank, isNull);
+    expect(restored.relevanceRank, isNull);
+  });
 }

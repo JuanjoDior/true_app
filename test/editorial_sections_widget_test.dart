@@ -97,6 +97,44 @@ void main() {
       expect(find.text('1960s, ee. uu.'), findsOneWidget);
     });
 
+    testWidgets(
+        'captures featuredRank and relevanceRank and autosaves them',
+        (tester) async {
+      final (container, store) =
+          await _pumpSection(tester, const SummarySection());
+
+      await tester.enterText(
+        find.byKey(const Key('intake-field-featured-rank')),
+        '1',
+      );
+      await tester.enterText(
+        find.byKey(const Key('intake-field-relevance-rank')),
+        '4',
+      );
+      await tester.pump();
+
+      final draft = container.read(editingDraftProvider)!;
+      expect(draft.featuredRank, 1);
+      expect(draft.relevanceRank, 4);
+      expect(store.saved.single.featuredRank, 1);
+      expect(store.saved.single.relevanceRank, 4);
+    });
+
+    testWidgets('shows the ranks of a resumed draft', (tester) async {
+      await _pumpSection(
+        tester,
+        const SummarySection(),
+        draft: (draftId) => CaseDraft(
+          draftId: draftId,
+          featuredRank: 2,
+          relevanceRank: 5,
+        ),
+      );
+
+      expect(find.text('2'), findsOneWidget);
+      expect(find.text('5'), findsOneWidget);
+    });
+
     testWidgets('keeps summary, victim and tags when typed one after another',
         (tester) async {
       // El mismo riesgo de siempre: sin rebuild entre campos, no deben

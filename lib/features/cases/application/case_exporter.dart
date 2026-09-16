@@ -97,10 +97,6 @@ String uniqueCaseSlug(String base, Set<String> taken) {
 ///
 /// [takenSlugs] son los slugs que ya existen —los del catálogo publicado y los
 /// de los demás borradores—, para no emitir una identidad repetida.
-///
-/// Los campos que el borrador todavía no captura (destacados, orden de
-/// relevancia) se omiten: `fromJson` los trata como opcionales y se editan a
-/// mano en el asset si hacen falta.
 Map<String, dynamic> draftToCaseJson(
   CaseDraft draft, {
   Set<String> takenSlugs = const {},
@@ -176,6 +172,8 @@ Map<String, dynamic> draftToCaseJson(
     // significativos y en orden editorial.
     if (draft.chapters.orderedMeaningful.isNotEmpty)
       'chapters': draft.chapters.toJson(),
+    if (draft.featuredRank != null) 'featuredRank': draft.featuredRank,
+    if (draft.relevanceRank != null) 'relevanceRank': draft.relevanceRank,
   };
 }
 
