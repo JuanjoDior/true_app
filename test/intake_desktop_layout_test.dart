@@ -31,7 +31,7 @@ class _NoGeocoder implements ReverseGeocoder {
   Future<ResolvedPlace?> resolve(double latitude, double longitude) async => null;
 }
 
-/// Ancho cómodamente por encima de `Breakpoints.intakeThreePane` (1024).
+/// Ancho cómodamente por encima de `Breakpoints.intakeThreePane` (1200).
 const _desktopSize = Size(1440, 900);
 
 const _draftListWidth = 260.0;

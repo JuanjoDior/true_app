@@ -3,7 +3,7 @@
 Este documento es para quien llega al proyecto y necesita entender **por qué**
 está hecho así, no sólo cómo. Para arrancarlo, el `README.md`.
 
-Última revisión: **12 de agosto de 2026**.
+Última revisión: **16 de septiembre de 2026**.
 
 ## Qué es
 
@@ -164,7 +164,7 @@ Tres piezas que conviene conocer antes de tocar nada:
 | ~~Comprobar en un dispositivo real~~ | **Hecho** (12 de agosto de 2026). El mantenedor abrió el despliegue público desde un teléfono y confirmó **las dos** pantallas: el formulario de alta y la Sala de Situación |
 | ~~El ciclo `intake-responsive` sigue abierto~~ | **Archivado** el 13 de agosto de 2026 con `blockers: 0`, 11/11 requisitos y 24/24 escenarios. Fundó `openspec/specs/` con los dominios `responsive-breakpoints` e `intake-responsive-layout`. El registro completo está en `openspec/changes/archive/2026-08-13-intake-responsive/`. El "deadlock" de Gentle AI ([#2997](https://github.com/Gentleman-Programming/gentle-ai/issues/2997)) **no era un bug**: faltaba atar la revisión aprobada al change con `gentle-ai review bind-sdd` |
 | ~~`SituationTopBar` desborda~~ | **Resuelto** (14 de agosto de 2026, ciclo `case-publication-detail`). Subir `topBarFull` de 980 a 1040 para que cupiera el acceso al directorio lo curó en todos los anchos medidos, y ocultar el atajo `⌘K` en compacto arregló el tramo estrecho. La lista `overflowingWidths` de `situation_breakpoints_test.dart` quedó **vacía**: cualquier desbordamiento a cualquier ancho es ahora una regresión. Coste declarado: entre 980 y 1040 las métricas de la barra ya no se ven |
-| La banda 1024–1199px | Ahí la columna del formulario es tan estrecha que **todas** las filas se apilan, en pantallas que técnicamente son escritorio. Anticipado en `design.md:9`, ausente del proposal, sin test |
+| ~~La banda 1024–1199px~~ | **Resuelto** (16 de septiembre de 2026). `Breakpoints.intakeThreePane` subió de 1024 a 1200: exactamente el punto en que a la columna del medio le quedan los 520px de `formRowStack` de sobra (1200 − 260 lista − 380 preview − 40 padding). Por debajo, el layout angosto — pensado para apilar — reemplaza al de tres columnas que apilaba igual pero sin sus afordancias. Fijado con dos tests exactos en el umbral (1199 vs 1200) en `test/intake_threepane_threshold_test.dart` |
 | Layout compacto del detalle y el directorio | Sin verificar en navegador. `resize_window` no llega al viewport de Flutter (`window.innerWidth` se queda clavado), así que sólo hay cobertura automática a 500 y 360px. Es la misma clase de ceguera que ya costó dos veces: **pendiente de abrir el despliegue en un teléfono de verdad** |
 | `createDraft` puede colisionar ids | Deriva el id de `DateTime.now().millisecondsSinceEpoch`; dos creaciones en el mismo milisegundo comparten `draftId`. Real, fuera del alcance de la Unit 3, sin unidad propia todavía |
 | `featuredRank` y `relevanceRank` | Edición manual en el asset |
