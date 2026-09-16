@@ -40,9 +40,18 @@ class _UpdatesTickerState extends State<UpdatesTicker>
       _last = elapsed;
       return;
     }
+    final position = _scroll.position;
+    // El primer tick puede llegar antes de que el `Scrollable` termine su
+    // primer layout: `hasClients` sólo dice que hay una posición enlazada,
+    // no que ya tenga dimensiones. Leer `viewportDimension` antes de eso
+    // revienta con "Unexpected null value" (`ScrollMetrics._viewportDimension`
+    // aún es `null`).
+    if (!position.hasViewportDimension) {
+      _last = elapsed;
+      return;
+    }
     final dt = (elapsed - _last).inMicroseconds / 1e6;
     _last = elapsed;
-    final position = _scroll.position;
     final viewport = position.viewportDimension;
     // El contenido está duplicado: una copia mide la mitad del total + viewport.
     final copyWidth = (position.maxScrollExtent + viewport) / 2;

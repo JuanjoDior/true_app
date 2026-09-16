@@ -168,7 +168,7 @@ Tres piezas que conviene conocer antes de tocar nada:
 | Layout compacto del detalle y el directorio | Sin verificar en navegador. `resize_window` no llega al viewport de Flutter (`window.innerWidth` se queda clavado), así que sólo hay cobertura automática a 500 y 360px. Es la misma clase de ceguera que ya costó dos veces: **pendiente de abrir el despliegue en un teléfono de verdad** |
 | ~~`createDraft` puede colisionar ids~~ | **Resuelto** (16 de septiembre de 2026). Un contador `_sequence` que solo crece se suma al timestamp: `draft-<ms>-<secuencia>`. La colisión era grave y silenciosa: `editingDraftProvider` devuelve el primer match por id, así que el segundo borrador mostraba/editaba el primero, y borrar uno borraba los dos. `createDraft` acepta `now` opcional para reproducir el instante exacto en tests, sin depender de que el test corra rápido |
 | `featuredRank` y `relevanceRank` | Edición manual en el asset |
-| Error en consola al arrancar | `updates_ticker.dart:46`, sin efecto visible |
+| ~~Error en consola al arrancar~~ | **Resuelto** (16 de septiembre de 2026). El primer tick del `Ticker` puede llegar antes de que el `Scrollable` termine su primer layout: `hasClients` sólo dice que hay una posición enlazada, no que ya tenga dimensiones. Leer `viewportDimension` en ese hueco tiraba "Unexpected null value" (`TypeErrorImpl`). Guard añadido: `position.hasViewportDimension`. No se pudo reproducir en un widget test (la cola de frames sincrónica del harness de test no repite la carrera del navegador real) — verificado abriendo `flutter run -d chrome` antes y después del fix, mismo patrón que la ceguera del `<meta viewport>` |
 
 ## Convenciones
 
