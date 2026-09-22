@@ -140,7 +140,7 @@ Confirming a batch with at least one draft selected MUST present copy that expli
 
 ### Requirement: Post-Batch Draft Publication State Distinction
 
-The system MUST derive each draft's publication state from a pure function combining the draft's validation result, its persisted handoff marker (`handoffSlug` and `handoffAt` on `CaseDraft`), and the set of slugs present in the catalog loaded via `casesProvider` at evaluation time. The derivation MUST yield exactly one of four states, rendered in the intake draft list as: `Incompleto` when the draft fails `validateDraft`; `Publicado` when the draft is valid and its effective slug (`handoffSlug` if non-null, otherwise the title-derived slug) is present in the loaded catalog's slug set; `Entregado · pendiente de publicar` when the draft is valid, its effective slug is absent from the loaded catalog, and `handoffSlug` is non-null; and `Listo · sin publicar` when the draft is valid, its effective slug is absent from the loaded catalog, and no handoff marker is set. A draft persisted before this change decodes with `handoffSlug` and `handoffAt` both null and MUST be indistinguishable, in this derivation, from a draft that has never gone through a batch.
+The system MUST derive each draft's publication state from a pure function combining the draft's validation result, its persisted handoff marker (`handoffSlug` and `handoffAt` on `CaseDraft`), and the set of slugs present in the catalog loaded via `casesProvider` at evaluation time. The derivation MUST yield exactly one of four states, rendered in the intake draft list as: `Incompleto` when the draft fails `validateDraft`; `Publicado` when the draft is valid and its effective slug (`handoffSlug` if non-null, otherwise the title-derived slug) is present in the loaded catalog's slug set; `Entregado el DD/MM · pendiente de publicar` (where `DD/MM` is `handoffAt` formatted as day/month) when the draft is valid, its effective slug is absent from the loaded catalog, and `handoffSlug` is non-null; and `Listo · sin publicar` when the draft is valid, its effective slug is absent from the loaded catalog, and no handoff marker is set. A draft persisted before this change decodes with `handoffSlug` and `handoffAt` both null and MUST be indistinguishable, in this derivation, from a draft that has never gone through a batch.
 
 #### Scenario: Never handed-off draft reads as ready
 
@@ -151,10 +151,10 @@ The system MUST derive each draft's publication state from a pure function combi
 
 #### Scenario: Handed-off draft not yet in the loaded catalog reads as delivered
 
-- GIVEN a valid draft whose `handoffSlug` is set from a previous batch
+- GIVEN a valid draft whose `handoffSlug` and `handoffAt` are set from a previous batch
 - AND that slug is absent from the currently loaded catalog
 - WHEN the intake draft list renders its state
-- THEN the draft's subtitle reads `Entregado · pendiente de publicar`
+- THEN the draft's subtitle reads `Entregado el DD/MM · pendiente de publicar`, where `DD/MM` is `handoffAt` formatted as day/month
 
 #### Scenario: Handed-off draft whose slug now appears in the catalog reads as published
 
