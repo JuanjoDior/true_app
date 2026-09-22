@@ -785,5 +785,51 @@
         "kind": "solved"
       }
     ]
+  },
+  {
+    "id": "camarena",
+    "slug": "camarena",
+    "title": "Caso Camarena",
+    "category": "kidnapping",
+    "country": "México",
+    "countryCode": "MX",
+    "regionOrCity": "Guadalajara",
+    "year": 1985,
+    "latitude": 20.6597,
+    "longitude": -103.3496,
+    "summary": "Un agente especial de la DEA secuestrado a la salida del consulado de EE. UU. en Guadalajara, torturado y asesinado por el Cártel de Guadalajara. Su muerte destapó la connivencia del cártel con sectores del Estado mexicano y desató la mayor investigación de la historia de la DEA.",
+    "tags": [
+      "1980s",
+      "méxico",
+      "cartel de guadalajara"
+    ],
+    "status": "inProgress",
+    "statusLabel": "Reabierto (2022)",
+    "victim": "Enrique Camarena Salazar, agente especial de la DEA, conocido como Kiki",
+    "timeline": [
+      {
+        "title": "Secuestro a la salida del consulado de EE. UU.",
+        "date": "7 feb 1985",
+        "kind": "initial"
+      },
+      {
+        "title": "Hallazgo del cuerpo en un rancho de Michoacán",
+        "date": "5 mar 1985",
+        "kind": "process"
+      },
+      {
+        "title": "Extradición de Rafael Caro Quintero a EE. UU.",
+        "date": "2022",
+        "kind": "open"
+      }
+    ],
+    "sources": [
+      {
+        "id": "https://es.wikipedia.org/wiki/Enrique_Camarena",
+        "title": "Wikipedia — Enrique Camarena",
+        "url": "https://es.wikipedia.org/wiki/Enrique_Camarena",
+        "kind": "investigation"
+      }
+    ]
   }
 ]

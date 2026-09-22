@@ -15,7 +15,7 @@ void main() {
     });
 
     test('lowercases them to match the catalogue', () {
-      // Los 14 casos publicados guardan los tags en minúsculas.
+      // Los 15 casos publicados guardan los tags en minúsculas.
       expect(parseTags('1960s, EE. UU., Sin Resolver'),
           ['1960s', 'ee. uu.', 'sin resolver']);
     });

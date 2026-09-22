@@ -39,7 +39,7 @@ void main() {
   });
 
   test('defaults to no photos when the key is absent', () {
-    // Los 14 casos del catálogo actual no tienen fotos.
+    // Los 15 casos del catálogo actual no tienen fotos.
     final restored = TrueCrimeCase.fromJson(caseJson());
 
     expect(restored.photos, isEmpty);
