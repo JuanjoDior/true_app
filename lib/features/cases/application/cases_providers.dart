@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import '../data/case_connections_seed.dart';
 import '../data/cases_repository.dart';
 import '../data/local_cases_repository.dart';
+import '../data/published_catalog_source.dart';
 import '../domain/case_category.dart';
 import '../domain/case_connection.dart';
 import '../domain/case_status.dart';
@@ -32,6 +33,28 @@ final caseSearchServiceProvider = Provider<CaseSearchService>((ref) {
 final casesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
   final repository = ref.watch(casesRepositoryProvider);
   return repository.getCases();
+});
+
+/// Texto crudo del catálogo publicado, sin decodificar.
+///
+/// **No sustituye a `casesProvider`.** El árbol de la app sigue usando el
+/// catálogo tipado; este provider existe sólo para la fusión por lotes, que
+/// necesita los bytes intactos [design.md §4, §9]. Ambos leen el mismo asset
+/// dentro de la misma carga de página, así que no hay dos verdades — sólo
+/// dos formas del mismo dato.
+///
+/// No hay un `Provider<PublishedCatalogSource>` intermedio: `overrideWith` en
+/// ESTE provider ya es el punto de sustitución en los tests; un puerto
+/// abstracto con su propio provider no añadiría nada [design.md §15].
+final publishedCatalogPayloadProvider = FutureProvider<String>((ref) async {
+  return PublishedCatalogSource().loadPayload();
+});
+
+/// Slugs ya publicados, derivados de `casesProvider` — no dispara una
+/// segunda lectura del catálogo.
+final publishedSlugsProvider = Provider<Set<String>>((ref) {
+  final cases = ref.watch(casesProvider).value ?? const <TrueCrimeCase>[];
+  return {for (final crimeCase in cases) crimeCase.slug};
 });
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
