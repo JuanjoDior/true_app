@@ -163,8 +163,8 @@ Map<String, dynamic> draftToCaseJson(
     if (draft.victim?.trim().isNotEmpty ?? false)
       'victim': draft.victim!.trim(),
     if (timeline.isNotEmpty) 'timeline': timeline,
-    // Las fotos aún no se pintan en el expediente publicado, pero viajan en
-    // el export para no perder el trabajo ya hecho en el borrador.
+    // Las fotos se pintan en el expediente publicado
+    // (case_dossier_content.dart:160-164).
     if (photos.isNotEmpty) 'photos': photos,
     // Única excepción deliberada al recorte que aplica el resto del
     // exportador: los capítulos son prosa editorial y su sangría y sus saltos
@@ -186,4 +186,152 @@ String encodeDraftAsCaseJson(
   return const JsonEncoder.withIndent(
     '  ',
   ).convert(draftToCaseJson(draft, takenSlugs: takenSlugs));
+}
+
+/// Qué le pasó a un borrador seleccionado dentro del lote.
+enum CatalogMergeOutcome { added, replaced }
+
+/// El destino de un borrador dentro del catálogo fundido.
+final class CatalogMergeEntry {
+  const CatalogMergeEntry({
+    required this.draftId,
+    required this.title,
+    required this.slug,
+    required this.outcome,
+    this.replacedTitle,
+    this.droppedKeys = const <String>[],
+  });
+
+  final String draftId;
+  final String title;
+
+  /// Identidad pública asignada dentro de ESTE lote.
+  final String slug;
+  final CatalogMergeOutcome outcome;
+
+  /// Título de la entrada publicada que se sustituye. Null si [outcome] es
+  /// [CatalogMergeOutcome.added].
+  final String? replacedTitle;
+
+  /// Claves que la entrada publicada tenía y el borrador no puede expresar
+  /// (`statusLabel`, un `featuredRank` que el borrador no rellena…). Se
+  /// pierden al sustituirla, y por eso se enseñan ANTES de confirmar.
+  final List<String> droppedKeys;
+}
+
+/// Catálogo completo más la traza de qué hizo el lote.
+final class CatalogMergeResult {
+  const CatalogMergeResult({required this.cases, required this.entries});
+
+  /// Array completo, listo para sustituir `assets/data/cases.json`.
+  final List<Map<String, dynamic>> cases;
+
+  /// Un elemento por borrador seleccionado, en orden de selección.
+  final List<CatalogMergeEntry> entries;
+
+  Iterable<CatalogMergeEntry> get replacements =>
+      entries.where((e) => e.outcome == CatalogMergeOutcome.replaced);
+}
+
+/// Decodifica el asset publicado sin perder nada: cada caso viaja tal y como
+/// está escrito en el fichero.
+///
+/// Lanza [FormatException] si el texto no es un array de objetos. NO devuelve
+/// una lista vacía ante un fallo: fundir sobre un catálogo vacío borraría
+/// todo lo publicado — un catálogo ilegible nunca se trata como uno vacío.
+List<Map<String, dynamic>> decodeCatalogPayload(String payload) {
+  final decoded = jsonDecode(payload);
+  if (decoded is! List) {
+    throw const FormatException(
+      'El catálogo publicado debe ser un array JSON de casos.',
+    );
+  }
+  return decoded.map((item) {
+    if (item is! Map<String, dynamic>) {
+      throw const FormatException(
+        'Una entrada del catálogo publicado no es un objeto JSON.',
+      );
+    }
+    return item;
+  }).toList(growable: false);
+}
+
+/// Funde los borradores seleccionados en el catálogo cargado.
+///
+/// [catalog] llega decodificado por [decodeCatalogPayload]; [drafts] en el
+/// orden en que se seleccionaron. Es pura: mismas entradas, mismo resultado.
+///
+/// Resolución de slugs secuencial dentro del lote: el slug de un borrador
+/// anterior se añade al conjunto considerado para los siguientes. Un borrador
+/// cuyo slug base ya está publicado y aún no ha sido reclamado por este
+/// mismo lote SUSTITUYE esa entrada en su misma posición del array; en
+/// cualquier otro caso se añade con un slug libre.
+CatalogMergeResult mergeDraftsIntoCatalog({
+  required List<Map<String, dynamic>> catalog,
+  required List<CaseDraft> drafts,
+}) {
+  final taken = <String>{
+    for (final entry in catalog)
+      if (entry['slug'] is String) entry['slug'] as String,
+  };
+  final batchSlugs = <String>{};
+  final cases = List<Map<String, dynamic>>.of(catalog);
+  final entries = <CatalogMergeEntry>[];
+
+  for (final draft in drafts) {
+    final title = draft.title?.trim() ?? '';
+    final base = caseSlug(title);
+
+    if (taken.contains(base) && !batchSlugs.contains(base)) {
+      // Sustitución: el mantenedor republica deliberadamente esta identidad.
+      final index = cases.indexWhere((entry) => entry['slug'] == base);
+      // `takenSlugs: const {}` es deliberado: reclamamos `base` a propósito,
+      // no queremos que se le añada un sufijo.
+      final json = draftToCaseJson(draft, takenSlugs: const {});
+      final replaced = cases[index];
+      final droppedKeys = replaced.keys
+          .where((key) => !json.containsKey(key))
+          .toList(growable: false);
+
+      entries.add(
+        CatalogMergeEntry(
+          draftId: draft.draftId,
+          title: title,
+          slug: base,
+          outcome: CatalogMergeOutcome.replaced,
+          replacedTitle: replaced['title'] as String?,
+          droppedKeys: droppedKeys,
+        ),
+      );
+      cases[index] = json; // el índice se conserva
+      taken.add(base);
+      batchSlugs.add(base);
+    } else {
+      final json = draftToCaseJson(draft, takenSlugs: taken);
+      final slug = json['slug'] as String;
+
+      entries.add(
+        CatalogMergeEntry(
+          draftId: draft.draftId,
+          title: title,
+          slug: slug,
+          outcome: CatalogMergeOutcome.added,
+        ),
+      );
+      cases.add(json);
+      taken.add(slug);
+      batchSlugs.add(slug);
+    }
+  }
+
+  return CatalogMergeResult(cases: cases, entries: entries);
+}
+
+/// Texto listo para sustituir `assets/data/cases.json`: dos espacios de
+/// sangría y acentos sin escapar, como el resto del catálogo, con un único
+/// salto de línea final para que el fichero producido sea un texto POSIX
+/// bien formado.
+String encodeMergedCatalog(CatalogMergeResult result) {
+  final encoded = const JsonEncoder.withIndent('  ').convert(result.cases);
+  return '$encoded\n';
 }

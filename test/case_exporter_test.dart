@@ -8,6 +8,27 @@ import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/case_timeline_event.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
 
+/// Entrada de catálogo mínima pero completa, para los casos de fusión por
+/// lote que viven junto a los guardas de slug de un solo caso.
+Map<String, dynamic> _catalogEntry({required String slug, String? title}) {
+  return {
+    'id': slug,
+    'slug': slug,
+    'title': title ?? slug,
+    'category': 'unsolved',
+    'country': 'España',
+    'countryCode': 'ES',
+    'regionOrCity': 'Cuenca',
+    'year': 1990,
+    'latitude': 40.0,
+    'longitude': -3.0,
+    'summary': 'Resumen.',
+    'tags': <String>[],
+    'status': 'open',
+    'sources': <Map<String, dynamic>>[],
+  };
+}
+
 CaseDraft publishableDraft({
   String title = 'El caso del faro',
   List<DraftLink> links = const <DraftLink>[],
@@ -91,6 +112,75 @@ void main() {
         'caso-asunta-2',
       );
     });
+  });
+
+  group('mergeDraftsIntoCatalog — batch slug resolution', () {
+    // Estos casos viven junto a los guardas de slug de un solo caso a
+    // propósito [tasks.md 1.18, anti-drift]: mergeDraftsIntoCatalog reutiliza
+    // caseSlug/uniqueCaseSlug, así que sus reglas de identidad no deben
+    // verificarse en una suite de tests paralela.
+    test(
+      'gives two similarly titled drafts in one batch distinct slugs',
+      () {
+        final result = mergeDraftsIntoCatalog(
+          catalog: const [],
+          drafts: [
+            publishableDraft(title: 'El Caso'),
+            publishableDraft(title: 'El Caso'),
+          ],
+        );
+
+        expect(result.cases[0]['slug'], 'el-caso');
+        expect(result.cases[1]['slug'], 'el-caso-2');
+        expect(result.cases[0]['id'], isNot(result.cases[1]['id']));
+      },
+    );
+
+    test(
+      'replaces a colliding catalog entry in place, keeping its array index',
+      () {
+        final catalog = [
+          _catalogEntry(slug: 'case-a', title: 'Caso A'),
+          _catalogEntry(slug: 'known-case', title: 'Caso publicado'),
+          _catalogEntry(slug: 'case-b', title: 'Caso B'),
+        ];
+
+        final result = mergeDraftsIntoCatalog(
+          catalog: catalog,
+          drafts: [publishableDraft(title: 'Known Case')],
+        );
+
+        expect(result.cases, hasLength(3));
+        expect(result.cases[1]['slug'], 'known-case');
+        expect(result.cases[1]['title'], 'Known Case');
+        expect(
+          result.cases.where((c) => c['slug'] == 'known-case'),
+          hasLength(1),
+        );
+        expect(result.entries.single.outcome, CatalogMergeOutcome.replaced);
+      },
+    );
+
+    test(
+      'does not let a second colliding draft in the batch overwrite the first replacement',
+      () {
+        final catalog = [_catalogEntry(slug: 'known-case', title: 'Publicado')];
+
+        final result = mergeDraftsIntoCatalog(
+          catalog: catalog,
+          drafts: [
+            publishableDraft(title: 'Known Case'),
+            publishableDraft(title: 'Known Case'),
+          ],
+        );
+
+        expect(result.cases, hasLength(2));
+        expect(result.entries[0].outcome, CatalogMergeOutcome.replaced);
+        expect(result.entries[0].slug, 'known-case');
+        expect(result.entries[1].outcome, CatalogMergeOutcome.added);
+        expect(result.entries[1].slug, 'known-case-2');
+      },
+    );
   });
 
   group('draftToCaseJson', () {
