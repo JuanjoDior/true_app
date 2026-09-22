@@ -28,6 +28,8 @@ class CaseDraft {
     this.chapters = const CaseChapters(),
     this.featuredRank,
     this.relevanceRank,
+    this.handoffSlug,
+    this.handoffAt,
   });
 
   /// Identidad local estable del borrador, independiente del título.
@@ -73,6 +75,44 @@ class CaseDraft {
   /// Orden de relevancia general del archivo. `null` = sin clasificar.
   final int? relevanceRank;
 
+  /// Slug con el que este borrador salió en el último lote entregado.
+  /// `null` = nunca ha entrado en un lote. Es el slug REALMENTE asignado,
+  /// que puede llevar sufijo y no coincidir con `caseSlug(title)`.
+  final String? handoffSlug;
+
+  /// Cuándo se entregó ese lote. Tolerante: una fecha ilegible decodifica a
+  /// `null` y el borrador sigue abriéndose.
+  final DateTime? handoffAt;
+
+  /// Deja constancia de que este borrador salió en un lote, con la identidad
+  /// que se le asignó. A diferencia de `copyWith`, construye el borrador
+  /// entero: el marcador no es un campo más del formulario.
+  CaseDraft markHandedOff({required String slug, required DateTime at}) {
+    return CaseDraft(
+      draftId: draftId,
+      title: title,
+      category: category,
+      year: year,
+      status: status,
+      summary: summary,
+      country: country,
+      countryCode: countryCode,
+      regionOrCity: regionOrCity,
+      latitude: latitude,
+      longitude: longitude,
+      victim: victim,
+      tags: tags,
+      timeline: timeline,
+      links: links,
+      photos: photos,
+      chapters: chapters,
+      featuredRank: featuredRank,
+      relevanceRank: relevanceRank,
+      handoffSlug: slug,
+      handoffAt: at,
+    );
+  }
+
   CaseDraft copyWith({
     String? title,
     CaseCategory? category,
@@ -113,6 +153,11 @@ class CaseDraft {
       chapters: chapters ?? this.chapters,
       featuredRank: featuredRank ?? this.featuredRank,
       relevanceRank: relevanceRank ?? this.relevanceRank,
+      // El marcador de entrega no es un campo del formulario: se conserva
+      // sin exponerlo como parámetro. `markHandedOff` es el único escritor
+      // [diseño D10].
+      handoffSlug: handoffSlug,
+      handoffAt: handoffAt,
     );
   }
 
@@ -141,6 +186,9 @@ class CaseDraft {
       chapters: chapters,
       featuredRank: featuredRank,
       relevanceRank: relevanceRank,
+      // Igual que en `copyWith`: el marcador sobrevive intacto [diseño D10].
+      handoffSlug: handoffSlug,
+      handoffAt: handoffAt,
     );
   }
 
@@ -180,6 +228,12 @@ class CaseDraft {
       chapters: CaseChapters.fromJson(json['chapters']),
       featuredRank: json['featuredRank'] as int?,
       relevanceRank: json['relevanceRank'] as int?,
+      handoffSlug: json['handoffSlug'] as String?,
+      // Tolerante: una fecha ilegible decodifica a `null` en vez de lanzar,
+      // la misma tolerancia que `DraftTimelineEvent.fromJson` aplica a `kind`.
+      handoffAt: json['handoffAt'] is String
+          ? DateTime.tryParse(json['handoffAt'] as String)
+          : null,
     );
   }
 
@@ -206,6 +260,8 @@ class CaseDraft {
       if (chapters.orderedMeaningful.isNotEmpty) 'chapters': chapters.toJson(),
       if (featuredRank != null) 'featuredRank': featuredRank,
       if (relevanceRank != null) 'relevanceRank': relevanceRank,
+      if (handoffSlug != null) 'handoffSlug': handoffSlug,
+      if (handoffAt != null) 'handoffAt': handoffAt!.toIso8601String(),
     };
   }
 }

@@ -13,6 +13,8 @@ import '../domain/case_source.dart';
 import '../domain/case_status.dart';
 import '../domain/case_timeline_event.dart';
 import '../domain/true_crime_case.dart';
+import 'cases_providers.dart';
+import 'draft_publication_state.dart';
 import 'drafts_backup.dart';
 
 /// Store de borradores, sobreescribible en tests (mismo patrón que
@@ -141,12 +143,47 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
     state = AsyncData(updated);
     await _persist(updated);
   }
+
+  /// Marca de una vez todos los borradores que acaban de salir en un lote.
+  ///
+  /// Una sola publicación de estado y una sola escritura en la cola de
+  /// `_persist`, en vez de N ediciones sueltas [diseño §6.3]. Los borradores
+  /// que no aparecen en [slugByDraftId] quedan intactos.
+  Future<void> markHandedOff(
+    Map<String, String> slugByDraftId, {
+    DateTime? now,
+  }) async {
+    final at = now ?? DateTime.now();
+    final drafts = state.value ?? const <CaseDraft>[];
+    final updated = [
+      for (final draft in drafts)
+        if (slugByDraftId.containsKey(draft.draftId))
+          draft.markHandedOff(slug: slugByDraftId[draft.draftId]!, at: at)
+        else
+          draft,
+    ];
+    state = AsyncData(updated);
+    await _persist(updated);
+  }
 }
 
 final caseDraftsProvider =
     AsyncNotifierProvider<CaseDraftsNotifier, List<CaseDraft>>(
       CaseDraftsNotifier.new,
     );
+
+/// Borradores ya entregados en un lote cuyo caso todavía no aparece en el
+/// catálogo que esta pestaña cargó [diseño §7.1, D12].
+final pendingHandoffDraftsProvider = Provider<List<CaseDraft>>((ref) {
+  final drafts = ref.watch(caseDraftsProvider).value ?? const <CaseDraft>[];
+  final publishedSlugs = ref.watch(publishedSlugsProvider);
+  return [
+    for (final draft in drafts)
+      if (draftPublicationState(draft, publishedSlugs: publishedSlugs) ==
+          DraftPublicationState.handedOff)
+        draft,
+  ];
+});
 
 /// Borrador que se está editando en el workspace de intake (null = ninguno).
 final editingDraftIdProvider = StateProvider<String?>((ref) => null);

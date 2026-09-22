@@ -1,8 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
+import 'package:true_app/features/cases/application/cases_providers.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
+import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/domain/case_draft.dart';
+import 'package:true_app/features/cases/domain/case_status.dart';
+
+import 'test_support/sample_cases.dart';
 
 /// Fake en memoria que mimetiza `_FakeAssetBundle`: nada de IO real,
 /// solo una lista mutable que representa "el disco".
@@ -187,4 +192,118 @@ void main() {
     expect(drafts, isEmpty);
     expect(store.saved, isEmpty);
   });
+
+  test(
+    'markHandedOff persists the marker on exactly the named drafts in one batched write',
+    () async {
+      final store = _FakeCaseDraftsStore();
+      final container = ProviderContainer(
+        overrides: [caseDraftsStoreProvider.overrideWithValue(store)],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(caseDraftsProvider.future);
+      final notifier = container.read(caseDraftsProvider.notifier);
+      final firstId = await notifier.createDraft();
+      final secondId = await notifier.createDraft();
+      final untouchedId = await notifier.createDraft();
+      final now = DateTime.utc(2026, 9, 12);
+
+      await notifier.markHandedOff({
+        firstId: 'el-primer-caso',
+        secondId: 'el-segundo-caso',
+      }, now: now);
+
+      final drafts = container.read(caseDraftsProvider).value!;
+      final first = drafts.firstWhere((draft) => draft.draftId == firstId);
+      final second = drafts.firstWhere((draft) => draft.draftId == secondId);
+      final untouched = drafts.firstWhere(
+        (draft) => draft.draftId == untouchedId,
+      );
+
+      expect(first.handoffSlug, 'el-primer-caso');
+      expect(first.handoffAt, now);
+      expect(second.handoffSlug, 'el-segundo-caso');
+      expect(second.handoffAt, now);
+      expect(untouched.handoffSlug, isNull);
+      expect(untouched.handoffAt, isNull);
+      expect(store.saved, hasLength(3));
+    },
+  );
+
+  test(
+    'pendingHandoffDraftsProvider returns exactly the drafts in state handedOff',
+    () async {
+      final store = _FakeCaseDraftsStore();
+      final container = ProviderContainer(
+        overrides: [
+          caseDraftsStoreProvider.overrideWithValue(store),
+          casesRepositoryProvider.overrideWithValue(
+            const FakeCasesRepository([]),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      await container.read(casesProvider.future);
+      await container.read(caseDraftsProvider.future);
+      final notifier = container.read(caseDraftsProvider.notifier);
+      final handedOffId = await notifier.createDraft();
+      final readyId = await notifier.createDraft();
+      final incompleteId = await notifier.createDraft();
+      // `incompleteId` se deja sin título: no es válido, así que nunca cuenta
+      // como `handedOff` aunque tuviera marcador.
+
+      const validFields = CaseDraft(
+        draftId: '',
+        title: 'Caso válido',
+        category: CaseCategory.unsolved,
+        year: 1994,
+        status: CaseStatus.open,
+        country: 'España',
+        countryCode: 'ES',
+        regionOrCity: 'Cuenca',
+        latitude: 40.07,
+        longitude: -2.13,
+      );
+      await notifier.updateDraft(
+        CaseDraft(
+          draftId: readyId,
+          title: validFields.title,
+          category: validFields.category,
+          year: validFields.year,
+          status: validFields.status,
+          country: validFields.country,
+          countryCode: validFields.countryCode,
+          regionOrCity: validFields.regionOrCity,
+          latitude: validFields.latitude,
+          longitude: validFields.longitude,
+        ),
+      );
+      await notifier.updateDraft(
+        CaseDraft(
+          draftId: handedOffId,
+          title: validFields.title,
+          category: validFields.category,
+          year: validFields.year,
+          status: validFields.status,
+          country: validFields.country,
+          countryCode: validFields.countryCode,
+          regionOrCity: validFields.regionOrCity,
+          latitude: validFields.latitude,
+          longitude: validFields.longitude,
+        ),
+      );
+      await notifier.markHandedOff({
+        handedOffId: 'caso-valido',
+      }, now: DateTime.utc(2026, 9, 12));
+
+      final pending = container.read(pendingHandoffDraftsProvider);
+
+      expect(pending, hasLength(1));
+      expect(pending.single.draftId, handedOffId);
+      expect(pending.any((draft) => draft.draftId == readyId), isFalse);
+      expect(pending.any((draft) => draft.draftId == incompleteId), isFalse);
+    },
+  );
 }

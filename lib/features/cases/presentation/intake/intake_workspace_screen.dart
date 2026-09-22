@@ -6,7 +6,7 @@ import '../../../../core/theme/app_theme.dart';
 import '../../../home/presentation/widgets/situation/situation_styles.dart';
 import '../../application/case_draft_providers.dart';
 import '../../application/cases_providers.dart';
-import '../../application/draft_validator.dart';
+import '../../application/draft_publication_state.dart';
 import '../../domain/case_draft.dart';
 import 'case_form_section.dart';
 import 'drafts_backup_button.dart';
@@ -204,6 +204,7 @@ class _DraftList extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final publishedSlugs = ref.watch(publishedSlugsProvider);
     return Container(
       decoration: const BoxDecoration(
         border: Border(right: BorderSide(color: AppColors.panelMuted)),
@@ -213,14 +214,17 @@ class _DraftList extends ConsumerWidget {
         itemBuilder: (context, index) {
           final draft = drafts[index];
           final isSelected = draft.draftId == selectedId;
-          final isValid = validateDraft(draft).isValid;
+          final state = draftPublicationState(
+            draft,
+            publishedSlugs: publishedSlugs,
+          );
           return ListTile(
             key: Key('intake-draft-item-${draft.draftId}'),
             selected: isSelected,
             title: Text(
               draft.title?.isNotEmpty == true ? draft.title! : 'Sin título',
             ),
-            subtitle: Text(isValid ? 'Listo · sin publicar' : 'Incompleto'),
+            subtitle: Text(_subtitleFor(state, draft)),
             trailing: IconButton(
               key: Key('intake-draft-delete-${draft.draftId}'),
               icon: const Icon(Icons.delete_outline, size: 18),
@@ -242,6 +246,26 @@ class _DraftList extends ConsumerWidget {
       ),
     );
   }
+}
+
+/// Subtítulo de la lista de borradores para los cuatro estados de
+/// publicación [diseño §6.4].
+String _subtitleFor(DraftPublicationState state, CaseDraft draft) {
+  return switch (state) {
+    DraftPublicationState.incomplete => 'Incompleto',
+    DraftPublicationState.ready => 'Listo · sin publicar',
+    DraftPublicationState.handedOff =>
+      'Entregado el ${_shortDate(draft.handoffAt!)} · pendiente de publicar',
+    DraftPublicationState.published => 'Publicado',
+  };
+}
+
+/// Fecha corta DD/MM, mismo idioma numérico que el resto de fechas del
+/// proyecto (`drafts_file_transfer.dart`).
+String _shortDate(DateTime date) {
+  final day = date.day.toString().padLeft(2, '0');
+  final month = date.month.toString().padLeft(2, '0');
+  return '$day/$month';
 }
 
 class _FormAndPreview extends StatelessWidget {
