@@ -13,7 +13,7 @@ flutter pub get
 flutter run -d chrome
 ```
 
-Para pasar la suite: `flutter test` (49 archivos, 521 tests).
+Para pasar la suite: `flutter test` (50 archivos, 530 tests).
 
 ## Las dos mitades
 
@@ -53,7 +53,7 @@ lib/
     └── home/               Sala de Situación
 ```
 
-`assets/data/cases.json` es el catálogo publicado: **14 casos** curados.
+`assets/data/cases.json` es el catálogo publicado: **15 casos** curados.
 
 ## Despliegue
 
