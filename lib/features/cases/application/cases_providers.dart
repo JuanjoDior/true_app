@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 
 import '../data/case_connections_seed.dart';
 import '../data/cases_repository.dart';
-import '../data/local_cases_repository.dart';
+import '../data/supabase_cases_repository.dart';
 import '../domain/case_category.dart';
 import '../domain/case_connection.dart';
 import '../domain/case_status.dart';
@@ -22,7 +22,7 @@ typedef ArchiveStats = ({
 });
 
 final casesRepositoryProvider = Provider<CasesRepository>((ref) {
-  return LocalCasesRepository();
+  return const SupabaseCasesRepository();
 });
 
 final caseSearchServiceProvider = Provider<CaseSearchService>((ref) {
