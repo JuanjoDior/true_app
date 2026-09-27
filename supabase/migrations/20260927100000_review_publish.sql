@@ -184,7 +184,6 @@ as $$
 declare
   v_draft public.drafts%rowtype;
   v_slug text := p_case ->> 'slug';
-  v_existing_source text;
 begin
   if not public.is_reviewer() then
     raise exception 'only reviewers can approve drafts' using errcode = '42501';
@@ -205,19 +204,22 @@ begin
       using errcode = '22023';
   end if;
 
-  select source_draft_id into v_existing_source
-  from public.cases where slug = v_slug;
-  if v_existing_source is not null and v_existing_source <> p_draft_id then
-    raise exception 'slug % belongs to another draft', v_slug using errcode = '55000';
-  end if;
-
+  -- Comprobar y escribir en una sola sentencia: el `where` del upsert se
+  -- evalúa con la fila bloqueada, así dos aprobaciones simultáneas del mismo
+  -- slug nuevo no se pisan. Nunca se sustituye un caso de otro borrador.
   insert into public.cases (slug, payload, published_at, published_by, source_draft_id)
   values (v_slug, p_case, now(), (select auth.uid()), p_draft_id)
   on conflict (slug) do update
   set payload = excluded.payload,
       published_at = excluded.published_at,
       published_by = excluded.published_by,
-      source_draft_id = excluded.source_draft_id;
+      source_draft_id = excluded.source_draft_id
+  where public.cases.source_draft_id is null
+     or public.cases.source_draft_id = excluded.source_draft_id;
+
+  if not found then
+    raise exception 'slug % belongs to another draft', v_slug using errcode = '55000';
+  end if;
 
   update public.drafts
   set status = 'published', published_slug = v_slug
@@ -238,7 +240,7 @@ begin
 
   delete from public.cases where slug = p_slug;
   if not found then
-    raise exception 'case % is not published', p_slug using errcode = '02000';
+    raise exception 'case % is not published', p_slug using errcode = 'P0002';
   end if;
 
   update public.drafts

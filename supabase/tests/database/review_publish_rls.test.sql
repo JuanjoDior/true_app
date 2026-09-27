@@ -191,7 +191,7 @@ select is((select count(*) from public.cases where slug = 'caso-nuevo')::int, 0,
   'el caso despublicado desaparece de la web');
 select is((select status::text || ':' || coalesce(published_slug, '-') from public.drafts where id = 'draft-ivan'),
   'draft:-', 'el borrador vuelve a borrador sin slug publicado');
-select throws_ok($$select public.unpublish_case('no-existe')$$, '02000', null,
+select throws_ok($$select public.unpublish_case('no-existe')$$, 'P0002', null,
   'despublicar un caso inexistente avisa');
 
 select * from finish();
