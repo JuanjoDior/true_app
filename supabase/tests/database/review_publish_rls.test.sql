@@ -24,6 +24,10 @@ end;
 $$;
 
 -- ---------------------------------------------------------------- datos base
+-- Sin el catálogo que carga la migración de CRP-02: estas pruebas montan sus
+-- propios casos. El rollback final lo devuelve.
+delete from public.cases;
+
 insert into auth.users (id, email, aud, role) values
   ('11111111-1111-1111-1111-111111111111', 'ivan@example.test', 'authenticated', 'authenticated'),
   ('22222222-2222-2222-2222-222222222222', 'otro@example.test', 'authenticated', 'authenticated'),
