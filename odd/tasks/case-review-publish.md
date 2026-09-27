@@ -24,17 +24,18 @@ Let Iván create cases in his browser and send them for review with one button, 
 - [ ] **CRP-04 — Drafts in the cloud.** `SupabaseCaseDraftsStore` behind `CaseDraftsStore` with per-draft saves (current `saveDrafts` writes the whole list — decide whether to change the interface). On Iván's first sign-in, upload drafts already in his browser automatically and keep the local copy until the upload is confirmed.
 - [ ] **CRP-05 — Send to review and states for Iván.** "Enviar a revisión" enabled only for valid drafts; list shows Borrador / En revisión / Devuelto / Publicado; in-review drafts are read-only.
 - [ ] **CRP-06 — Reviewer inbox.** Pending count, preview rendered with the same dossier visitors see (with a replacement diff when the slug exists), Aprobar (publishes immediately) and Devolver.
+- [ ] **CRP-07a — Keep-alive and backups.** Scheduled workflow (cron every 3 days + manual dispatch) that reads `cases` and `drafts` with the service-role secret and commits dated JSON to the `backups` branch. Prove one manual run and a restore dry run.
 - [ ] **CRP-07 — Integration and two-account walkthrough.** Full suite and analyze; real browser on the deployed Pages site with Iván's and the reviewer's accounts from different browsers: create → send → approve → visible to an anonymous visitor; and send → return → edit → resend.
 - [ ] **CRP-08 — Delivery.** User decides push/PR strategy and what happens to the frozen case-auto-publish branches.
 
-## Open decisions
-- Unpublishing: who can withdraw a published case (reviewer only?) and whether it needs its own button in this change.
-- Free-plan pause after 7 days without activity and no downloadable automatic backups: accept, add a periodic export, or pay.
-- Whether `assets/data/cases.json` stays as an offline fallback or is removed after the seed.
-- Editing a published case: new draft cycle (edit → send → approve) is assumed; confirm.
+## Decisions
+- 2026-09-27 — Unpublishing: only the reviewer (developer) withdraws published cases, from the reviewer inbox; Iván has no unpublish action and asks by phone. RLS: delete on `cases` restricted to reviewers.
+- 2026-09-27 — Free plan kept. A scheduled GitHub Actions workflow queries Supabase every few days (prevents the 7-day inactivity pause) and exports published cases and drafts as JSON. Backups go to a dedicated `backups` branch, never `main`, because every push to `main` redeploys Pages. Draft export needs the service-role key as a GitHub secret; never ship that key in the app.
+- 2026-09-27 — `assets/data/cases.json` is removed after the CRP-02 seed is verified; no offline fallback, because a stale bundled catalog shown as real is worse than an explicit «no se pudieron cargar los casos» with retry. Tests and code that read the real asset must move to fixtures or the seed file in the same work unit.
+- 2026-09-27 — Editing a published case always goes back through review: Iván edits the draft (status returns to `draft`), resends, and the published version stays live and unchanged until the reviewer approves the new one.
 
 ## Review follow-ups
 - Baseline review (lineage `review-98063ab629b4466d`, base `faec1ee`, covers the two unpushed `main` commits plus this document): approved and acknowledged. WARNING `R3-camarena-extradition-date` (`cases.json:821-822`, same pending content check as in case-auto-publish); WARNING `R3-new-entry-unproved-parse` (`cases.json:788-833`, no test parses the newest entry — the CRP-02 seed must parse all entries); SUGGESTION `R3-readme-suite-count-unbacked` (`README.md:16`); WARNING `R3-seed-count-mismatch` checked and not reproduced: `assets/data/cases.json` holds 16 entries on this branch.
 
 ## Progress / next step
-- 2026-09-27: direction agreed with the user; branch and this document created. Next: CRP-01, starting with confirming the data model and the open decisions that affect it.
+- 2026-09-27: direction agreed with the user; branch and this document created. All open decisions closed with the user (see Decisions). Next: CRP-01 — the developer creates the Supabase project; then versioned SQL and RLS proofs.
