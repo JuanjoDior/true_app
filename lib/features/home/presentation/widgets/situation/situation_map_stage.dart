@@ -222,6 +222,7 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
               ],
             ),
           ),
+          const Positioned.fill(child: _CatalogStatus()),
           if (widget.showControls)
             Positioned(top: 14, left: 16, child: const CaseStatusChips()),
           if (widget.showControls)
@@ -237,6 +238,75 @@ class _SituationMapStageState extends ConsumerState<SituationMapStage> {
               ),
             ),
         ],
+      ),
+    );
+  }
+}
+
+/// Aviso sobre el mapa mientras el catálogo no está disponible.
+///
+/// Los casos llegan por red: un mapa sin marcadores mientras cargan, o porque
+/// la carga falló, se leería como un archivo vacío de verdad. Riverpod ya
+/// reintenta solo con espera creciente; el botón adelanta el siguiente intento.
+/// Mientras reintenta se mantiene el error, para que el aviso no parpadee.
+class _CatalogStatus extends ConsumerWidget {
+  const _CatalogStatus();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final catalog = ref.watch(casesProvider);
+    if (catalog.hasValue) {
+      return const SizedBox.shrink();
+    }
+
+    final failed = catalog.hasError;
+    return Center(
+      child: Container(
+        key: Key(failed ? 'catalog-error' : 'catalog-loading'),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        decoration: BoxDecoration(
+          color: AppColors.bar.withValues(alpha: 0.92),
+          borderRadius: BorderRadius.circular(6),
+          border: Border.all(color: AppColors.panelMuted),
+        ),
+        child: failed
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'No se pudieron cargar los casos.',
+                    style: SituationStyles.sans(size: 14),
+                  ),
+                  const SizedBox(height: 10),
+                  TextButton(
+                    key: const Key('catalog-retry'),
+                    onPressed: catalog.isLoading
+                        ? null
+                        : () => ref.invalidate(casesProvider),
+                    child: Text(
+                      catalog.isLoading ? 'Reintentando…' : 'Reintentar',
+                    ),
+                  ),
+                ],
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const SizedBox(
+                    width: 14,
+                    height: 14,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                  const SizedBox(width: 12),
+                  Text(
+                    'Cargando el archivo…',
+                    style: SituationStyles.mono(
+                      size: 11,
+                      color: AppColors.textSub,
+                    ),
+                  ),
+                ],
+              ),
       ),
     );
   }
