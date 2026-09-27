@@ -26,7 +26,7 @@ El producto tiene dos caras:
 | El mapa es la navegación | Un caso sin coordenadas no existe en el producto. Por eso la ubicación es obligatoria para publicar |
 | Un tipo por caso | Taxonomía cerrada: asesinatos aislados, asesinos en serie, secuestros y casos sin resolver. Los tags acompañan, no sustituyen |
 | Los borradores no se versionan | Viven en el navegador de quien escribe. El repositorio sólo guarda lo publicado |
-| El acceso al formulario es un filtro, no seguridad | Una clave compartida en el código. Evita entradas accidentales; no protege de nada más |
+| Al formulario se entra con cuenta | Email y contraseña de Supabase. Las cuentas las crea quien revisa desde el panel; no hay registro abierto ni correos, porque el correo gratuito de Supabase no llega fuera del equipo del proyecto |
 
 ## El circuito de publicación
 

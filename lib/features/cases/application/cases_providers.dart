@@ -57,9 +57,6 @@ final workspaceProvider = StateProvider<Workspace>(
   (ref) => Workspace.situationRoom,
 );
 
-/// Desbloqueo del workspace de intake, por sesión (no persiste al recargar).
-final intakeUnlockedProvider = StateProvider<bool>((ref) => false);
-
 final filteredCasesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
   final search = ref.watch(caseSearchServiceProvider);
   final cases = await ref.watch(casesProvider.future);

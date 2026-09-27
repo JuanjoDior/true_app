@@ -7,25 +7,68 @@ import '../../../home/presentation/widgets/situation/situation_styles.dart';
 import '../../application/case_draft_providers.dart';
 import '../../application/cases_providers.dart';
 import '../../application/draft_validator.dart';
+import '../../application/intake_session_providers.dart';
 import '../../domain/case_draft.dart';
 import 'case_form_section.dart';
 import 'drafts_backup_button.dart';
 import 'export_case_button.dart';
-import 'intake_gate_screen.dart';
 import 'intake_preview_panel.dart';
+import 'intake_sign_in_screen.dart';
 
-/// Workspace de alta de casos de Iván: gate por clave compartida, lista de
+/// Workspace de alta de casos de Iván: entrada con cuenta, lista de
 /// borradores, formulario por secciones y previsualización del expediente.
 class IntakeWorkspaceScreen extends ConsumerWidget {
   const IntakeWorkspaceScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final unlocked = ref.watch(intakeUnlockedProvider);
-    if (!unlocked) {
-      return const IntakeGateScreen();
-    }
-    return const _IntakeFormBody();
+    return ref
+        .watch(intakeAccountProvider)
+        .when(
+          data: (account) => account == null
+              ? const IntakeSignInScreen()
+              : const _IntakeFormBody(),
+          loading: () => const Scaffold(
+            backgroundColor: AppColors.bgDeep,
+            body: Center(
+              child: CircularProgressIndicator(
+                key: Key('intake-session-loading'),
+              ),
+            ),
+          ),
+          error: (_, _) => const _SessionUnavailable(),
+        );
+  }
+}
+
+/// Sin poder comprobar la sesión no se enseña ni el formulario ni la
+/// entrada: ninguno de los dos funcionaría.
+class _SessionUnavailable extends ConsumerWidget {
+  const _SessionUnavailable();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Scaffold(
+      backgroundColor: AppColors.bgDeep,
+      body: Center(
+        child: Column(
+          key: const Key('intake-session-error'),
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'No se pudo conectar con el archivo.',
+              style: SituationStyles.sans(size: 14, color: AppColors.textBody),
+            ),
+            const SizedBox(height: 12),
+            TextButton(
+              key: const Key('intake-session-retry'),
+              onPressed: () => ref.invalidate(intakeAccountProvider),
+              child: const Text('Reintentar'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -208,37 +251,83 @@ class _DraftList extends ConsumerWidget {
       decoration: const BoxDecoration(
         border: Border(right: BorderSide(color: AppColors.panelMuted)),
       ),
-      child: ListView.builder(
-        itemCount: drafts.length,
-        itemBuilder: (context, index) {
-          final draft = drafts[index];
-          final isSelected = draft.draftId == selectedId;
-          final isValid = validateDraft(draft).isValid;
-          return ListTile(
-            key: Key('intake-draft-item-${draft.draftId}'),
-            selected: isSelected,
-            title: Text(
-              draft.title?.isNotEmpty == true ? draft.title! : 'Sin título',
-            ),
-            subtitle: Text(isValid ? 'Listo · sin publicar' : 'Incompleto'),
-            trailing: IconButton(
-              key: Key('intake-draft-delete-${draft.draftId}'),
-              icon: const Icon(Icons.delete_outline, size: 18),
-              onPressed: () async {
-                await ref
-                    .read(caseDraftsProvider.notifier)
-                    .deleteDraft(draft.draftId);
-                if (selectedId == draft.draftId) {
-                  ref.read(editingDraftIdProvider.notifier).state = null;
-                }
+      child: Column(
+        children: [
+          Expanded(
+            child: ListView.builder(
+              itemCount: drafts.length,
+              itemBuilder: (context, index) {
+                final draft = drafts[index];
+                final isSelected = draft.draftId == selectedId;
+                final isValid = validateDraft(draft).isValid;
+                return ListTile(
+                  key: Key('intake-draft-item-${draft.draftId}'),
+                  selected: isSelected,
+                  title: Text(
+                    draft.title?.isNotEmpty == true
+                        ? draft.title!
+                        : 'Sin título',
+                  ),
+                  subtitle: Text(
+                    isValid ? 'Listo · sin publicar' : 'Incompleto',
+                  ),
+                  trailing: IconButton(
+                    key: Key('intake-draft-delete-${draft.draftId}'),
+                    icon: const Icon(Icons.delete_outline, size: 18),
+                    onPressed: () async {
+                      await ref
+                          .read(caseDraftsProvider.notifier)
+                          .deleteDraft(draft.draftId);
+                      if (selectedId == draft.draftId) {
+                        ref.read(editingDraftIdProvider.notifier).state = null;
+                      }
+                    },
+                  ),
+                  onTap: () {
+                    ref.read(editingDraftIdProvider.notifier).state =
+                        draft.draftId;
+                    onAfterSelect?.call();
+                  },
+                );
               },
             ),
-            onTap: () {
-              ref.read(editingDraftIdProvider.notifier).state = draft.draftId;
-              onAfterSelect?.call();
-            },
-          );
-        },
+          ),
+          const _AccountFooter(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Con quién se ha entrado, y la salida. Va al pie de la lista y no en la
+/// barra superior, que en pantallas estrechas ya no tiene sitio.
+class _AccountFooter extends ConsumerWidget {
+  const _AccountFooter();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final email = ref.watch(intakeAccountProvider).value?.email ?? '';
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+      decoration: const BoxDecoration(
+        border: Border(top: BorderSide(color: AppColors.panelMuted)),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              email,
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              style: SituationStyles.sans(size: 12, color: AppColors.textSub),
+            ),
+          ),
+          TextButton(
+            key: const Key('intake-signout-button'),
+            onPressed: () => ref.read(intakeAuthProvider).signOut(),
+            child: const Text('Cerrar sesión'),
+          ),
+        ],
       ),
     );
   }

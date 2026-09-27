@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/core/config/map_config.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
+import 'package:true_app/features/cases/application/intake_session_providers.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
 import 'package:true_app/features/cases/data/reverse_geocoder.dart';
 import 'package:true_app/features/cases/domain/case_category.dart';
@@ -18,6 +19,7 @@ import 'package:true_app/features/cases/presentation/intake/intake_workspace_scr
 import 'package:true_app/features/home/presentation/widgets/situation/case_dossier_panel.dart';
 
 import 'test_support/sample_cases.dart';
+import 'test_support/fake_intake_auth.dart';
 
 class _FakeCaseDraftsStore implements CaseDraftsStore {
   _FakeCaseDraftsStore([List<CaseDraft>? seed])
@@ -82,6 +84,7 @@ Future<ProviderContainer> _pumpNarrowWorkspace(
 
   final container = ProviderContainer(
     overrides: [
+      intakeAuthProvider.overrideWithValue(FakeIntakeAuth.signedIn()),
       caseDraftsStoreProvider.overrideWithValue(
         _FakeCaseDraftsStore(seedDrafts),
       ),
@@ -93,7 +96,6 @@ Future<ProviderContainer> _pumpNarrowWorkspace(
   addTearDown(container.dispose);
 
   await container.read(caseDraftsProvider.future);
-  container.read(intakeUnlockedProvider.notifier).state = true;
   if (editingDraftId != null) {
     container.read(editingDraftIdProvider.notifier).state = editingDraftId;
   }

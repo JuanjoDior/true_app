@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/app/true_crime_app.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
+import 'package:true_app/features/cases/application/intake_session_providers.dart';
 import 'package:true_app/features/cases/data/cases_repository.dart';
 import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
@@ -10,6 +11,7 @@ import 'package:true_app/features/cases/domain/true_crime_case.dart';
 import 'package:true_app/features/cases/presentation/case_detail_page.dart';
 import 'package:true_app/features/cases/presentation/intake/intake_workspace_screen.dart';
 import 'package:true_app/features/home/presentation/home_page.dart';
+import 'test_support/fake_intake_auth.dart';
 
 /// La aplicación entera bajo el Router [diseño §7.3, §7.4].
 ///
@@ -69,13 +71,13 @@ Future<ProviderContainer> _pumpApp(
 
   final container = ProviderContainer(
     overrides: [
+      intakeAuthProvider.overrideWithValue(FakeIntakeAuth.signedIn()),
       casesRepositoryProvider.overrideWithValue(const _StubRepository()),
     ],
   );
   addTearDown(container.dispose);
   if (workspace != null) {
     container.read(workspaceProvider.notifier).state = workspace;
-    container.read(intakeUnlockedProvider.notifier).state = true;
   }
   // Se siembra ANTES de montar, no después.
   //
@@ -115,6 +117,7 @@ void main() {
       // URL de verdad.
       final container = ProviderContainer(
         overrides: [
+          intakeAuthProvider.overrideWithValue(FakeIntakeAuth.signedIn()),
           casesRepositoryProvider.overrideWithValue(const _StubRepository()),
         ],
       );
@@ -136,6 +139,7 @@ void main() {
       // dejaría los otros trece tests sin forma de fijar una ruta.
       final container = ProviderContainer(
         overrides: [
+          intakeAuthProvider.overrideWithValue(FakeIntakeAuth.signedIn()),
           casesRepositoryProvider.overrideWithValue(const _StubRepository()),
         ],
       );

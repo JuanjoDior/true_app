@@ -44,6 +44,7 @@ dependencies:
   # única forma de traspasar trabajo entre equipos sin backend que resulte fácil
   # para alguien que sólo abre una URL.
   file_picker: ^12.0.0
+  supabase_flutter: ^2.17.2
 
 dev_dependencies:
   flutter_test:

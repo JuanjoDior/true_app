@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/core/config/map_config.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
+import 'package:true_app/features/cases/application/intake_session_providers.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
 import 'package:true_app/features/cases/data/reverse_geocoder.dart';
 import 'package:true_app/features/cases/domain/case_draft.dart';
@@ -11,6 +12,7 @@ import 'package:true_app/features/cases/domain/resolved_place.dart';
 import 'package:true_app/features/cases/presentation/intake/intake_workspace_screen.dart';
 
 import 'test_support/sample_cases.dart';
+import 'test_support/fake_intake_auth.dart';
 
 class _FakeCaseDraftsStore implements CaseDraftsStore {
   _FakeCaseDraftsStore(this.saved);
@@ -62,6 +64,7 @@ void main() {
     // justo donde antes ni se renderizaba.
     final container = ProviderContainer(
       overrides: [
+        intakeAuthProvider.overrideWithValue(FakeIntakeAuth.signedIn()),
         caseDraftsStoreProvider
             .overrideWithValue(_FakeCaseDraftsStore([_first, _second])),
         casesRepositoryProvider.overrideWithValue(const FakeCasesRepository([])),
@@ -72,7 +75,6 @@ void main() {
     addTearDown(container.dispose);
 
     await container.read(caseDraftsProvider.future);
-    container.read(intakeUnlockedProvider.notifier).state = true;
     container.read(editingDraftIdProvider.notifier).state = 'draft-a';
 
     await tester.pumpWidget(
@@ -108,6 +110,7 @@ void main() {
     // Sin viewport forzado: ver la nota del primer test.
     final container = ProviderContainer(
       overrides: [
+        intakeAuthProvider.overrideWithValue(FakeIntakeAuth.signedIn()),
         caseDraftsStoreProvider
             .overrideWithValue(_FakeCaseDraftsStore([_first, _second])),
         casesRepositoryProvider.overrideWithValue(const FakeCasesRepository([])),
@@ -118,7 +121,6 @@ void main() {
     addTearDown(container.dispose);
 
     await container.read(caseDraftsProvider.future);
-    container.read(intakeUnlockedProvider.notifier).state = true;
     container.read(editingDraftIdProvider.notifier).state = 'draft-b';
 
     await tester.pumpWidget(
