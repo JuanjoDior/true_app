@@ -21,6 +21,25 @@ class _PendingRepository implements CasesRepository {
   Future<List<TrueCrimeCase>> getCases() => completer.future;
 }
 
+class _EmptyRepository implements CasesRepository {
+  @override
+  Future<List<TrueCrimeCase>> getCases() async => const [];
+}
+
+/// Falla una vez y el siguiente intento se queda esperando.
+class _SlowRetryRepository implements CasesRepository {
+  int calls = 0;
+
+  @override
+  Future<List<TrueCrimeCase>> getCases() {
+    calls++;
+    if (calls == 1) {
+      return Future.error(StateError('sin red'));
+    }
+    return Completer<List<TrueCrimeCase>>().future;
+  }
+}
+
 /// Falla hasta que se marca como disponible; cuenta cada intento.
 class _FlakyRepository implements CasesRepository {
   bool available = false;
@@ -58,6 +77,7 @@ Future<void> _pumpHome(WidgetTester tester, CasesRepository repository) async {
 final _loading = find.byKey(const Key('catalog-loading'));
 final _error = find.byKey(const Key('catalog-error'));
 final _retry = find.byKey(const Key('catalog-retry'));
+final _empty = find.byKey(const Key('catalog-empty'));
 
 void main() {
   testWidgets('says the archive is loading while the cases arrive', (
@@ -86,6 +106,35 @@ void main() {
     expect(_error, findsOneWidget);
     expect(find.text('No se pudieron cargar los casos.'), findsOneWidget);
     expect(_loading, findsNothing);
+  });
+
+  testWidgets('an empty archive says so instead of showing a blank map', (
+    tester,
+  ) async {
+    await _pumpHome(tester, _EmptyRepository());
+    await tester.pump(const Duration(milliseconds: 50));
+
+    expect(_empty, findsOneWidget);
+    expect(find.text('Todavía no hay expedientes publicados.'), findsOneWidget);
+    expect(_loading, findsNothing);
+    expect(_error, findsNothing);
+  });
+
+  testWidgets('keeps the error and disables the button while retrying', (
+    tester,
+  ) async {
+    await _pumpHome(tester, _SlowRetryRepository());
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(_error, findsOneWidget);
+
+    await tester.tap(_retry);
+    await tester.pump();
+
+    // El aviso no parpadea a «cargando»: sigue el error, con el botón ocupado.
+    expect(_error, findsOneWidget);
+    expect(_loading, findsNothing);
+    expect(find.text('Reintentando…'), findsOneWidget);
+    expect(tester.widget<TextButton>(_retry).onPressed, isNull);
   });
 
   testWidgets('retrying loads the archive once it is reachable again', (
