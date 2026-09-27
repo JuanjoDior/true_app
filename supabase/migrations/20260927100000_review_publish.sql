@@ -137,7 +137,8 @@ begin
   from public.drafts where id = p_draft_id
   for update;
 
-  if v_owner is null or v_owner <> (select auth.uid()) then
+  -- `is distinct from` también rechaza una sesión sin usuario (uid null).
+  if v_owner is null or v_owner is distinct from (select auth.uid()) then
     raise exception 'draft % not found for this user', p_draft_id
       using errcode = '42501';
   end if;
@@ -243,8 +244,11 @@ begin
     raise exception 'case % is not published', p_slug using errcode = 'P0002';
   end if;
 
+  -- Sólo el borrador publicado vuelve a draft; una corrección que ya está
+  -- en revisión sigue su curso, pero pierde el slug que ya no existe.
   update public.drafts
-  set status = 'draft', published_slug = null
+  set status = case when status = 'published' then 'draft'::public.draft_status else status end,
+      published_slug = null
   where published_slug = p_slug;
 end;
 $$;

@@ -101,6 +101,13 @@ select throws_ok($$select public.return_draft('draft-ivan')$$,
 select throws_ok($$select public.unpublish_case('zodiac')$$,
   '42501', null, 'Iván no puede despublicar');
 
+-- Sesión autenticada sin `sub`: auth.uid() es null y no debe colarse.
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims', '{"role": "authenticated"}', true);
+select throws_ok($$select public.submit_draft('draft-ivan')$$, '42501', null,
+  'sin usuario identificado no se puede enviar ningún borrador');
+
 -- ------------------------------------------------------------ otro usuario
 reset role;
 set local role authenticated;
@@ -186,11 +193,24 @@ select is((select payload->>'title' from public.cases where slug = 'caso-nuevo')
 select is((select count(*) from public.cases where slug = 'caso-nuevo')::int, 1,
   'la edición no duplica el caso');
 
+-- Iván tiene una corrección en revisión cuando el revisor despublica.
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
+select lives_ok($$update public.drafts set payload = '{"title": "Caso nuevo v4"}', status = 'draft' where id = 'draft-ivan'$$,
+  'Iván prepara otra corrección');
+select lives_ok($$select public.submit_draft('draft-ivan')$$, 'Iván la envía a revisión');
+
+reset role;
+set local role authenticated;
+select set_config('request.jwt.claims',
+  '{"sub": "33333333-3333-3333-3333-333333333333", "role": "authenticated"}', true);
 select lives_ok($$select public.unpublish_case('caso-nuevo')$$, 'el revisor despublica');
 select is((select count(*) from public.cases where slug = 'caso-nuevo')::int, 0,
   'el caso despublicado desaparece de la web');
 select is((select status::text || ':' || coalesce(published_slug, '-') from public.drafts where id = 'draft-ivan'),
-  'draft:-', 'el borrador vuelve a borrador sin slug publicado');
+  'in_review:-', 'despublicar no interrumpe una corrección en revisión, pero suelta el slug');
 select throws_ok($$select public.unpublish_case('no-existe')$$, 'P0002', null,
   'despublicar un caso inexistente avisa');
 
