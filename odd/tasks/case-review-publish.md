@@ -33,5 +33,8 @@ Let Iván create cases in his browser and send them for review with one button, 
 - Whether `assets/data/cases.json` stays as an offline fallback or is removed after the seed.
 - Editing a published case: new draft cycle (edit → send → approve) is assumed; confirm.
 
+## Review follow-ups
+- Baseline review (lineage `review-98063ab629b4466d`, base `faec1ee`, covers the two unpushed `main` commits plus this document): approved and acknowledged. WARNING `R3-camarena-extradition-date` (`cases.json:821-822`, same pending content check as in case-auto-publish); WARNING `R3-new-entry-unproved-parse` (`cases.json:788-833`, no test parses the newest entry — the CRP-02 seed must parse all entries); SUGGESTION `R3-readme-suite-count-unbacked` (`README.md:16`); WARNING `R3-seed-count-mismatch` checked and not reproduced: `assets/data/cases.json` holds 16 entries on this branch.
+
 ## Progress / next step
 - 2026-09-27: direction agreed with the user; branch and this document created. Next: CRP-01, starting with confirming the data model and the open decisions that affect it.
