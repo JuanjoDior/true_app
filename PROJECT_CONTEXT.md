@@ -3,7 +3,7 @@
 Este documento es para quien llega al proyecto y necesita entender **por qué**
 está hecho así, no sólo cómo. Para arrancarlo, el `README.md`.
 
-Última revisión: **16 de septiembre de 2026**.
+Última revisión: **27 de septiembre de 2026**.
 
 ## Qué es
 
@@ -22,7 +22,7 @@ El producto tiene dos caras:
 
 | Decisión | Por qué |
 |----------|---------|
-| Sin backend ni CMS | El catálogo es un JSON versionado. Nada entra sin pasar por un commit, y eso es la revisión editorial |
+| El catálogo vive en Supabase | Desde septiembre de 2026 los casos publicados están en la tabla `cases` y la web los lee al abrirse. Publicar un caso deja de exigir commit y despliegue; la revisión editorial pasa a ser la aprobación del revisor (ver `odd/tasks/case-review-publish.md`) |
 | El mapa es la navegación | Un caso sin coordenadas no existe en el producto. Por eso la ubicación es obligatoria para publicar |
 | Un tipo por caso | Taxonomía cerrada: asesinatos aislados, asesinos en serie, secuestros y casos sin resolver. Los tags acompañan, no sustituyen |
 | Los borradores no se versionan | Viven en el navegador de quien escribe. El repositorio sólo guarda lo publicado |
@@ -30,16 +30,23 @@ El producto tiene dos caras:
 
 ## El circuito de publicación
 
+**En transición.** El circuito antiguo era manual a propósito:
+
 ```
 Formulario  ──►  Copiar JSON  ──►  assets/data/cases.json  ──►  commit  ──►  Pages
-(navegador)      (portapapeles)     (repositorio)                            (público)
 ```
 
-El paso manual del portapapeles es deliberado. Automatizarlo significaría montar
-un backend, y con el volumen actual el coste no compensa.
+En la rama `case-review-publish` el catálogo ya se lee de Supabase y
+`assets/data/cases.json` se retiró (su contenido es la carga inicial de
+`supabase/migrations/20260927110000_seed_cases.sql`). El circuito nuevo:
 
-**Cuándo revisar esta decisión:** cuando llegue un lote de diez casos de golpe.
-Copiar y pegar de uno en uno deja de tener gracia ahí.
+```
+Formulario  ──►  Enviar a revisión  ──►  Aprobar (revisor)  ──►  visible al momento
+(navegador)      (Supabase: drafts)      (Supabase: cases)
+```
+
+Hasta que la rama llegue a `main`, **no se publican casos en `main`**: no
+entrarían en Supabase.
 
 ## Qué captura el formulario
 
@@ -61,7 +68,7 @@ Arquitectura por capas dentro de cada feature:
 
 ```
 domain/       los modelos y sus reglas, sin dependencias de Flutter
-data/         de dónde salen los datos (asset JSON, localStorage, Nominatim)
+data/         de dónde salen los datos (Supabase, localStorage, Nominatim)
 application/  providers de Riverpod, validación y exportador
 presentation/ los widgets
 ```

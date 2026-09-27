@@ -62,6 +62,9 @@ Future<void> _pumpHome(WidgetTester tester, CasesRepository repository) async {
 
   final container = ProviderContainer(
     overrides: [casesRepositoryProvider.overrideWithValue(repository)],
+    // Sin el reintento automático de Riverpod: cada intento de estos tests
+    // sale del botón, no de un temporizador.
+    retry: (_, _) => null,
   );
   addTearDown(container.dispose);
 
@@ -151,7 +154,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
 
-    // El intento sale del botón, no del reintento automático, que espera más.
     expect(repository.calls, callsBefore + 1);
     expect(_error, findsNothing);
     expect(find.byKey(Key('marker-${sampleCases.first.id}')), findsOneWidget);

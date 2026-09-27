@@ -13,7 +13,7 @@ flutter pub get
 flutter run -d chrome
 ```
 
-Para pasar la suite: `flutter test` (50 archivos, 530 tests).
+Para pasar la suite: `flutter test` (52 archivos, 542 tests).
 
 ## Las dos mitades
 
@@ -26,17 +26,17 @@ Al formulario se entra por el `+` del rail izquierdo.
 
 ## Cómo se publica un caso
 
-No hay backend ni CMS: el catálogo es un archivo JSON versionado. El circuito es
-manual a propósito, para que nada entre sin pasar por una revisión.
+El catálogo publicado vive en **Supabase** (tabla `cases`) y la web lo lee al
+abrirse, así que publicar un caso no requiere commit ni despliegue.
 
-1. En el formulario, rellenar el caso. La ubicación se marca **tocando el mapa**:
-   país y municipio se rellenan solos.
-2. Pulsar **Copiar JSON**. Sólo se activa cuando el borrador está completo.
-3. Pegar el objeto en `assets/data/cases.json`.
-4. Commit y push. El despliegue es automático.
+El circuito de revisión está en construcción (`odd/tasks/case-review-publish.md`):
+quien redacta envía el borrador a revisión y el revisor lo aprueba; al aprobarlo
+aparece en la web al momento. Las reglas de acceso de
+`supabase/migrations/` son lo único que protege los datos: la clave del
+navegador es pública por diseño.
 
-Los borradores viven en el navegador de quien los escribe (`localStorage`), no en
-el repositorio.
+Los borradores viven de momento en el navegador de quien los escribe
+(`localStorage`); pasarán a Supabase con el circuito de revisión.
 
 ## Estructura
 
@@ -47,13 +47,15 @@ lib/
 └── features/
     ├── cases/
     │   ├── domain/         el caso, el borrador y sus piezas
-    │   ├── data/           catálogo JSON, borradores y geocodificación
+    │   ├── data/           catálogo en Supabase, borradores y geocodificación
     │   ├── application/    providers, validación y exportador
     │   └── presentation/   formulario de alta
     └── home/               Sala de Situación
 ```
 
-`assets/data/cases.json` es el catálogo publicado: **15 casos** curados.
+La carga inicial del catálogo (16 casos) está en
+`supabase/migrations/20260927110000_seed_cases.sql`; `supabase/tests/` prueba
+las reglas de acceso con `supabase test db`.
 
 ## Despliegue
 
@@ -62,5 +64,5 @@ Pages en cada push a `main`. Si los tests fallan, no se despliega.
 
 ## Más contexto
 
-`PROJECT_CONTEXT.md` recoge las decisiones de producto, por qué el catálogo es un
-JSON y qué queda pendiente.
+`PROJECT_CONTEXT.md` recoge las decisiones de producto, por qué el catálogo pasó
+de un JSON a Supabase y qué queda pendiente.

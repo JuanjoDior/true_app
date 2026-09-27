@@ -23,12 +23,31 @@ List<dynamic> _seedEntries() {
 }
 
 void main() {
-  test('the seed holds exactly the bundled catalog, in order', () {
-    final bundled = jsonDecode(
-      File('assets/data/cases.json').readAsStringSync(),
+  // Mientras existía assets/data/cases.json, un test probaba que la carga era
+  // idéntica al fichero. Tras verificarlo también contra la API real, el
+  // fichero se retiró; queda fijado el orden publicado.
+  test('the seed keeps the published order', () {
+    expect(
+      [for (final entry in _seedEntries()) (entry as Map)['slug']],
+      [
+        'zodiac',
+        'blackdahlia',
+        'jonbenet',
+        'tylenol',
+        'lizzie',
+        'btk',
+        'goldenstate',
+        'mccann',
+        'ripper',
+        'isdal',
+        'hinterkaifeck',
+        'kercher',
+        'dyatlov',
+        'somerton',
+        'caso-asunta',
+        'camarena',
+      ],
     );
-
-    expect(_seedEntries(), equals(bundled));
   });
 
   test('every seeded entry parses as a published case', () {
