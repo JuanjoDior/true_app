@@ -324,12 +324,25 @@ class _AccountFooter extends ConsumerWidget {
           ),
           TextButton(
             key: const Key('intake-signout-button'),
-            onPressed: () => ref.read(intakeAuthProvider).signOut(),
+            onPressed: () => _signOut(context, ref),
             child: const Text('Cerrar sesión'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
+    try {
+      await ref.read(intakeAuthProvider).signOut();
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No se pudo cerrar la sesión. Vuelve a probar.'),
+        ),
+      );
+    }
   }
 }
 

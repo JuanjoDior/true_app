@@ -1,7 +1,13 @@
+import 'dart:async';
+
 import 'package:http/http.dart' show ClientException;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'supabase_project.dart';
+
+/// Lo que se espera a Supabase al entrar antes de darlo por perdido, igual
+/// que al leer el catálogo.
+const kIntakeSignInTimeout = Duration(seconds: 15);
 
 /// Cuenta con la que se ha entrado al formulario de alta.
 class IntakeAccount {
@@ -80,7 +86,14 @@ class SupabaseIntakeAuth implements IntakeAuth {
   @override
   Future<void> signOut() async {
     final auth = await _auth();
-    await auth.signOut();
+    try {
+      await auth.signOut();
+    } catch (_) {
+      // La librería borra la sesión del navegador antes de avisar al
+      // servidor. Si sólo falla ese aviso (sin conexión), aquí ya se ha
+      // salido y el token caduca solo.
+      if (auth.currentSession != null) rethrow;
+    }
   }
 
   static IntakeAccount? _toAccount(User? user) =>
@@ -89,7 +102,9 @@ class SupabaseIntakeAuth implements IntakeAuth {
 
 /// Mensaje para quien intenta entrar. Nunca enseña el error en crudo.
 String describeSignInError(Object error) {
-  if (error is AuthRetryableFetchException || error is ClientException) {
+  if (error is AuthRetryableFetchException ||
+      error is ClientException ||
+      error is TimeoutException) {
     return 'No se pudo conectar. Revisa la conexión y vuelve a probar.';
   }
   if (error is AuthException) {

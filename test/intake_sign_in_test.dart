@@ -170,6 +170,25 @@ void main() {
       expect(_form, findsOneWidget);
     });
 
+    testWidgets('a sign-in that never answers gives up and says so', (
+      tester,
+    ) async {
+      final auth = FakeIntakeAuth()..signInGate = Completer<void>();
+      await _pumpIntake(tester, auth);
+
+      await _signIn(tester);
+      await tester.pump(kIntakeSignInTimeout);
+      await tester.pump();
+
+      expect(
+        find.text('No se pudo conectar. Revisa la conexión y vuelve a probar.'),
+        findsOneWidget,
+      );
+      final button = tester.widget<ElevatedButton>(_signInScreen);
+      expect(button.onPressed, isNotNull);
+      expect(_form, findsNothing);
+    });
+
     testWidgets('signing out returns to the sign-in', (tester) async {
       final auth = FakeIntakeAuth.signedIn();
       await _pumpIntake(tester, auth);
@@ -181,6 +200,23 @@ void main() {
       expect(auth.signOutCalls, 1);
       expect(_signInScreen, findsOneWidget);
       expect(_form, findsNothing);
+    });
+
+    testWidgets('a failed sign-out keeps the form and says so', (tester) async {
+      final auth = FakeIntakeAuth.signedIn()
+        ..signOutError = AuthRetryableFetchException();
+      await _pumpIntake(tester, auth);
+
+      await tester.tap(find.byKey(const Key('intake-signout-button')));
+      await tester.pump();
+      await tester.pump();
+
+      expect(auth.signOutCalls, 1);
+      expect(
+        find.text('No se pudo cerrar la sesión. Vuelve a probar.'),
+        findsOneWidget,
+      );
+      expect(_form, findsOneWidget);
     });
 
     testWidgets('if the session cannot be checked, it says so and retries', (
@@ -230,6 +266,13 @@ void main() {
     test('no connection', () {
       expect(
         describeSignInError(AuthRetryableFetchException()),
+        'No se pudo conectar. Revisa la conexión y vuelve a probar.',
+      );
+    });
+
+    test('no answer in time', () {
+      expect(
+        describeSignInError(TimeoutException(null)),
         'No se pudo conectar. Revisa la conexión y vuelve a probar.',
       );
     });

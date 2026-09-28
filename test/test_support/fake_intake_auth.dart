@@ -23,6 +23,9 @@ class FakeIntakeAuth implements IntakeAuth {
   /// Si se fija, `signIn` espera a que se complete antes de responder.
   Completer<void>? signInGate;
 
+  /// Si se fija, `signOut` falla con esto y la sesión sigue abierta.
+  Object? signOutError;
+
   @override
   Stream<IntakeAccount?> accountChanges() async* {
     yield _account;
@@ -41,6 +44,8 @@ class FakeIntakeAuth implements IntakeAuth {
   @override
   Future<void> signOut() async {
     signOutCalls++;
+    final error = signOutError;
+    if (error != null) throw error;
     _set(null);
   }
 

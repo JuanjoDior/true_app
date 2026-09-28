@@ -13,14 +13,14 @@ flutter pub get
 flutter run -d chrome
 ```
 
-Para pasar la suite: `flutter test` (52 archivos, 551 tests).
+Para pasar la suite: `flutter test` (52 archivos, 554 tests).
 
 ## Las dos mitades
 
 | Pantalla | Para quién | Qué hace |
 |----------|------------|----------|
 | **Sala de Situación** | Cualquiera | Mapa mundial con los casos, filtros por estado, línea de tiempo y expediente de cada caso |
-| **Formulario de alta** | El equipo editorial | Redactar casos nuevos y exportarlos al catálogo. Hay que entrar con una cuenta (email y contraseña) |
+| **Formulario de alta** | El equipo editorial | Redactar casos nuevos como borradores. Hay que entrar con una cuenta (email y contraseña) |
 
 Al formulario se entra por el `+` del rail izquierdo.
 

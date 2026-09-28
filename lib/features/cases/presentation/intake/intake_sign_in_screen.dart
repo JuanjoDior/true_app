@@ -45,7 +45,8 @@ class _IntakeSignInScreenState extends ConsumerState<IntakeSignInScreen> {
     try {
       await ref
           .read(intakeAuthProvider)
-          .signIn(email: email, password: password);
+          .signIn(email: email, password: password)
+          .timeout(kIntakeSignInTimeout);
       // Al entrar, el formulario sustituye a esta pantalla.
     } catch (error) {
       if (mounted) setState(() => _error = describeSignInError(error));
