@@ -64,17 +64,18 @@ set local role authenticated;
 select set_config('request.jwt.claims',
   '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
 
-select lives_ok($$insert into public.drafts (id, payload) values ('draft-ivan', '{"title": "Caso nuevo"}')$$,
-  'Iván crea su borrador');
-select is((select owner from public.drafts where id = 'draft-ivan'),
-  '11111111-1111-1111-1111-111111111111'::uuid,
-  'el dueño se asigna solo a quien lo crea');
-select is((select status::text from public.drafts where id = 'draft-ivan'), 'draft',
-  'un borrador nuevo empieza en estado draft');
+-- CRP-04b: el cliente ya no escribe `drafts`; sólo envía snapshots.
+select throws_ok($$insert into public.drafts (id, payload) values ('draft-directo', '{"title": "Directo"}')$$,
+  '42501', null, 'Iván no puede insertar borradores directamente');
 select throws_ok($$insert into public.drafts (id, owner, payload) values ('draft-x', '22222222-2222-2222-2222-222222222222', '{}')$$,
   '42501', null, 'Iván no puede crear borradores a nombre de otro');
 select throws_ok($$insert into public.drafts (id, payload, status) values ('draft-y', '{}', 'published')$$,
   '42501', null, 'Iván no puede crear un borrador ya publicado');
+select lives_ok($$select public.submit_draft_snapshot('draft-ivan', 'a0000000-0000-0000-0000-000000000001', '{"draftId": "draft-ivan", "title": "Caso nuevo"}')$$,
+  'Iván envía su borrador a revisión');
+select is((select owner from public.drafts where id = 'draft-ivan'),
+  '11111111-1111-1111-1111-111111111111'::uuid,
+  'el dueño se asigna solo a quien envía');
 select is((select count(*) from public.drafts where id = 'draft-otro')::int, 0,
   'Iván no ve borradores de otros');
 select throws_ok('select * from public.reviewers', '42501', null,
@@ -88,16 +89,14 @@ select throws_ok($$delete from public.cases where slug = 'zodiac'$$,
 select throws_ok($$update public.drafts set published_slug = 'zodiac' where id = 'draft-ivan'$$,
   '42501', null, 'Iván no puede fijar el slug publicado');
 
-select lives_ok($$select public.submit_draft('draft-ivan')$$,
-  'Iván envía su borrador a revisión');
 select is((select status::text from public.drafts where id = 'draft-ivan'), 'in_review',
   'el borrador queda en revisión');
-select throws_ok($$select public.submit_draft('draft-ivan')$$, '55000', null,
+select throws_ok($$select public.submit_draft_snapshot('draft-ivan', 'a0000000-0000-0000-0000-000000000002', '{"draftId": "draft-ivan", "title": "Otra"}')$$, '55000', null,
   'no se puede reenviar un borrador que ya está en revisión');
-select is(pg_temp.affected($q$update public.drafts set payload = '{"title": "Cambio"}' where id = 'draft-ivan'$q$), 0,
-  'Iván no puede editar un borrador mientras está en revisión');
-select is(pg_temp.affected($q$delete from public.drafts where id = 'draft-ivan'$q$), 0,
-  'Iván no puede borrar un borrador mientras está en revisión');
+select throws_ok($$update public.drafts set payload = '{"title": "Cambio"}' where id = 'draft-ivan'$$, '42501', null,
+  'Iván no puede editar directamente un borrador');
+select throws_ok($$delete from public.drafts where id = 'draft-ivan'$$, '42501', null,
+  'Iván no puede borrar directamente un borrador');
 select throws_ok($$select public.approve_draft('draft-ivan', '{"slug": "caso-nuevo"}')$$,
   '42501', null, 'Iván no puede aprobar');
 select throws_ok($$select public.return_draft('draft-ivan')$$,
@@ -109,7 +108,7 @@ select throws_ok($$select public.unpublish_case('zodiac')$$,
 reset role;
 set local role authenticated;
 select set_config('request.jwt.claims', '{"role": "authenticated"}', true);
-select throws_ok($$select public.submit_draft('draft-ivan')$$, '42501', null,
+select throws_ok($$select public.submit_draft_snapshot('draft-ivan', 'a0000000-0000-0000-0000-000000000001', '{"draftId": "draft-ivan", "title": "Caso nuevo"}')$$, '42501', null,
   'sin usuario identificado no se puede enviar ningún borrador');
 
 -- ------------------------------------------------------------ otro usuario
@@ -120,7 +119,7 @@ select set_config('request.jwt.claims',
 
 select is((select count(*) from public.drafts where id = 'draft-ivan')::int, 0,
   'otro usuario no ve el borrador de Iván');
-select throws_ok($$select public.submit_draft('draft-ivan')$$, '42501', null,
+select throws_ok($$select public.submit_draft_snapshot('draft-ivan', 'b0000000-0000-0000-0000-000000000001', '{"draftId": "draft-ivan", "title": "Robo"}')$$, '42501', null,
   'otro usuario no puede enviar el borrador de Iván');
 
 -- ------------------------------------------------------------------ revisor
@@ -131,7 +130,7 @@ select set_config('request.jwt.claims',
 
 select is((select count(*) from public.drafts where id = 'draft-ivan')::int, 1,
   'el revisor ve los borradores enviados');
-select is(pg_temp.affected($q$update public.drafts set status = 'published' where id = 'draft-ivan'$q$), 0,
+select throws_ok($$update public.drafts set status = 'published' where id = 'draft-ivan'$$, '42501', null,
   'el revisor no cambia estados escribiendo directamente');
 select is((select status::text from public.drafts where id = 'draft-ivan'), 'in_review',
   'el estado sigue intacto tras el intento');
@@ -147,9 +146,7 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claims',
   '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
-select is(pg_temp.affected($q$update public.drafts set payload = '{"title": "Caso nuevo v2"}' where id = 'draft-ivan'$q$), 1,
-  'Iván puede corregir un borrador devuelto');
-select lives_ok($$select public.submit_draft('draft-ivan')$$,
+select lives_ok($$select public.submit_draft_snapshot('draft-ivan', 'a0000000-0000-0000-0000-000000000003', '{"draftId": "draft-ivan", "title": "Caso nuevo v2"}')$$,
   'Iván reenvía el borrador corregido');
 
 -- El revisor aprueba.
@@ -177,12 +174,13 @@ set local role authenticated;
 select set_config('request.jwt.claims',
   '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
 select throws_ok($$update public.drafts set payload = '{"title": "v3"}' where id = 'draft-ivan'$$,
-  '42501', null, 'editar un publicado sin volver a borrador no está permitido');
-select lives_ok($$update public.drafts set payload = '{"title": "Caso nuevo v3"}', status = 'draft' where id = 'draft-ivan'$$,
-  'Iván edita el caso publicado volviendo a borrador');
+  '42501', null, 'editar un publicado escribiendo directamente no está permitido');
+select lives_ok($$select public.submit_draft_snapshot('draft-ivan', 'a0000000-0000-0000-0000-000000000004', '{"draftId": "draft-ivan", "title": "Caso nuevo v3"}')$$,
+  'Iván reenvía la edición del caso publicado');
+select is((select status::text || ':' || published_slug from public.drafts where id = 'draft-ivan'),
+  'in_review:caso-nuevo', 'la edición vuelve a revisión conservando el slug publicado');
 select is((select payload->>'title' from public.cases where slug = 'caso-nuevo'), 'Caso nuevo v2',
   'la versión publicada no cambia hasta que se apruebe la nueva');
-select lives_ok($$select public.submit_draft('draft-ivan')$$, 'Iván reenvía la edición');
 
 reset role;
 set local role authenticated;
@@ -202,9 +200,8 @@ reset role;
 set local role authenticated;
 select set_config('request.jwt.claims',
   '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}', true);
-select lives_ok($$update public.drafts set payload = '{"title": "Caso nuevo v4"}', status = 'draft' where id = 'draft-ivan'$$,
-  'Iván prepara otra corrección');
-select lives_ok($$select public.submit_draft('draft-ivan')$$, 'Iván la envía a revisión');
+select lives_ok($$select public.submit_draft_snapshot('draft-ivan', 'a0000000-0000-0000-0000-000000000005', '{"draftId": "draft-ivan", "title": "Caso nuevo v4"}')$$,
+  'Iván envía otra corrección a revisión');
 
 reset role;
 set local role authenticated;
