@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/config/map_config.dart';
 import '../../../../../core/theme/app_theme.dart';
 import '../../../../cases/application/cases_providers.dart';
 import 'situation_styles.dart';
@@ -84,7 +85,7 @@ class _ArchiveControlBarState extends ConsumerState<ArchiveControlBar> {
         crossAxisAlignment: WrapCrossAlignment.center,
         alignment: WrapAlignment.spaceBetween,
         children: [
-          const _Legend(),
+          _Legend(attribution: ref.watch(mapConfigProvider).attribution),
           SizedBox(
             width: 360,
             child: _Timeline(
@@ -106,7 +107,9 @@ class _ArchiveControlBarState extends ConsumerState<ArchiveControlBar> {
 }
 
 class _Legend extends StatelessWidget {
-  const _Legend();
+  const _Legend({required this.attribution});
+
+  final String attribution;
 
   @override
   Widget build(BuildContext context) {
@@ -150,7 +153,7 @@ class _Legend extends StatelessWidget {
         ),
         const SizedBox(height: 2),
         Text(
-          'Mapa © OpenStreetMap · CARTO',
+          attribution,
           style: SituationStyles.mono(size: 9, color: Color(0xFF5C5852)),
         ),
       ],

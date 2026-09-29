@@ -29,14 +29,14 @@ class MapConfig {
   final double maxZoom;
 
   factory MapConfig.production() {
-    // Teselas oscuras de CARTO, idénticas a la "Sala de Situación".
+    // CARTO dejó de servir sus teselas oscuras sin clave (devuelve una marca de agua).
     return const MapConfig(
       initialCenter: LatLng(40, 0),
       initialZoom: 2.4,
       focusZoom: 6,
       tileUrlTemplate:
-          'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png',
-      attribution: 'Mapa © OpenStreetMap · CARTO',
+          'https://services.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+      attribution: 'Mapa © Esri · OpenStreetMap',
       userAgentPackageName: 'com.example.true_app',
     );
   }
