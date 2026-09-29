@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart' show StateProvider;
+import 'package:http/http.dart' as http;
 
 import '../data/case_drafts_store.dart';
 import '../data/drafts_file_transfer.dart';
@@ -15,8 +16,14 @@ import '../domain/case_timeline_event.dart';
 import '../domain/true_crime_case.dart';
 import 'drafts_backup.dart';
 
-/// Store de borradores, sobreescribible en tests (mismo patrón que
-/// `casesRepositoryProvider`).
+/// Cliente REST compartido, sobreescribible en tests para aislar Supabase.
+final caseDraftsHttpClientProvider = Provider<http.Client>((ref) {
+  final client = http.Client();
+  ref.onDispose(client.close);
+  return client;
+});
+
+/// Store local de borradores, disponible aunque no haya sesión ni conexión.
 final caseDraftsStoreProvider = Provider<CaseDraftsStore>((ref) {
   return SharedPreferencesCaseDraftsStore();
 });
@@ -65,7 +72,8 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
   /// guarda la versión neutralizada para que la siguiente mutación siga
   /// pudiendo escribir.
   Future<void> _persist(List<CaseDraft> snapshot) {
-    final write = _writes.then((_) => _store.saveDrafts(snapshot));
+    final store = _store;
+    final write = _writes.then((_) => store.saveDrafts(snapshot));
     _writes = write.catchError((Object _) {});
     return write;
   }
@@ -121,15 +129,17 @@ class CaseDraftsNotifier extends AsyncNotifier<List<CaseDraft>> {
 
   /// Incorpora los borradores de una copia de seguridad.
   ///
-  /// **Funde, no reemplaza.** Un borrador que sólo existe en este equipo se
-  /// conserva, así que restaurar una copia vieja nunca destruye el trabajo
-  /// posterior. Lo que coincide por `draftId` se sustituye por la versión de la
-  /// copia, que es lo que uno espera al decir "restaurar".
-  Future<void> importDrafts(List<CaseDraft> incoming) async {
+  /// **Funde, no reemplaza.** Sólo entran los borradores que no existen en
+  /// este equipo. Lo que coincide por `draftId` conserva la versión local,
+  /// así que reimportar una copia vieja nunca deshace el trabajo posterior;
+  /// si la copia traía otro contenido se informa en el resultado para que la
+  /// interfaz lo diga.
+  Future<DraftsMergeResult> importDrafts(List<CaseDraft> incoming) async {
     final drafts = state.value ?? const <CaseDraft>[];
-    final updated = mergeDrafts(current: drafts, incoming: incoming);
-    state = AsyncData(updated);
-    await _persist(updated);
+    final merged = mergeDrafts(current: drafts, incoming: incoming);
+    state = AsyncData(merged.drafts);
+    await _persist(merged.drafts);
+    return merged;
   }
 
   /// Elimina un borrador y lo quita del almacenamiento local.

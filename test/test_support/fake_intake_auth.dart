@@ -49,6 +49,14 @@ class FakeIntakeAuth implements IntakeAuth {
     _set(null);
   }
 
+  @override
+  Future<String?> accessTokenForAccount(String accountId) async =>
+      _account?.id == accountId ? 'token-$accountId' : null;
+
+  @override
+  Future<String?> accessToken() async =>
+      _account == null ? null : 'token-${_account!.id}';
+
   void _set(IntakeAccount? account) {
     _account = account;
     _changes.add(account);

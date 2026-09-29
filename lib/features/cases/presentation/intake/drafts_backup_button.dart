@@ -54,15 +54,10 @@ class DraftsBackupButton extends ConsumerWidget {
         return;
       }
 
-      await ref.read(caseDraftsProvider.notifier).importDrafts(result.drafts);
-      messenger.showSnackBar(
-        SnackBar(
-          content: Text(
-            'Cargados ${result.drafts.length} casos. Los que ya tenías siguen '
-            'aquí.',
-          ),
-        ),
-      );
+      final merged = await ref
+          .read(caseDraftsProvider.notifier)
+          .importDrafts(result.drafts);
+      messenger.showSnackBar(SnackBar(content: Text(_importSummary(merged))));
     }
 
     Future<void> saveToFile() async {
@@ -152,6 +147,29 @@ class DraftsBackupButton extends ConsumerWidget {
   }
 }
 
+/// Cuenta lo que ha hecho una importación, sin prometer más de lo que entró.
+///
+/// Los borradores que ya existían con otro contenido se nombran aparte: la
+/// persona tiene que saber que su versión local se ha quedado y la de la copia
+/// no.
+String _importSummary(DraftsMergeResult merged) {
+  final added = switch (merged.added) {
+    0 => 'No se ha añadido ningún borrador nuevo.',
+    1 => 'Se ha añadido 1 borrador.',
+    final count => 'Se han añadido $count borradores.',
+  };
+  final kept = switch (merged.keptLocal) {
+    0 => '',
+    1 =>
+      ' 1 borrador ya existía en este equipo con otro contenido y no se ha '
+          'sustituido.',
+    final count =>
+      ' $count borradores ya existían en este equipo con otro contenido y no '
+          'se han sustituido.',
+  };
+  return '$added$kept';
+}
+
 /// Pide el texto de la copia y lo devuelve, o `null` si se cancela.
 class _RestoreDialog extends StatefulWidget {
   const _RestoreDialog();
@@ -182,7 +200,7 @@ class _RestoreDialogState extends State<_RestoreDialog> {
           children: [
             const Text(
               'Pega aquí el texto de una copia. Lo que ya tengas en este equipo '
-              'se conserva; sólo se sustituyen los borradores que coincidan.',
+              'se conserva; sólo se añaden los borradores que no estén aquí.',
             ),
             const SizedBox(height: 12),
             TextField(

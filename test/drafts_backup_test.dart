@@ -147,9 +147,11 @@ void main() {
       );
 
       expect(
-        merged.map((draft) => draft.draftId),
+        merged.drafts.map((draft) => draft.draftId),
         containsAll(const ['draft-a', 'draft-b']),
       );
+      expect(merged.added, 1);
+      expect(merged.keptLocal, 0);
     });
 
     test('a draft that only exists locally is kept', () {
@@ -160,18 +162,72 @@ void main() {
       );
 
       expect(
-        merged.firstWhere((draft) => draft.draftId == 'draft-a').title,
+        merged.drafts.firstWhere((draft) => draft.draftId == 'draft-a').title,
         'Local',
       );
     });
 
-    test('the incoming version wins for a draft that exists in both', () {
+    test('the local version wins for a draft that exists in both', () {
+      // Una copia vieja del navegador no puede deshacer lo editado después
+      // en este equipo.
       final merged = mergeDrafts(
-        current: const [CaseDraft(draftId: 'draft-a', title: 'Viejo')],
+        current: const [CaseDraft(draftId: 'draft-a', title: 'Local')],
         incoming: const [CaseDraft(draftId: 'draft-a', title: 'De la copia')],
       );
 
-      expect(merged.single.title, 'De la copia');
+      expect(merged.drafts.single.title, 'Local');
+    });
+
+    test('a different version of a local draft is reported, not added', () {
+      final merged = mergeDrafts(
+        current: const [CaseDraft(draftId: 'draft-a', title: 'Local')],
+        incoming: const [CaseDraft(draftId: 'draft-a', title: 'De la copia')],
+      );
+
+      expect(merged.keptLocal, 1);
+      expect(merged.added, 0);
+    });
+
+    test('an identical copy of a local draft is not a conflict', () {
+      // Gemelo del anterior: sin él, "todo lo que coincide es conflicto" lo
+      // pasaría.
+      final merged = mergeDrafts(
+        current: const [CaseDraft(draftId: 'draft-a', title: 'Igual')],
+        incoming: const [CaseDraft(draftId: 'draft-a', title: 'Igual')],
+      );
+
+      expect(merged.keptLocal, 0);
+      expect(merged.added, 0);
+      expect(merged.drafts.single.title, 'Igual');
+    });
+
+    test('identical content is compared deeply, not by reference', () {
+      // Dos borradores leídos por separado nunca son el mismo objeto; lo que
+      // cuenta es el contenido, incluidas las listas anidadas.
+      final local = decodeDraftsBackup(
+        encodeDraftsBackup([_completeDraft()]),
+      ).drafts;
+      final incoming = decodeDraftsBackup(
+        encodeDraftsBackup([_completeDraft()]),
+      ).drafts;
+
+      final merged = mergeDrafts(current: local, incoming: incoming);
+
+      expect(merged.keptLocal, 0);
+    });
+
+    test('a difference deep inside a draft is still a conflict', () {
+      final local = _completeDraft();
+      final incoming = local.copyWith(
+        timeline: const [
+          DraftTimelineEvent(date: '1968-12-20', title: 'Otro título'),
+        ],
+      );
+
+      final merged = mergeDrafts(current: [local], incoming: [incoming]);
+
+      expect(merged.keptLocal, 1);
+      expect(merged.drafts.single.toJson(), local.toJson());
     });
 
     test('a draft present in both is not duplicated', () {
@@ -180,7 +236,7 @@ void main() {
         incoming: const [CaseDraft(draftId: 'draft-a', title: 'De la copia')],
       );
 
-      expect(merged, hasLength(1));
+      expect(merged.drafts, hasLength(1));
     });
 
     test('restoring an empty backup changes nothing', () {
@@ -189,7 +245,9 @@ void main() {
         incoming: const [],
       );
 
-      expect(merged.single.title, 'Local');
+      expect(merged.drafts.single.title, 'Local');
+      expect(merged.added, 0);
+      expect(merged.keptLocal, 0);
     });
 
     test('restoring into an empty workspace brings everything', () {
@@ -201,7 +259,23 @@ void main() {
         ],
       );
 
-      expect(merged, hasLength(2));
+      expect(merged.drafts, hasLength(2));
+      expect(merged.added, 2);
     });
   });
+}
+
+/// Borrador con listas y capítulos rellenos, para comparar a fondo.
+CaseDraft _completeDraft() {
+  return const CaseDraft(
+    draftId: 'draft-a',
+    title: 'Caso completo',
+    category: CaseCategory.serialKiller,
+    year: 1968,
+    tags: ['1960s', 'ee. uu.'],
+    timeline: [DraftTimelineEvent(date: '1968-12-20', title: 'Primer crimen')],
+    links: [DraftLink(url: 'https://example.com/podcast')],
+    photos: [DraftPhoto(url: 'https://example.com/foto.jpg', caption: 'Pie')],
+    chapters: CaseChapters(background: 'Antes', events: 'Hechos'),
+  );
 }

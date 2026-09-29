@@ -98,19 +98,84 @@ DraftsBackupResult decodeDraftsBackup(String raw) {
   return DraftsBackupResult.drafts(List.unmodifiable(drafts));
 }
 
+/// Resultado de fundir una copia con los borradores del equipo.
+///
+/// Lleva las cuentas para que la interfaz diga la verdad: cuántos borradores
+/// han entrado y cuántos se han quedado con la versión local.
+class DraftsMergeResult {
+  const DraftsMergeResult({
+    required this.drafts,
+    required this.added,
+    required this.keptLocal,
+  });
+
+  /// La lista completa tras fundir, lista para guardar.
+  final List<CaseDraft> drafts;
+
+  /// Borradores de la copia que no existían en el equipo y se han añadido.
+  final int added;
+
+  /// Borradores que ya existían en el equipo con OTRO contenido: se conserva
+  /// la versión local y la de la copia se descarta.
+  final int keptLocal;
+}
+
 /// Funde los borradores de una copia con los que ya hay.
 ///
-/// **Nunca borra.** Un borrador que sólo existe en el equipo se conserva, así
-/// que restaurar una copia vieja no puede destruir lo que se hizo después. Lo
-/// que coincide por `draftId` se sustituye por la versión de la copia, que es
-/// lo que uno espera al decir "restaurar".
-List<CaseDraft> mergeDrafts({
+/// **Nunca borra ni sustituye.** Un borrador que sólo existe en el equipo se
+/// conserva, y uno que coincide por `draftId` también: una copia vieja del
+/// navegador no puede deshacer en silencio lo editado después en este equipo.
+/// Si la versión de la copia es distinta se cuenta en
+/// [DraftsMergeResult.keptLocal]; si es idéntica no es un conflicto.
+DraftsMergeResult mergeDrafts({
   required List<CaseDraft> current,
   required List<CaseDraft> incoming,
 }) {
   final byId = {for (final draft in current) draft.draftId: draft};
+  var added = 0;
+  var keptLocal = 0;
   for (final draft in incoming) {
-    byId[draft.draftId] = draft;
+    final local = byId[draft.draftId];
+    if (local == null) {
+      byId[draft.draftId] = draft;
+      added++;
+    } else if (!_sameJson(local.toJson(), draft.toJson())) {
+      keptLocal++;
+    }
   }
-  return List.unmodifiable(byId.values);
+  return DraftsMergeResult(
+    drafts: List.unmodifiable(byId.values),
+    added: added,
+    keptLocal: keptLocal,
+  );
+}
+
+/// Igualdad profunda de dos valores JSON (mapas, listas y escalares).
+///
+/// Compara por contenido, no por el orden de las claves: dos borradores
+/// leídos por caminos distintos pueden serializar igual en otro orden.
+bool _sameJson(Object? a, Object? b) {
+  if (a is Map && b is Map) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (final entry in a.entries) {
+      if (!b.containsKey(entry.key) || !_sameJson(entry.value, b[entry.key])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (a is List && b is List) {
+    if (a.length != b.length) {
+      return false;
+    }
+    for (var i = 0; i < a.length; i++) {
+      if (!_sameJson(a[i], b[i])) {
+        return false;
+      }
+    }
+    return true;
+  }
+  return a == b;
 }

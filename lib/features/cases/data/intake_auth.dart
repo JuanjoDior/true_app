@@ -36,6 +36,12 @@ abstract interface class IntakeAuth {
   Future<void> signIn({required String email, required String password});
 
   Future<void> signOut();
+
+  /// Token de acceso sólo si la sesión actual pertenece a [accountId].
+  Future<String?> accessTokenForAccount(String accountId);
+
+  /// Token de acceso de la sesión actual para las peticiones REST autenticadas.
+  Future<String?> accessToken();
 }
 
 /// [IntakeAuth] contra Supabase Auth.
@@ -95,6 +101,17 @@ class SupabaseIntakeAuth implements IntakeAuth {
       if (auth.currentSession != null) rethrow;
     }
   }
+
+  @override
+  Future<String?> accessTokenForAccount(String accountId) async {
+    final session = (await _auth()).currentSession;
+    if (session?.user.id != accountId) return null;
+    return session?.accessToken;
+  }
+
+  @override
+  Future<String?> accessToken() async =>
+      (await _auth()).currentSession?.accessToken;
 
   static IntakeAccount? _toAccount(User? user) =>
       user == null ? null : IntakeAccount(id: user.id, email: user.email ?? '');

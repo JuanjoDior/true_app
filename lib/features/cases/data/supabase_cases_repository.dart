@@ -28,7 +28,7 @@ class CasesUnavailableException implements Exception {
 class SupabaseCasesRepository implements CasesRepository {
   const SupabaseCasesRepository({
     http.Client? client,
-    this.timeout = const Duration(seconds: 15),
+    this.timeout = kSupabaseNetworkTimeout,
   }) : _client = client;
 
   final http.Client? _client;

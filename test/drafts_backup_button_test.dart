@@ -113,6 +113,16 @@ Future<void> _openMenu(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Pega [backup] en el diálogo de restaurar y lo confirma.
+Future<void> _restoreText(WidgetTester tester, String backup) async {
+  await _openMenu(tester);
+  await tester.tap(find.byKey(const Key('drafts-backup-restore')));
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byKey(const Key('drafts-restore-field')), backup);
+  await tester.tap(find.byKey(const Key('drafts-restore-confirm')));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   group('copiar', () {
     testWidgets('the backup is available even for an unfinished draft', (
@@ -189,6 +199,73 @@ void main() {
       expect(
         store.saved.map((draft) => draft.draftId),
         containsAll(const ['draft-local', 'draft-rescued']),
+      );
+    });
+
+    testWidgets('restoring reports how many drafts were added', (tester) async {
+      final backup = encodeDraftsBackup(const [
+        CaseDraft(draftId: 'draft-a', title: 'Uno'),
+        CaseDraft(draftId: 'draft-b', title: 'Dos'),
+      ]);
+      await _pumpButton(tester, const []);
+
+      await _restoreText(tester, backup);
+
+      expect(find.text('Se han añadido 2 borradores.'), findsOneWidget);
+    });
+
+    testWidgets('restoring an older copy keeps the local draft', (
+      tester,
+    ) async {
+      final backup = encodeDraftsBackup(const [
+        CaseDraft(draftId: 'draft-a', title: 'Copia vieja'),
+      ]);
+      final (_, store) = await _pumpButton(tester, const [
+        CaseDraft(draftId: 'draft-a', title: 'Editado aquí'),
+      ]);
+
+      await _restoreText(tester, backup);
+
+      expect(store.saved.single.title, 'Editado aquí');
+    });
+
+    testWidgets('restoring says which drafts were not replaced', (
+      tester,
+    ) async {
+      // El mensaje no puede decir "cargados" de algo que no ha entrado: quien
+      // restaura tiene que saber que su versión local se ha quedado.
+      final backup = encodeDraftsBackup(const [
+        CaseDraft(draftId: 'draft-a', title: 'Copia vieja'),
+        CaseDraft(draftId: 'draft-b', title: 'Nuevo'),
+      ]);
+      await _pumpButton(tester, const [
+        CaseDraft(draftId: 'draft-a', title: 'Editado aquí'),
+      ]);
+
+      await _restoreText(tester, backup);
+
+      expect(
+        find.text(
+          'Se ha añadido 1 borrador. 1 borrador ya existía en este equipo '
+          'con otro contenido y no se ha sustituido.',
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('restoring a copy with nothing new says so', (tester) async {
+      final backup = encodeDraftsBackup(const [
+        CaseDraft(draftId: 'draft-a', title: 'Igual'),
+      ]);
+      await _pumpButton(tester, const [
+        CaseDraft(draftId: 'draft-a', title: 'Igual'),
+      ]);
+
+      await _restoreText(tester, backup);
+
+      expect(
+        find.text('No se ha añadido ningún borrador nuevo.'),
+        findsOneWidget,
       );
     });
 

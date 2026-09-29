@@ -13,14 +13,14 @@ flutter pub get
 flutter run -d chrome
 ```
 
-Para pasar la suite: `flutter test` (52 archivos, 554 tests).
+Para pasar la suite: `flutter test`.
 
 ## Las dos mitades
 
 | Pantalla | Para quién | Qué hace |
 |----------|------------|----------|
 | **Sala de Situación** | Cualquiera | Mapa mundial con los casos, filtros por estado, línea de tiempo y expediente de cada caso |
-| **Formulario de alta** | El equipo editorial | Redactar casos nuevos como borradores. Hay que entrar con una cuenta (email y contraseña) |
+| **Formulario de alta** | El equipo editorial | Redactar casos nuevos en borradores locales, también sin conexión. El inicio de sesión queda disponible para el futuro envío explícito a revisión |
 
 Al formulario se entra por el `+` del rail izquierdo.
 
@@ -30,13 +30,26 @@ El catálogo publicado vive en **Supabase** (tabla `cases`) y la web lo lee al
 abrirse, así que publicar un caso no requiere commit ni despliegue.
 
 El circuito de revisión está en construcción (`odd/tasks/case-review-publish.md`):
-quien redacta envía el borrador a revisión y el revisor lo aprueba; al aprobarlo
-aparece en la web al momento. Las reglas de acceso de
+quien redacta podrá enviar un borrador con «Enviar a revisión» y el revisor lo
+aprobará; al aprobarlo aparece en la web al momento. El contenido no se envía al
+iniciar sesión ni se sincroniza en segundo plano. Un envío sin conexión o fallido
+requerirá que quien redacta lo reintente expresamente. Las reglas de acceso de
 `supabase/migrations/` son lo único que protege los datos: la clave del
 navegador es pública por diseño.
 
-Los borradores viven de momento en el navegador de quien los escribe
-(`localStorage`); pasarán a Supabase con el circuito de revisión.
+Los borradores se guardan localmente en cada dispositivo (`localStorage` en el
+navegador y almacenamiento local de preferencias en Windows). Los borradores
+antiguos del navegador siguen allí; para llevarlos a Windows se usa una copia
+de seguridad por fichero y se importa en la aplicación. No hay transferencia
+automática entre dispositivos.
+
+### Windows
+
+La compilación local de Windows sirve como verificación técnica: no instala ni
+distribuye la aplicación. La instalación, el canal de actualizaciones y el
+paquete para Iván siguen pendientes de la decisión de entrega CRP-08. El
+selector nativo de ficheros para exportar e importar copias debe probarse en el
+Windows de destino antes de la entrega.
 
 ## Estructura
 

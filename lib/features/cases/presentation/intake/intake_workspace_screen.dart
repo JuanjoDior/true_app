@@ -15,61 +15,13 @@ import 'export_case_button.dart';
 import 'intake_preview_panel.dart';
 import 'intake_sign_in_screen.dart';
 
-/// Workspace de alta de casos de Iván: entrada con cuenta, lista de
-/// borradores, formulario por secciones y previsualización del expediente.
-class IntakeWorkspaceScreen extends ConsumerWidget {
+/// Workspace local de alta de casos: la sesión se reserva para el envío
+/// explícito a revisión y nunca bloquea los borradores de este dispositivo.
+class IntakeWorkspaceScreen extends StatelessWidget {
   const IntakeWorkspaceScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return ref
-        .watch(intakeAccountProvider)
-        .when(
-          data: (account) => account == null
-              ? const IntakeSignInScreen()
-              : const _IntakeFormBody(),
-          loading: () => const Scaffold(
-            backgroundColor: AppColors.bgDeep,
-            body: Center(
-              child: CircularProgressIndicator(
-                key: Key('intake-session-loading'),
-              ),
-            ),
-          ),
-          error: (_, _) => const _SessionUnavailable(),
-        );
-  }
-}
-
-/// Sin poder comprobar la sesión no se enseña ni el formulario ni la
-/// entrada: ninguno de los dos funcionaría.
-class _SessionUnavailable extends ConsumerWidget {
-  const _SessionUnavailable();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      backgroundColor: AppColors.bgDeep,
-      body: Center(
-        child: Column(
-          key: const Key('intake-session-error'),
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'No se pudo conectar con el archivo.',
-              style: SituationStyles.sans(size: 14, color: AppColors.textBody),
-            ),
-            const SizedBox(height: 12),
-            TextButton(
-              key: const Key('intake-session-retry'),
-              onPressed: () => ref.invalidate(intakeAccountProvider),
-              child: const Text('Reintentar'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget build(BuildContext context) => const _IntakeFormBody();
 }
 
 class _IntakeFormBody extends ConsumerWidget {
@@ -306,7 +258,7 @@ class _AccountFooter extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final email = ref.watch(intakeAccountProvider).value?.email ?? '';
+    final account = ref.watch(intakeAccountProvider).value;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
       decoration: const BoxDecoration(
@@ -315,20 +267,53 @@ class _AccountFooter extends ConsumerWidget {
       child: Row(
         children: [
           Expanded(
-            child: Text(
-              email,
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              style: SituationStyles.sans(size: 12, color: AppColors.textSub),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  account?.email ?? 'Sin sesión',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: SituationStyles.sans(
+                    size: 12,
+                    color: AppColors.textSub,
+                  ),
+                ),
+                Text(
+                  'Borradores guardados en este dispositivo',
+                  key: const Key('intake-local-drafts-status'),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
+                  style: SituationStyles.sans(
+                    size: 11,
+                    color: AppColors.textSub,
+                  ),
+                ),
+              ],
             ),
           ),
-          TextButton(
-            key: const Key('intake-signout-button'),
-            onPressed: () => _signOut(context, ref),
-            child: const Text('Cerrar sesión'),
-          ),
+          if (account == null)
+            TextButton(
+              key: const Key('intake-signin-open'),
+              onPressed: () => _showSignIn(context),
+              child: const Text('Iniciar sesión'),
+            )
+          else
+            TextButton(
+              key: const Key('intake-signout-button'),
+              onPressed: () => _signOut(context, ref),
+              child: const Text('Cerrar sesión'),
+            ),
         ],
       ),
+    );
+  }
+
+  void _showSignIn(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (_) => const _IntakeSignInDialog(),
     );
   }
 
@@ -343,6 +328,38 @@ class _AccountFooter extends ConsumerWidget {
         ),
       );
     }
+  }
+}
+
+class _IntakeSignInDialog extends ConsumerWidget {
+  const _IntakeSignInDialog();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    ref.listen(intakeAccountProvider, (previous, next) {
+      if (next.value != null && context.mounted) {
+        Navigator.of(context).pop();
+      }
+    });
+    return Dialog.fullscreen(
+      child: Stack(
+        children: [
+          const IntakeSignInScreen(),
+          Positioned(
+            top: 8,
+            right: 8,
+            child: SafeArea(
+              child: IconButton(
+                key: const Key('intake-signin-close'),
+                tooltip: 'Cerrar',
+                onPressed: () => Navigator.of(context).pop(),
+                icon: const Icon(Icons.close),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 

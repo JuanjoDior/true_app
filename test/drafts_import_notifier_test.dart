@@ -76,16 +76,48 @@ void main() {
     );
   });
 
-  test('the backup version wins for a draft that exists in both', () async {
+  test('the local version wins for a draft that exists in both', () async {
+    // Reimportar una copia vieja del navegador no puede deshacer en silencio
+    // lo editado después en este equipo.
     final (container, store) = await _workspace(const [
-      CaseDraft(draftId: 'draft-a', title: 'Viejo'),
+      CaseDraft(draftId: 'draft-a', title: 'Editado aquí'),
     ]);
 
     await container.read(caseDraftsProvider.notifier).importDrafts(const [
       CaseDraft(draftId: 'draft-a', title: 'De la copia'),
     ]);
 
-    expect(store.saved.single.title, 'De la copia');
+    expect(store.saved.single.title, 'Editado aquí');
+  });
+
+  test('a draft kept locally is reported as a conflict', () async {
+    final (container, _) = await _workspace(const [
+      CaseDraft(draftId: 'draft-a', title: 'Editado aquí'),
+    ]);
+
+    final result = await container
+        .read(caseDraftsProvider.notifier)
+        .importDrafts(const [
+          CaseDraft(draftId: 'draft-a', title: 'De la copia'),
+          CaseDraft(draftId: 'draft-b', title: 'Nuevo'),
+        ]);
+
+    expect(result.keptLocal, 1);
+    expect(result.added, 1);
+  });
+
+  test('an identical draft in the backup is not a conflict', () async {
+    final (container, store) = await _workspace(const [
+      CaseDraft(draftId: 'draft-a', title: 'Igual'),
+    ]);
+
+    final result = await container
+        .read(caseDraftsProvider.notifier)
+        .importDrafts(const [CaseDraft(draftId: 'draft-a', title: 'Igual')]);
+
+    expect(result.keptLocal, 0);
+    expect(result.added, 0);
+    expect(store.saved.single.title, 'Igual');
   });
 
   test('importing an empty backup leaves everything alone', () async {
