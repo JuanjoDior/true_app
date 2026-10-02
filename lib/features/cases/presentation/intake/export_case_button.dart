@@ -12,7 +12,7 @@ import '../../domain/true_crime_case.dart';
 /// Copia el borrador en edición al portapapeles con el esquema del catálogo.
 ///
 /// El paso final del flujo es manual y a propósito: no hay backend ni CMS, así
-/// que Iván copia el JSON y se pega en `assets/data/cases.json` al publicar
+/// que Iván copia el JSON y lo pega en el catálogo al publicar
 /// [Diseño #7]. Sólo se habilita cuando el borrador está completo, porque un
 /// caso sin ubicación no puede entrar en el catálogo.
 class ExportCaseButton extends ConsumerWidget {
@@ -55,7 +55,7 @@ class ExportCaseButton extends ConsumerWidget {
       );
       messenger.showSnackBar(
         const SnackBar(
-          content: Text('JSON copiado. Pégalo en assets/data/cases.json'),
+          content: Text('JSON copiado al portapapeles.'),
         ),
       );
     }

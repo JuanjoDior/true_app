@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import '../data/case_connections_seed.dart';
 import '../data/cases_repository.dart';
 import '../data/supabase_cases_repository.dart';
-import '../domain/case_category.dart';
 import '../domain/case_connection.dart';
 import '../domain/case_status.dart';
 import '../domain/true_crime_case.dart';
@@ -36,8 +35,6 @@ final casesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
 
 final searchQueryProvider = StateProvider<String>((ref) => '');
 
-final activeCategoryProvider = StateProvider<CaseCategory?>((ref) => null);
-
 /// Filtro por estado de investigación (null = todos).
 final statusFilterProvider = StateProvider<CaseStatus?>((ref) => null);
 
@@ -60,16 +57,12 @@ final workspaceProvider = StateProvider<Workspace>(
 final filteredCasesProvider = FutureProvider<List<TrueCrimeCase>>((ref) async {
   final search = ref.watch(caseSearchServiceProvider);
   final cases = await ref.watch(casesProvider.future);
-  final activeCategory = ref.watch(activeCategoryProvider);
   final statusFilter = ref.watch(statusFilterProvider);
   final maxYear = ref.watch(timelineYearProvider);
   final query = ref.watch(searchQueryProvider);
 
   final preFiltered = cases
       .where((crimeCase) {
-        if (activeCategory != null && crimeCase.category != activeCategory) {
-          return false;
-        }
         if (statusFilter != null && crimeCase.status != statusFilter) {
           return false;
         }

@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_riverpod/legacy.dart' show StateProvider;
 import 'package:latlong2/latlong.dart';
@@ -62,11 +61,3 @@ final mapConfigProvider = Provider<MapConfig>((ref) {
 /// Permite que controles fuera del mapa (p. ej. el botón "Centrar" del dossier)
 /// disparen un recentrado sin acoplarse al `MapController`.
 final mapRecenterTickProvider = StateProvider<int>((ref) => 0);
-
-final mapSectionGradientProvider = Provider<LinearGradient>((ref) {
-  return const LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF1B1B21), Color(0xFF111217), Color(0xFF0A0B0F)],
-  );
-});

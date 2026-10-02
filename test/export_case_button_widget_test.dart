@@ -227,7 +227,7 @@ void main() {
     await tester.pump();
 
     expect(find.byType(SnackBar), findsOneWidget);
-    expect(find.textContaining('cases.json'), findsOneWidget);
+    expect(find.text('JSON copiado al portapapeles.'), findsOneWidget);
   });
 
   testWidgets('renders nothing when no draft is being edited', (tester) async {

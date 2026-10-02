@@ -3,9 +3,9 @@
     "short_name": "true_app",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "Base project for the true_app application.",
+    "background_color": "#090A0D",
+    "theme_color": "#090A0D",
+    "description": "Archivo web de casos de crímenes reales.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

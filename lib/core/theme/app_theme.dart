@@ -4,10 +4,8 @@ class AppColors {
   static const background = Color(0xFF090A0D);
   static const panel = Color(0xFF14161C);
   static const panelMuted = Color(0xFF1C2029);
-  static const surface = Color(0xFF111318);
   static const border = Color(0xFF2A2F3A);
   static const accent = Color(0xFFB1232E);
-  static const accentSoft = Color(0xFF6E1B22);
   static const textPrimary = Color(0xFFF3F0EA);
   static const textMuted = Color(0xFFB4AFAB);
   static const textSoft = Color(0xFF8A8681);

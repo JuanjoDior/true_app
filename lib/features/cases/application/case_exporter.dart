@@ -4,7 +4,7 @@ import '../domain/case_draft.dart';
 import '../domain/case_source.dart';
 import '../domain/case_timeline_event.dart';
 
-/// Convierte un borrador en el JSON que consume `assets/data/cases.json`.
+/// Convierte un borrador en el JSON que consume el catálogo.
 ///
 /// Es el único puente entre el borrador local de Iván y el catálogo
 /// publicado: no hay backend ni CMS, así que el flujo es exportar, pegar en
@@ -177,7 +177,7 @@ Map<String, dynamic> draftToCaseJson(
   };
 }
 
-/// Texto listo para pegar en `assets/data/cases.json`: indentado a dos
+/// Texto listo para pegar en el catálogo: indentado a dos
 /// espacios y sin escapar los acentos, para que el asset siga siendo legible.
 String encodeDraftAsCaseJson(
   CaseDraft draft, {
