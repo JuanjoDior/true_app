@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../core/theme/app_theme.dart';
+import '../core/design/design.dart';
 import '../features/cases/presentation/case_detail_page.dart';
 import '../features/home/presentation/home_page.dart';
 import 'navigation/app_navigation_scope.dart';
@@ -53,7 +53,7 @@ class _TrueCrimeAppState extends State<TrueCrimeApp> {
     return MaterialApp.router(
       title: 'true_app',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.buildTheme(),
+      theme: DsTheme.build(),
       routerDelegate: _delegate,
       routeInformationParser: AppRouteInformationParser(),
       // `null` significa "usa el de la plataforma", que es el que lee la barra
