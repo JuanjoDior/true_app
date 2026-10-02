@@ -111,7 +111,7 @@ TDD estricto: prueba que falla → implementación → refactor.
 
 | # | Fase | Contenido | Criterio de aceptación |
 | --- | --- | --- | --- |
-| F0 | Limpieza de restos reales | `DESIGN.md` §10 (`windows/` se conserva; `android/ ios/ macos/ linux/`: decisión pendiente D5, F0b) | `flutter analyze` y `flutter test` en verde; build web OK |
+| F0 | Limpieza de restos reales | `DESIGN.md` §10 (`windows/` se conserva; `android/ ios/ macos/ linux/` retiradas en F0b, decisión D5) | `flutter analyze` y `flutter test` en verde; build web OK |
 | F1 | Sistema de diseño | tokens, tipografía + fuentes, `DsTheme`, átomos (`DsBadge`, `DsStatusLabel`, `DsMonoLabel`, `DsStatCell`, botones, chips, segmentado, panel de cristal, campo, diálogo, aviso, estados) | Pruebas de widget por componente; galería de componentes visible en una ruta de desarrollo |
 | F2 | Motor del mapa plano | `land_mask`, proyección, cámara (objetivos Mundo/Caso/Conexiones), pintor de puntos, marcadores, arcos | Pruebas unitarias de proyección y cámara; golden del mapa en 1440 y 390 |
 | F3 | Motor del globo | proyección ortográfica, orientación, pintor, deriva | Pruebas de las fórmulas (`map-and-globe.md` §3.2); prueba de rendimiento básica |
@@ -145,7 +145,7 @@ Orden recomendado: **F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 
 
 ## 11. Preguntas abiertas
 
-> Corresponden a las decisiones D1–D5 de `odd/tasks/cinematic-design-system.md`, que es donde se registra su estado. D5 (carpetas `android/ ios/ macos/ linux/`; `windows/` se conserva) no figura en la lista de abajo.
+> Corresponden a las decisiones D1–D5 de `odd/tasks/cinematic-design-system.md`, que es donde se registra su estado. D5 (carpetas de plataforma) quedó resuelta: se retiraron `android/ ios/ macos/ linux/` y se conserva `windows/`.
 
 1. ¿Globo con `CustomPainter` propio (A), paquete (B) o sin globo (C)?
 2. ¿Selector de ubicación con `flutter_map` (recomendado) o con mapa de puntos + zoom?

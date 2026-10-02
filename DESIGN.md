@@ -231,7 +231,7 @@ cualquier otra          Dirección no encontrada
 
 `cupertino_icons` sin uso · `mapSectionGradientProvider` · `activeCategoryProvider` (nadie lo escribe) · ticker con 4 actualizaciones inventadas · círculos de densidad fijos en el mapa · mensaje «JSON copiado. Pégalo en assets/data/cases.json» (obsoleto: el catálogo viene de Supabase) · identificador `com.example.true_app` · descripción «Base project…» · `AppColors.surface` y `AppColors.accentSoft` (sin lectores) · campo `CaseCategoryPresentation.description` (sin lectores) · color `#0175C2` en `web/manifest.json` e iconos por defecto de `web/icons/` (por confirmar). Comprobado que **no** son restos: `MapConfig.attribution` (se pinta en la leyenda del mapa) y `shortLabel` (lo usa el buscador).
 
-**Plataformas.** Además de web existe la entrega de escritorio para Windows (`odd/tasks/ivan-usb-delivery.md`): la carpeta `windows/` **se conserva**. `android/ ios/ macos/ linux/`: decisión pendiente D5 (ver `odd/tasks/cinematic-design-system.md`). `BackdropFilter`, `file_picker` y el rendimiento del globo se prueban también en Windows.
+**Plataformas.** Además de web existe la entrega de escritorio para Windows (`odd/tasks/ivan-usb-delivery.md`): la carpeta `windows/` **se conserva**. `android/ ios/ macos/ linux/` se retiraron (D5 resuelta en F0b). `BackdropFilter`, `file_picker` y el rendimiento del globo se prueban también en Windows.
 
 ## 11. Datos necesarios
 

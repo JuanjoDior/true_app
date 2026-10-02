@@ -25,7 +25,7 @@ Los documentos se escribieron contra una versión anterior del código. Hay que 
 - D2 Selector de ubicación del formulario: mantener `flutter_map` solo ahí (recomendado) / mapa de puntos con zoom. Bloquea F8.
 - D3 Ruta propia `/mapa` o modo explorar como estado de la portada. Bloquea F4/F5.
 - D4 `updatedAt`/`updateKind`: añadirlos al contrato (afecta al payload de Supabase, a `draftToCaseJson` y al catálogo) o ocultar «Novedades» hasta tener datos. Bloquea F4.
-- D5 Carpetas de plataforma: conservar `windows/`; ¿retirar `android/ ios/ macos/ linux/`? Bloquea F0b.
+- D5 Carpetas de plataforma: **resuelta (2026-10-02)**: se conserva `windows/` y se retiran `android/ ios/ macos/ linux/`.
 
 ## Principios de código limpio (todas las tareas)
 - Una responsabilidad por archivo y componente; widgets pequeños y con nombre que dice su intención; sin lógica de negocio en widgets (providers y funciones puras testeables).
@@ -50,7 +50,7 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
 
 - [x] D0: Reconciliar `DESIGN.md` y `docs/design/` con los hallazgos 1–7 (acceso, catálogo, plataformas, teselas, datos). Solo documentación; sin TDD (pasivo). Worker editó `DESIGN.md`, `screens.md` y `flutter-implementation.md`; verificado por búsqueda que `MapConfig.attribution` y `shortLabel` no son restos y que `AppColors.surface/accentSoft`, `CaseCategoryPresentation.description` y `#0175C2` sí lo son (repuestos en `DESIGN.md` §10). Pendiente de revisar contra la pantalla real: cómo es el pie de cuenta del formulario y si el diálogo de sesión tiene candado/mapa de fondo.
 - [x] F0a (a456cde; worker + gentle-ai-verify 7/7 PASS, analyze 0, 636 tests; RED observado en el texto del SnackBar, el resto son borrados sin referencias): Retirar código muerto y textos obsoletos: `cupertino_icons`, `mapSectionGradientProvider`, `activeCategoryProvider`, `AppColors.surface/accentSoft`, `CaseCategoryPresentation.description`, mensaje obsoleto de `export_case_button.dart` (y su test), color `#0175C2` del manifest, descripción/identificadores de plantilla. Tests existentes en verde.
-- [ ] F0b: Carpetas de plataforma no usadas y restos en `web/` (requiere D5).
+- [x] F0b (verify: analyze 0, 636 tests, build web y Windows OK): Retirar `android/ ios/ macos/ linux/` y sus entradas en `.metadata` (D5 resuelta). Comprobar analyze, tests y build web/Windows.
 - [ ] F1-T1: Tokens en `lib/core/design/tokens/` (color, espaciado, radios, movimiento, sombras) según `DESIGN.md` §3.
 - [ ] F1-T2: Tipografía y empaquetado de IBM Plex Mono 400/500 (OFL) en `assets/fonts/` + `pubspec.yaml`.
 - [ ] F1-T3: `DsTheme` (inputs, botones, diálogos, snackbars) sin romper las pantallas actuales.
