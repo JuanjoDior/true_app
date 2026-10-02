@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Expediente con mapa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070B;font-family:'Noto Sans',system-ui,sans-serif}
+a{color:#F4F1EB;text-decoration:none}a:hover{color:#FFFFFF}
+button{font-family:inherit;cursor:pointer}
+.lift{transition:transform .35s cubic-bezier(.2,.8,.2,1),border-color .3s,background .3s}
+.lift:hover{transform:translateY(-5px);border-color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.08)}
+.photo{transition:transform .5s cubic-bezier(.2,.8,.2,1),box-shadow .5s}
+.photo:hover{transform:scale(1.05);box-shadow:0 24px 50px rgba(0,0,0,0.6)}
+.cta{transition:transform .25s}
+.cta:hover{transform:scale(1.04)}
+.chip{transition:background .25s,transform .25s}
+.chip:hover{background:rgba(255,255,255,0.12);transform:translateX(4px)}
+@keyframes pulse{0%{transform:scale(0.5);opacity:0.9}100%{transform:scale(2.8);opacity:0}}
+@keyframes dash{to{stroke-dashoffset:-14}}
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 2020px; box-sizing: border-box; background: #05070B; color: #F4F1EB; overflow: hidden">
+
+<!-- Cabecera -->
+<section style="position: relative; height: 500px; overflow: hidden; background: radial-gradient(900px 620px at 76% 40%, rgba(229,72,77,0.28), transparent 65%), radial-gradient(700px 500px at 18% 95%, rgba(229,72,77,0.13), transparent 70%), linear-gradient(120deg, #2A0B10 0%, #05070B 78%)">
+<div style="position: absolute; right: 30px; top: 20px; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 520px; line-height: 1; color: rgba(255,255,255,0.05)">1968</div>
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 900px; background: linear-gradient(90deg, rgba(5,7,11,0.92) 0%, rgba(5,7,11,0.55) 60%, rgba(5,7,11,0) 100%)"></div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 160px; background: linear-gradient(180deg, rgba(5,7,11,0) 0%, #05070B 100%)"></div>
+
+<header style="position: absolute; left: 0; right: 0; top: 0; height: 96px; box-sizing: border-box; padding: 0 80px; display: flex; align-items: center; gap: 48px; background: linear-gradient(180deg, rgba(5,7,11,0.85) 0%, rgba(5,7,11,0) 100%)">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 36px; height: 36px; border-radius: 10px; background: #E5484D; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; color: #FFFFFF">T</div>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; letter-spacing: 0.1em">TRUE</span>
+</div>
+<nav aria-label="Secciones" style="display: flex; gap: 8px">
+<a href="Globo.dc.html" style="height: 44px; padding: 0 16px; display: flex; align-items: center; font-size: 15px; font-weight: 500; color: #C9C4BB">Inicio</a>
+<a href="Globo.dc.html" style="height: 44px; padding: 0 16px; display: flex; align-items: center; font-size: 15px; font-weight: 500; color: #C9C4BB">Globo</a>
+<a href="Archivo.dc.html" style="height: 44px; padding: 0 16px; display: flex; align-items: center; font-size: 15px; font-weight: 500; color: #C9C4BB">Archivo</a>
+<a href="Acceso.dc.html" style="height: 44px; padding: 0 16px; display: flex; align-items: center; font-size: 15px; font-weight: 500; color: #C9C4BB">Formulario</a>
+</nav>
+</header>
+
+<div style="position: absolute; left: 80px; bottom: 60px; width: 900px; display: flex; flex-direction: column; gap: 18px; animation: rise 0.9s cubic-bezier(0.2,0.8,0.2,1) both">
+<a href="Globo.dc.html" style="align-self: flex-start; height: 44px; display: flex; align-items: center; gap: 10px; color: #C9C4BB; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>VOLVER AL GLOBO
+</a>
+<div style="display: flex; gap: 10px; align-items: center">
+<span style="height: 28px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid #E5484D; border-radius: 6px; color: #E5484D; font-size: 13px; font-weight: 600">Asesinos en serie</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: #6CB0E0"><span style="width: 8px; height: 8px; border-radius: 50%; background: #6CB0E0"></span>Sin resolver</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 13px; letter-spacing: 0.12em; color: #D8D3CA">· SAN FRANCISCO · EE. UU. · 1968</span>
+</div>
+<h1 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 120px; line-height: 0.94; letter-spacing: -0.01em; color: #FFFFFF">Zodiac</h1>
+</div>
+</section>
+
+<!-- MAPA 2D: protagonista del expediente -->
+<section style="position: relative; height: 620px; overflow: hidden; background: radial-gradient(ellipse at 55% 50%, #0E1420 0%, #05070B 75%)">
+<div style="{{sceneStyle}}">
+<sc-for list="{{land}}" as="d" hint-placeholder-count="500">
+<div style="{{d.style}}"></div>
+</sc-for>
+<svg width="1440" height="620" viewBox="0 0 1440 620" style="position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible" aria-hidden="true">
+<path d="{{arc0.d}}" vector-effect="non-scaling-stroke" style="{{arc0.style}}"/>
+<path d="{{arc1.d}}" vector-effect="non-scaling-stroke" style="{{arc1.style}}"/>
+<path d="{{arc2.d}}" vector-effect="non-scaling-stroke" style="{{arc2.style}}"/>
+</svg>
+<sc-for list="{{relLabels}}" as="r" hint-placeholder-count="3">
+<div style="{{r.wrapStyle}}">
+<div style="{{r.scaleStyle}}">
+<span style="position: absolute; left: 0; top: 0; transform: translate(-50%, -50%); padding: 6px 12px; background: rgba(12,14,19,0.88); border: 1px solid #F0C674; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #F0C674; white-space: nowrap">{{r.text}}</span>
+</div>
+</div>
+</sc-for>
+<sc-for list="{{markers}}" as="m" hint-placeholder-count="14">
+<div style="{{m.wrapStyle}}">
+<div style="{{m.scaleStyle}}">
+<button type="button" aria-label="{{m.title}}" onClick="{{m.pick}}" style="{{m.btnStyle}}">
+<span style="{{m.ringStyle}}"></span>
+<span style="{{m.dotStyle}}"></span>
+</button>
+<sc-if value="{{m.showLabel}}" hint-placeholder-val="{{true}}">
+<span style="position: absolute; left: 18px; top: -14px; padding: 4px 10px; background: rgba(12,14,19,0.88); border-radius: 6px; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 14px; color: #FFFFFF; white-space: nowrap">{{m.title}}</span>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="position: absolute; inset: 0; background: radial-gradient(ellipse at 55% 50%, rgba(5,7,11,0) 55%, rgba(5,7,11,0.85) 100%); pointer-events: none"></div>
+<div style="position: absolute; left: 0; right: 0; top: 0; height: 90px; background: linear-gradient(180deg, #05070B 0%, rgba(5,7,11,0) 100%); pointer-events: none"></div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 90px; background: linear-gradient(180deg, rgba(5,7,11,0) 0%, #05070B 100%); pointer-events: none"></div>
+
+<!-- Tarjeta de ubicación -->
+<div style="position: absolute; left: 80px; top: 70px; width: 360px; box-sizing: border-box; padding: 22px; display: flex; flex-direction: column; gap: 14px; background: rgba(14,16,22,0.82); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,0.14); border-radius: 18px; box-shadow: 0 30px 80px rgba(0,0,0,0.6)">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: #E5484D">UBICACIÓN</span>
+<div style="display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 30px; line-height: 1.05; color: #FFFFFF">{{focus.title}}</span>
+<span style="font-size: 14px; color: #D8D3CA">{{focus.loc}} · {{focus.year}}</span>
+</div>
+<div style="display: flex; gap: 24px; padding: 12px 0; border-top: 1px solid rgba(255,255,255,0.12); border-bottom: 1px solid rgba(255,255,255,0.12)">
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">LATITUD</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #F0C674">{{focus.lat}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">LONGITUD</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #F0C674">{{focus.lon}}</span></div>
+</div>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">CASOS CONECTADOS</span>
+<sc-for list="{{chipsRel}}" as="r" hint-placeholder-count="2">
+<button type="button" class="chip" onClick="{{r.pick}}" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; text-align: left; color: #F4F1EB">
+<span style="width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: {{r.color}}"></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 15px">{{r.title}}</span>
+<span style="font-size: 12px; color: #C9C4BB">{{r.rel}}</span>
+</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9C4BB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</button>
+</sc-for>
+<sc-if value="{{showOpen}}" hint-placeholder-val="{{false}}">
+<a class="cta" href="Expediente-Cine.dc.html" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #F4F1EB; border-radius: 10px; color: #0B0C10; font-size: 14px; font-weight: 600">Abrir expediente
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+</sc-if>
+</div>
+
+<!-- Vistas de cámara -->
+<div style="position: absolute; right: 80px; bottom: 50px; display: flex; padding: 4px; gap: 4px; background: rgba(12,14,19,0.78); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px">
+<sc-for list="{{views}}" as="v" hint-placeholder-count="3">
+<button type="button" onClick="{{v.pick}}" style="{{v.style}}">{{v.label}}</button>
+</sc-for>
+</div>
+<div style="position: absolute; right: 80px; top: 70px; padding: 12px 16px; background: rgba(12,14,19,0.78); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; display: flex; flex-direction: column; gap: 9px">
+<sc-for list="{{legend}}" as="l" hint-placeholder-count="4">
+<span style="display: inline-flex; align-items: center; gap: 10px; font-size: 13px; color: #E4E0D8"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{l.color}}"></span>{{l.label}}</span>
+</sc-for>
+</div>
+<span style="position: absolute; left: 80px; bottom: 16px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #A7A29A">Mapa © OpenStreetMap · CARTO</span>
+</section>
+
+<!-- Cuerpo -->
+<div style="box-sizing: border-box; padding: 24px 80px 0; display: grid; grid-template-columns: minmax(0, 1fr) 380px; column-gap: 72px; align-items: start">
+<article style="display: flex; flex-direction: column; gap: 48px">
+<p style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 30px; line-height: 1.4; color: #F4F1EB">Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.</p>
+<div style="align-self: flex-start; padding: 14px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; display: flex; gap: 16px; align-items: baseline">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #B9B4AB">VÍCTIMA(S)</span>
+<span style="font-size: 15px; color: #F4F1EB">Al menos 5 víctimas confirmadas</span>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 14px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">LOS HECHOS</span>
+<p style="margin: 0; font-size: 17px; line-height: 1.75; color: #D8D3CA">[Texto del capítulo «Los hechos»]</p>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 16px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">FOTOGRAFÍAS</span>
+<div style="display: flex; gap: 18px">
+<sc-for list="{{photos}}" as="p" hint-placeholder-count="3">
+<figure style="margin: 0; width: 240px; display: flex; flex-direction: column; gap: 10px">
+<div class="photo" style="width: 240px; height: 170px; border-radius: 12px; background: linear-gradient(160deg, #2A0B10, #0B0D12); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #B9B4AB">[Fotografía]</div>
+<figcaption style="font-size: 13px; color: #B9B4AB">{{p.caption}}</figcaption>
+</figure>
+</sc-for>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 22px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">CRONOLOGÍA VERIFICADA</span>
+<div style="position: relative; display: flex; flex-direction: column; gap: 30px; padding-left: 190px">
+<div style="position: absolute; left: 160px; top: 10px; bottom: 10px; width: 2px; background: linear-gradient(180deg, #E5484D, #6CB0E0)"></div>
+<sc-for list="{{timeline}}" as="t" hint-placeholder-count="3">
+<div style="position: relative; display: flex; flex-direction: column; gap: 4px">
+<span style="position: absolute; left: -190px; top: 0; width: 130px; text-align: right; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 26px; color: {{t.color}}">{{t.date}}</span>
+<span style="position: absolute; left: -36px; top: 10px; width: 12px; height: 12px; border-radius: 50%; background: {{t.color}}; box-shadow: 0 0 0 5px #05070B, 0 0 18px {{t.color}}"></span>
+<span style="font-size: 19px; font-weight: 500; color: #F4F1EB">{{t.title}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+</article>
+
+<aside style="display: flex; flex-direction: column; gap: 32px">
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="padding: 16px 14px; display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">AÑO</span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 26px; color: #F0C674">1968</span>
+</div>
+<div style="padding: 16px 14px; display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">CONEXIONES</span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 26px; color: #F0C674">2</span>
+</div>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">FUENTES CITADAS</span>
+<sc-for list="{{sources}}" as="s" hint-placeholder-count="2">
+<a class="lift" href="https://example.com" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px">
+<div style="display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 15px; font-weight: 500; color: #F4F1EB">{{s.title}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #B9B4AB">{{s.host}}</span>
+</div>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9C4BB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+</a>
+</sc-for>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">CASOS RELACIONADOS</span>
+<sc-for list="{{related}}" as="r" hint-placeholder-count="2">
+<a class="lift" href="Expediente-Cine.dc.html" style="position: relative; height: 130px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: 16px 18px; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; background: linear-gradient(160deg, #2A0B10 0%, #07080B 100%)">
+<span style="position: absolute; right: 10px; top: -6px; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 84px; line-height: 1; color: rgba(255,255,255,0.08)">{{r.year}}</span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 21px; color: #FFFFFF">{{r.title}}</span>
+<span style="font-size: 13px; color: #D8D3CA">{{r.relation}}</span>
+</a>
+</sc-for>
+</section>
+</aside>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2020}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { view: 'world', focus: 'zodiac' };
+}
+componentDidMount() {
+this._t = setTimeout(() => this.setState({ view: 'case' }), 1100);
+}
+componentWillUnmount() {
+clearTimeout(this._t);
+}
+renderVals() {
+const CAT = {
+serie: { label: 'Asesinos en serie', c: '#E5484D' },
+isolated: { label: 'Asesinato aislado', c: '#D9788A' },
+kidnapping: { label: 'Secuestro', c: '#E0A63A' },
+unsolved: { label: 'Caso sin resolver', c: '#5AA0D0' }
+};
+const C = {
+zodiac: { t: 'Zodiac', loc: 'San Francisco', y: 1968, lat: 37.77, lon: -122.42, cat: 'serie' },
+dahlia: { t: 'Black Dahlia', loc: 'Los Ángeles', y: 1947, lat: 34.05, lon: -118.24, cat: 'isolated' },
+isdal: { t: 'La mujer de Isdal', loc: 'Bergen', y: 1970, lat: 60.39, lon: 5.32, cat: 'unsolved' },
+mccann: { t: 'Madeleine McCann', loc: 'Praia da Luz', y: 2007, lat: 37.09, lon: -8.72, cat: 'kidnapping' },
+dyatlov: { t: 'Paso Diátlov', loc: 'Montes Urales', y: 1959, lat: 61.75, lon: 59.45, cat: 'unsolved' },
+somerton: { t: 'El hombre de Somerton', loc: 'Adelaida', y: 1948, lat: -34.93, lon: 138.6, cat: 'unsolved' },
+gsk: { t: 'Golden State Killer', loc: 'California', y: 1974, lat: 38.58, lon: -121.49, cat: 'serie' },
+hinter: { t: 'Hinterkaifeck', loc: 'Baviera', y: 1922, lat: 48.46, lon: 11.27, cat: 'unsolved' },
+ripper: { t: 'Jack el Destripador', loc: 'Londres', y: 1888, lat: 51.51, lon: -0.07, cat: 'serie' },
+tylenol: { t: 'Envenenamientos de Tylenol', loc: 'Chicago', y: 1982, lat: 41.88, lon: -87.63, cat: 'unsolved' },
+jonbenet: { t: 'JonBenét Ramsey', loc: 'Boulder', y: 1996, lat: 40.02, lon: -105.27, cat: 'unsolved' },
+borden: { t: 'Caso Borden', loc: 'Fall River', y: 1892, lat: 41.7, lon: -71.15, cat: 'isolated' },
+btk: { t: 'BTK', loc: 'Wichita', y: 1974, lat: 37.69, lon: -97.34, cat: 'serie' },
+kercher: { t: 'Meredith Kercher', loc: 'Perugia', y: 2007, lat: 43.11, lon: 12.39, cat: 'isolated' }
+};
+const pairs = [['zodiac', 'gsk', 'Norte de California'], ['zodiac', 'ripper', 'Sin identificar · desafió a la prensa']];
+const pos = (c) => ({ x: (c.lon + 180) * 4, y: 40 + (80 - c.lat) * 4 });
+const { view, focus } = this.state;
+const ease = 'cubic-bezier(0.22,0.8,0.2,1)';
+const ids = Object.keys(C);
+const relFocus = pairs.filter((p) => p[0] === focus || p[1] === focus).map((p) => ({ id: p[0] === focus ? p[1] : p[0], rel: p[2] }));
+
+// Cámara según la vista elegida.
+let k = 1, tx = 0, ty = 0;
+if (view === 'case') {
+const p = pos(C[focus]);
+k = 3.4;
+tx = 900 - k * p.x;
+ty = 310 - k * p.y;
+} else if (view === 'links') {
+const base = pos(C[focus]);
+const ps = [base].concat(relFocus.map((r) => pos(C[r.id])));
+const xs = ps.map((p) => p.x), ys = ps.map((p) => p.y);
+const bw = Math.max.apply(null, xs) - Math.min.apply(null, xs), bh = Math.max.apply(null, ys) - Math.min.apply(null, ys);
+const cx = (Math.max.apply(null, xs) + Math.min.apply(null, xs)) / 2, cy = (Math.max.apply(null, ys) + Math.min.apply(null, ys)) / 2;
+k = Math.max(1.2, Math.min(3, 820 / (bw + 240), 420 / (bh + 220)));
+tx = 860 - k * cx;
+ty = 310 - k * cy;
+}
+const sceneStyle = 'position:absolute;left:0;top:0;width:1440px;height:620px;transform-origin:0 0;transform:translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + k.toFixed(3) + ');transition:transform 1800ms ' + ease;
+const counter = 'position:absolute;left:0;top:0;width:0;height:0;transform:scale(' + (1 / k).toFixed(4) + ');transition:transform 1800ms ' + ease;
+
+const LAND = {
+0: [[21, 32], [39, 40], [55, 56]], 1: [[9, 19], [21, 33], [49, 50], [54, 71]], 2: [[2, 22], [23, 31], [37, 71]],
+3: [[2, 16], [20, 24], [26, 28], [31, 32], [37, 71]], 4: [[3, 16], [21, 24], [35, 35], [38, 71]], 5: [[4, 16], [20, 25], [34, 35], [36, 71]],
+6: [[5, 25], [35, 71]], 7: [[10, 25], [34, 40], [45, 64]], 8: [[11, 24], [34, 37], [38, 38], [41, 64]], 9: [[12, 23], [34, 63]],
+10: [[13, 20], [33, 63]], 11: [[12, 18], [20, 21], [33, 49], [50, 62]], 12: [[16, 19], [21, 23], [33, 47], [45, 48], [50, 53], [55, 58], [60, 60]],
+13: [[17, 19], [20, 24], [33, 46], [47, 47], [51, 52], [55, 57], [60, 60]], 14: [[18, 19], [20, 26], [33, 47], [52, 52], [55, 56], [57, 59]],
+15: [[20, 29], [36, 46], [55, 56], [57, 59], [60, 61], [63, 65]], 16: [[20, 29], [36, 45], [55, 56], [57, 59], [62, 66]],
+17: [[20, 30], [37, 44], [56, 58], [63, 66]], 18: [[21, 30], [37, 44], [57, 60], [62, 64]], 19: [[22, 30], [38, 45], [59, 66]],
+20: [[22, 28], [38, 45], [58, 66]], 21: [[22, 28], [38, 43], [58, 66]], 22: [[22, 27], [39, 43], [59, 66]], 23: [[22, 26], [60, 66], [69, 70]],
+24: [[22, 26], [65, 65], [69, 70]], 25: [[22, 25], [69, 70]], 26: [[22, 25]]
+};
+const land = [];
+Object.keys(LAND).forEach((r) => {
+LAND[r].forEach((rg) => {
+for (let col = rg[0]; col <= rg[1]; col++) {
+const x = (col + 0.5) * 20, y = 40 + (Number(r) + 0.5) * 20;
+const op = 0.45 + ((col * 7 + Number(r) * 13) % 6) / 10;
+land.push({ style: 'position:absolute;left:' + (x - 2.5) + 'px;top:' + (y - 2.5) + 'px;width:5px;height:5px;border-radius:50%;background:#33405A;opacity:' + op });
+}
+});
+});
+
+const markers = ids.map((id, i) => {
+const c = C[id], m = CAT[c.cat], p = pos(c);
+const isF = id === focus, isRel = relFocus.some((r) => r.id === id);
+const size = isF ? 18 : 12;
+const dim = isF || isRel || view === 'world' ? 1 : 0.4;
+return {
+title: c.t,
+showLabel: (isF || isRel) && view !== 'world',
+pick: () => this.setState({ focus: id, view: 'case' }),
+wrapStyle: 'position:absolute;left:' + p.x + 'px;top:' + p.y + 'px;width:0;height:0;opacity:' + dim + ';transition:opacity 500ms ease',
+scaleStyle: counter,
+btnStyle: 'position:absolute;left:-20px;top:-20px;width:40px;height:40px;padding:0;background:transparent;border:0',
+ringStyle: 'position:absolute;left:50%;top:50%;width:' + size + 'px;height:' + size + 'px;margin:' + -size / 2 + 'px 0 0 ' + -size / 2 + 'px;border-radius:50%;border:2px solid ' + m.c + ';animation:pulse ' + (isF ? '1.8s' : '3s') + ' ease-out ' + ((i * 0.41) % 3).toFixed(2) + 's infinite',
+dotStyle: 'position:absolute;left:50%;top:50%;width:' + size + 'px;height:' + size + 'px;margin:' + -size / 2 + 'px 0 0 ' + -size / 2 + 'px;border-radius:50%;background:' + m.c + ';border:2px solid ' + (isRel ? '#F0C674' : '#05070B') + ';box-sizing:border-box;box-shadow:0 0 ' + (isF ? 26 : 12) + 'px ' + m.c + ';transition:width 400ms ease,height 400ms ease,margin 400ms ease'
+};
+});
+
+const arcs = pairs.map((pr) => {
+const a = pos(C[pr[0]]), b = pos(C[pr[1]]);
+const dist = Math.hypot(a.x - b.x, a.y - b.y);
+const mx = (a.x + b.x) / 2, cy = Math.min(a.y, b.y) - dist * 0.28 - 20;
+const on = focus === pr[0] || focus === pr[1];
+return {
+d: 'M' + a.x + ',' + a.y + ' Q' + mx + ',' + cy + ' ' + b.x + ',' + b.y,
+style: 'fill:none;stroke:#F0C674;stroke-width:1.8;stroke-dasharray:7 7;stroke-linecap:round;opacity:' + (on ? 0.95 : 0) + ';transition:opacity 900ms ease 500ms;animation:dash 1.2s linear infinite',
+lx: mx, ly: 0.25 * a.y + 0.5 * cy + 0.25 * b.y, on, text: pr[2]
+};
+});
+const relLabels = arcs.map((a) => ({
+text: a.text,
+wrapStyle: 'position:absolute;left:' + a.lx + 'px;top:' + a.ly + 'px;width:0;height:0;pointer-events:none;opacity:' + (a.on && view === 'links' ? 1 : 0) + ';transition:opacity 700ms ease ' + (a.on && view === 'links' ? '1100ms' : '0ms'),
+scaleStyle: counter
+}));
+
+const f = C[focus];
+const seg = (key, label) => ({
+label,
+pick: () => this.setState({ view: key }),
+style: 'height:40px;padding:0 20px;border:0;border-radius:10px;font-size:14px;font-weight:' + (view === key ? 600 : 500) + ';background:' + (view === key ? '#F4F1EB' : 'transparent') + ';color:' + (view === key ? '#0B0C10' : '#D8D3CA')
+});
+
+return {
+sceneStyle, land, markers, arc0: arcs[0], arc1: arcs[1], arc2: arcs[1], relLabels, showOpen: focus !== 'zodiac',
+focus: {
+title: f.t, loc: f.loc, year: String(f.y),
+lat: Math.abs(f.lat).toFixed(2) + '° ' + (f.lat >= 0 ? 'N' : 'S'),
+lon: Math.abs(f.lon).toFixed(2) + '° ' + (f.lon >= 0 ? 'E' : 'O')
+},
+chipsRel: relFocus.map((r) => ({ title: C[r.id].t, rel: r.rel, color: CAT[C[r.id].cat].c, pick: () => this.setState({ focus: r.id, view: 'case' }) })),
+views: [seg('case', 'Caso'), seg('links', 'Conexiones'), seg('world', 'Mundo')],
+legend: [
+{ label: 'Serie', color: CAT.serie.c }, { label: 'Aislado', color: CAT.isolated.c },
+{ label: 'Secuestro', color: CAT.kidnapping.c }, { label: 'Sin resolver', color: CAT.unsolved.c }
+],
+photos: [{ caption: '[Pie de foto]' }, { caption: '[Pie de foto]' }, { caption: '[Pie de foto]' }],
+timeline: [
+{ date: '1968–69', title: 'Primeros ataques confirmados', color: '#E5484D' },
+{ date: '1969', title: 'Cartas cifradas a la prensa', color: '#F0C674' },
+{ date: 'Hoy', title: 'Investigación aún abierta', color: '#6CB0E0' }
+],
+sources: [
+{ title: 'Wikipedia — Zodiac Killer', host: 'wikipedia.org' },
+{ title: 'Archivo de prensa', host: 'sfchronicle.com' }
+],
+related: [
+{ title: 'Golden State Killer', relation: 'Norte de California', year: '1974' },
+{ title: 'Jack el Destripador', relation: 'Sin identificar · desafió a la prensa', year: '1888' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

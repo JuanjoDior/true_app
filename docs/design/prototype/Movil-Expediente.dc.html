@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Expediente móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070B;font-family:'Noto Sans',system-ui,sans-serif}
+a{color:#F4F1EB;text-decoration:none}a:hover{color:#FFFFFF}
+button{font-family:inherit;cursor:pointer}
+.scroller{scrollbar-width:none}
+.scroller::-webkit-scrollbar{display:none}
+@keyframes pulse{0%{transform:scale(0.5);opacity:0.9}100%{transform:scale(2.8);opacity:0}}
+@keyframes dash{to{stroke-dashoffset:-14}}
+@keyframes rise{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 2400px; box-sizing: border-box; background: #05070B; color: #F4F1EB; overflow: hidden">
+
+<!-- Cabecera -->
+<section style="position: relative; height: 360px; overflow: hidden; background: radial-gradient(520px 420px at 70% 30%, rgba(229,72,77,0.33), transparent 65%), linear-gradient(160deg, #2A0B10 0%, #05070B 80%)">
+<div style="position: absolute; right: -10px; top: 60px; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 250px; line-height: 1; color: rgba(255,255,255,0.07)">1968</div>
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 240px; background: linear-gradient(180deg, rgba(5,7,11,0) 0%, #05070B 100%)"></div>
+<a href="Movil-Portada.dc.html" aria-label="Volver" style="position: absolute; left: 8px; top: 12px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; color: #FFFFFF">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+</a>
+<div style="position: absolute; left: 16px; right: 16px; bottom: 28px; display: flex; flex-direction: column; gap: 12px; animation: rise 0.9s cubic-bezier(0.2,0.8,0.2,1) both">
+<div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap">
+<span style="height: 26px; padding: 0 10px; display: inline-flex; align-items: center; border: 1px solid #E5484D; border-radius: 6px; color: #E5484D; font-size: 12px; font-weight: 600">Asesinos en serie</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: #6CB0E0"><span style="width: 8px; height: 8px; border-radius: 50%; background: #6CB0E0"></span>Sin resolver</span>
+</div>
+<h1 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 64px; line-height: 0.96; color: #FFFFFF">Zodiac</h1>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.1em; color: #D8D3CA">SAN FRANCISCO · EE. UU. · 1968</span>
+</div>
+</section>
+
+<!-- Mapa -->
+<section style="position: relative; height: 440px; overflow: hidden; background: radial-gradient(ellipse at 50% 50%, #0E1420 0%, #05070B 75%)">
+<div style="{{sceneStyle}}">
+<sc-for list="{{land}}" as="d" hint-placeholder-count="500">
+<div style="{{d.style}}"></div>
+</sc-for>
+<svg width="1440" height="540" viewBox="0 0 1440 540" style="position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible" aria-hidden="true">
+<path d="{{arc0.d}}" vector-effect="non-scaling-stroke" style="{{arc0.style}}"/>
+<path d="{{arc1.d}}" vector-effect="non-scaling-stroke" style="{{arc1.style}}"/>
+</svg>
+<sc-for list="{{markers}}" as="m" hint-placeholder-count="14">
+<div style="{{m.wrapStyle}}">
+<div style="{{m.scaleStyle}}">
+<button type="button" aria-label="{{m.title}}" onClick="{{m.pick}}" style="{{m.btnStyle}}">
+<span style="{{m.ringStyle}}"></span>
+<span style="{{m.dotStyle}}"></span>
+</button>
+<sc-if value="{{m.showLabel}}" hint-placeholder-val="{{true}}">
+<span style="position: absolute; left: 16px; top: -12px; padding: 3px 9px; background: rgba(12,14,19,0.88); border-radius: 6px; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 13px; color: #FFFFFF; white-space: nowrap">{{m.title}}</span>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(5,7,11,0) 55%, rgba(5,7,11,0.85) 100%); pointer-events: none"></div>
+<div style="position: absolute; left: 0; right: 0; top: 0; height: 60px; background: linear-gradient(180deg, #05070B 0%, rgba(5,7,11,0) 100%); pointer-events: none"></div>
+
+<div style="position: absolute; left: 16px; top: 18px; width: 230px; box-sizing: border-box; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; background: rgba(14,16,22,0.82); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.2em; color: #E5484D">UBICACIÓN</span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; line-height: 1.05; color: #FFFFFF">{{focus.title}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #F0C674">{{focus.lat}} · {{focus.lon}}</span>
+</div>
+<div style="position: absolute; left: 16px; right: 16px; bottom: 16px; display: flex; flex-direction: column; gap: 10px">
+<div class="scroller" style="display: flex; gap: 8px; overflow-x: auto">
+<sc-for list="{{chipsRel}}" as="r" hint-placeholder-count="2">
+<button type="button" onClick="{{r.pick}}" style="flex-shrink: 0; height: 44px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: rgba(14,16,22,0.82); border: 1px solid rgba(255,255,255,0.16); border-radius: 12px; color: #F4F1EB; font-size: 13px; font-weight: 500">
+<span style="width: 9px; height: 9px; border-radius: 50%; background: {{r.color}}"></span>{{r.title}}</button>
+</sc-for>
+</div>
+<div style="display: flex; padding: 4px; gap: 4px; background: rgba(12,14,19,0.85); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.14); border-radius: 14px">
+<sc-for list="{{views}}" as="v" hint-placeholder-count="3">
+<button type="button" onClick="{{v.pick}}" style="{{v.style}}">{{v.label}}</button>
+</sc-for>
+</div>
+</div>
+</section>
+
+<!-- Cuerpo -->
+<div style="box-sizing: border-box; padding: 28px 16px 0; display: flex; flex-direction: column; gap: 36px">
+<p style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 23px; line-height: 1.4; color: #F4F1EB">Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.</p>
+
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+<div style="padding: 14px; display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">AÑO</span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px; color: #F0C674">1968</span>
+</div>
+<div style="padding: 14px; display: flex; flex-direction: column; gap: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">CONEXIONES</span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px; color: #F0C674">2</span>
+</div>
+</div>
+
+<div style="padding: 14px 16px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #B9B4AB">VÍCTIMA(S)</span>
+<span style="font-size: 15px; color: #F4F1EB">Al menos 5 víctimas confirmadas</span>
+</div>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">LOS HECHOS</span>
+<p style="margin: 0; font-size: 16px; line-height: 1.7; color: #D8D3CA">[Texto del capítulo «Los hechos»]</p>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 14px; margin: 0 -16px">
+<span style="padding: 0 16px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">FOTOGRAFÍAS</span>
+<div class="scroller" style="display: flex; gap: 12px; padding: 0 16px; overflow-x: auto">
+<sc-for list="{{photos}}" as="p" hint-placeholder-count="3">
+<figure style="margin: 0; flex-shrink: 0; width: 220px; display: flex; flex-direction: column; gap: 8px">
+<div style="width: 220px; height: 150px; border-radius: 12px; background: linear-gradient(160deg, #2A0B10, #0B0D12); border: 1px solid rgba(255,255,255,0.12); display: flex; align-items: center; justify-content: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #B9B4AB">[Fotografía]</div>
+<figcaption style="font-size: 13px; color: #B9B4AB">{{p.caption}}</figcaption>
+</figure>
+</sc-for>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 18px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">CRONOLOGÍA VERIFICADA</span>
+<div style="position: relative; display: flex; flex-direction: column; gap: 26px; padding-left: 28px">
+<div style="position: absolute; left: 4px; top: 8px; bottom: 8px; width: 2px; background: linear-gradient(180deg, #E5484D, #6CB0E0)"></div>
+<sc-for list="{{timeline}}" as="t" hint-placeholder-count="3">
+<div style="position: relative; display: flex; flex-direction: column; gap: 4px">
+<span style="position: absolute; left: -29px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: {{t.color}}; box-shadow: 0 0 0 4px #05070B, 0 0 14px {{t.color}}"></span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 22px; color: {{t.color}}">{{t.date}}</span>
+<span style="font-size: 16px; font-weight: 500; color: #F4F1EB">{{t.title}}</span>
+</div>
+</sc-for>
+</div>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">FUENTES CITADAS</span>
+<sc-for list="{{sources}}" as="s" hint-placeholder-count="2">
+<a href="https://example.com" style="min-height: 44px; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px">
+<div style="display: flex; flex-direction: column; gap: 3px">
+<span style="font-size: 15px; font-weight: 500; color: #F4F1EB">{{s.title}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #B9B4AB">{{s.host}}</span>
+</div>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9C4BB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg>
+</a>
+</sc-for>
+</section>
+
+<section style="display: flex; flex-direction: column; gap: 12px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">CASOS RELACIONADOS</span>
+<sc-for list="{{related}}" as="r" hint-placeholder-count="2">
+<a href="Movil-Expediente.dc.html" style="position: relative; height: 120px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; padding: 16px; border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; background: linear-gradient(160deg, #2A0B10 0%, #07080B 100%)">
+<span style="position: absolute; right: 10px; top: -4px; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 80px; line-height: 1; color: rgba(255,255,255,0.08)">{{r.year}}</span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; color: #FFFFFF">{{r.title}}</span>
+<span style="font-size: 13px; color: #D8D3CA">{{r.relation}}</span>
+</a>
+</sc-for>
+</section>
+
+<footer style="padding: 20px 0 32px; border-top: 1px solid #1B1E26; font-size: 13px; line-height: 1.5; color: #B9B4AB">Crímenes reales · documentados con respeto. Las víctimas se nombran con respeto.</footer>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":2400}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { view: 'world', focus: 'zodiac' };
+}
+componentDidMount() {
+this._t = setTimeout(() => this.setState({ view: 'case' }), 1100);
+}
+componentWillUnmount() {
+clearTimeout(this._t);
+}
+renderVals() {
+const CAT = {
+serie: { c: '#E5484D' }, isolated: { c: '#D9788A' }, kidnapping: { c: '#E0A63A' }, unsolved: { c: '#5AA0D0' }
+};
+const C = {
+zodiac: { t: 'Zodiac', y: 1968, lat: 37.77, lon: -122.42, cat: 'serie' },
+dahlia: { t: 'Black Dahlia', y: 1947, lat: 34.05, lon: -118.24, cat: 'isolated' },
+isdal: { t: 'La mujer de Isdal', y: 1970, lat: 60.39, lon: 5.32, cat: 'unsolved' },
+mccann: { t: 'Madeleine McCann', y: 2007, lat: 37.09, lon: -8.72, cat: 'kidnapping' },
+dyatlov: { t: 'Paso Diátlov', y: 1959, lat: 61.75, lon: 59.45, cat: 'unsolved' },
+somerton: { t: 'El hombre de Somerton', y: 1948, lat: -34.93, lon: 138.6, cat: 'unsolved' },
+gsk: { t: 'Golden State Killer', y: 1974, lat: 38.58, lon: -121.49, cat: 'serie' },
+hinter: { t: 'Hinterkaifeck', y: 1922, lat: 48.46, lon: 11.27, cat: 'unsolved' },
+ripper: { t: 'Jack el Destripador', y: 1888, lat: 51.51, lon: -0.07, cat: 'serie' },
+tylenol: { t: 'Envenenamientos de Tylenol', y: 1982, lat: 41.88, lon: -87.63, cat: 'unsolved' },
+jonbenet: { t: 'JonBenét Ramsey', y: 1996, lat: 40.02, lon: -105.27, cat: 'unsolved' },
+borden: { t: 'Caso Borden', y: 1892, lat: 41.7, lon: -71.15, cat: 'isolated' },
+btk: { t: 'BTK', y: 1974, lat: 37.69, lon: -97.34, cat: 'serie' },
+kercher: { t: 'Meredith Kercher', y: 2007, lat: 43.11, lon: 12.39, cat: 'isolated' }
+};
+const pairs = [['zodiac', 'gsk', 'Norte de California'], ['zodiac', 'ripper', 'Sin identificar · desafió a la prensa']];
+const pos = (c) => ({ x: (c.lon + 180) * 4, y: (80 - c.lat) * 4 });
+const { view, focus } = this.state;
+const ease = 'cubic-bezier(0.22,0.8,0.2,1)';
+const ids = Object.keys(C);
+const relFocus = pairs.filter((p) => p[0] === focus || p[1] === focus).map((p) => ({ id: p[0] === focus ? p[1] : p[0], rel: p[2] }));
+
+let k = 0.42, tx = 195 - 0.42 * 680, ty = 230 - 0.42 * 190;
+if (view === 'case') {
+const p = pos(C[focus]);
+k = 2.2;
+tx = 195 - k * p.x;
+ty = 230 - k * p.y;
+} else if (view === 'links') {
+const ps = [pos(C[focus])].concat(relFocus.map((r) => pos(C[r.id])));
+const xs = ps.map((p) => p.x), ys = ps.map((p) => p.y);
+const bw = Math.max.apply(null, xs) - Math.min.apply(null, xs), bh = Math.max.apply(null, ys) - Math.min.apply(null, ys);
+const cx = (Math.max.apply(null, xs) + Math.min.apply(null, xs)) / 2, cy = (Math.max.apply(null, ys) + Math.min.apply(null, ys)) / 2;
+k = Math.max(0.5, Math.min(2.2, 340 / (bw + 120), 200 / (bh + 100)));
+tx = 195 - k * cx;
+ty = 210 - k * cy;
+}
+const sceneStyle = 'position:absolute;left:0;top:0;width:1440px;height:540px;transform-origin:0 0;transform:translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + k.toFixed(3) + ');transition:transform 1800ms ' + ease;
+const counter = 'position:absolute;left:0;top:0;width:0;height:0;transform:scale(' + (1 / k).toFixed(4) + ');transition:transform 1800ms ' + ease;
+
+const LAND = {
+0: [[21, 32], [39, 40], [55, 56]], 1: [[9, 19], [21, 33], [49, 50], [54, 71]], 2: [[2, 22], [23, 31], [37, 71]],
+3: [[2, 16], [20, 24], [26, 28], [31, 32], [37, 71]], 4: [[3, 16], [21, 24], [35, 35], [38, 71]], 5: [[4, 16], [20, 25], [34, 35], [36, 71]],
+6: [[5, 25], [35, 71]], 7: [[10, 25], [34, 40], [45, 64]], 8: [[11, 24], [34, 37], [38, 38], [41, 64]], 9: [[12, 23], [34, 63]],
+10: [[13, 20], [33, 63]], 11: [[12, 18], [20, 21], [33, 49], [50, 62]], 12: [[16, 19], [21, 23], [33, 47], [45, 48], [50, 53], [55, 58], [60, 60]],
+13: [[17, 19], [20, 24], [33, 46], [47, 47], [51, 52], [55, 57], [60, 60]], 14: [[18, 19], [20, 26], [33, 47], [52, 52], [55, 56], [57, 59]],
+15: [[20, 29], [36, 46], [55, 56], [57, 59], [60, 61], [63, 65]], 16: [[20, 29], [36, 45], [55, 56], [57, 59], [62, 66]],
+17: [[20, 30], [37, 44], [56, 58], [63, 66]], 18: [[21, 30], [37, 44], [57, 60], [62, 64]], 19: [[22, 30], [38, 45], [59, 66]],
+20: [[22, 28], [38, 45], [58, 66]], 21: [[22, 28], [38, 43], [58, 66]], 22: [[22, 27], [39, 43], [59, 66]], 23: [[22, 26], [60, 66], [69, 70]],
+24: [[22, 26], [65, 65], [69, 70]], 25: [[22, 25], [69, 70]], 26: [[22, 25]]
+};
+const land = [];
+Object.keys(LAND).forEach((r) => {
+LAND[r].forEach((rg) => {
+for (let col = rg[0]; col <= rg[1]; col++) {
+const x = (col + 0.5) * 20, y = (Number(r) + 0.5) * 20;
+land.push({ style: 'position:absolute;left:' + (x - 3.5) + 'px;top:' + (y - 3.5) + 'px;width:7px;height:7px;border-radius:50%;background:#33405A;opacity:' + (0.45 + ((col * 7 + Number(r) * 13) % 6) / 10) });
+}
+});
+});
+
+const markers = ids.map((id, i) => {
+const c = C[id], m = CAT[c.cat], p = pos(c);
+const isF = id === focus, isRel = relFocus.some((r) => r.id === id);
+const size = isF ? 20 : 14;
+const dim = isF || isRel || view === 'world' ? 1 : 0.4;
+return {
+title: c.t,
+showLabel: (isF || isRel) && view !== 'world',
+pick: () => this.setState({ focus: id, view: 'case' }),
+wrapStyle: 'position:absolute;left:' + p.x + 'px;top:' + p.y + 'px;width:0;height:0;opacity:' + dim + ';transition:opacity 500ms ease',
+scaleStyle: counter,
+btnStyle: 'position:absolute;left:-22px;top:-22px;width:44px;height:44px;padding:0;background:transparent;border:0',
+ringStyle: 'position:absolute;left:50%;top:50%;width:' + size + 'px;height:' + size + 'px;margin:' + -size / 2 + 'px 0 0 ' + -size / 2 + 'px;border-radius:50%;border:2px solid ' + m.c + ';animation:pulse ' + (isF ? '1.8s' : '3s') + ' ease-out ' + ((i * 0.41) % 3).toFixed(2) + 's infinite',
+dotStyle: 'position:absolute;left:50%;top:50%;width:' + size + 'px;height:' + size + 'px;margin:' + -size / 2 + 'px 0 0 ' + -size / 2 + 'px;border-radius:50%;background:' + m.c + ';border:2px solid ' + (isRel ? '#F0C674' : '#05070B') + ';box-sizing:border-box;box-shadow:0 0 ' + (isF ? 24 : 12) + 'px ' + m.c + ';transition:width 400ms ease,height 400ms ease,margin 400ms ease'
+};
+});
+const arcs = pairs.map((pr) => {
+const a = pos(C[pr[0]]), b = pos(C[pr[1]]);
+const dist = Math.hypot(a.x - b.x, a.y - b.y);
+const mx = (a.x + b.x) / 2, cy = Math.min(a.y, b.y) - dist * 0.28 - 20;
+const on = focus === pr[0] || focus === pr[1];
+return {
+d: 'M' + a.x + ',' + a.y + ' Q' + mx + ',' + cy + ' ' + b.x + ',' + b.y,
+style: 'fill:none;stroke:#F0C674;stroke-width:1.8;stroke-dasharray:7 7;stroke-linecap:round;opacity:' + (on ? 0.95 : 0) + ';transition:opacity 900ms ease 500ms;animation:dash 1.2s linear infinite'
+};
+});
+const f = C[focus];
+const seg = (key, label) => ({
+label,
+pick: () => this.setState({ view: key }),
+style: 'flex:1;height:44px;border:0;border-radius:10px;font-size:14px;font-weight:' + (view === key ? 600 : 500) + ';background:' + (view === key ? '#F4F1EB' : 'transparent') + ';color:' + (view === key ? '#0B0C10' : '#D8D3CA')
+});
+return {
+sceneStyle, land, markers, arc0: arcs[0], arc1: arcs[1],
+focus: { title: f.t, lat: Math.abs(f.lat).toFixed(2) + '° ' + (f.lat >= 0 ? 'N' : 'S'), lon: Math.abs(f.lon).toFixed(2) + '° ' + (f.lon >= 0 ? 'E' : 'O') },
+chipsRel: relFocus.map((r) => ({ title: C[r.id].t, color: CAT[C[r.id].cat].c, pick: () => this.setState({ focus: r.id, view: 'case' }) })),
+views: [seg('case', 'Caso'), seg('links', 'Conexiones'), seg('world', 'Mundo')],
+photos: [{ caption: '[Pie de foto]' }, { caption: '[Pie de foto]' }, { caption: '[Pie de foto]' }],
+timeline: [
+{ date: '1968–69', title: 'Primeros ataques confirmados', color: '#E5484D' },
+{ date: '1969', title: 'Cartas cifradas a la prensa', color: '#F0C674' },
+{ date: 'Hoy', title: 'Investigación aún abierta', color: '#6CB0E0' }
+],
+sources: [{ title: 'Wikipedia — Zodiac Killer', host: 'wikipedia.org' }, { title: 'Archivo de prensa', host: 'sfchronicle.com' }],
+related: [
+{ title: 'Golden State Killer', relation: 'Norte de California', year: '1974' },
+{ title: 'Jack el Destripador', relation: 'Sin identificar · desafió a la prensa', year: '1888' }
+]
+};
+}
+}
+</script>
+</body>
+</html>

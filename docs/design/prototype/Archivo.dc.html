@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>El archivo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070B;font-family:'Noto Sans',system-ui,sans-serif}
+a{color:#F4F1EB;text-decoration:none}a:hover{color:#FFFFFF}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit;transition:border-color .2s,box-shadow .2s}
+input:focus{outline:none;border-color:#E5484D !important;box-shadow:0 0 0 3px rgba(229,72,77,0.25)}
+input::placeholder{color:#8B8880}
+.arow{transition:background .25s,transform .3s cubic-bezier(.2,.8,.2,1)}
+.arow:hover{background:rgba(255,255,255,0.07);transform:translateX(4px)}
+.arow .chev{transition:transform .3s cubic-bezier(.2,.8,.2,1),color .2s}
+.arow:hover .chev{transform:translateX(5px);color:#FFFFFF}
+.xbtn{transition:background .2s}
+.xbtn:hover{background:rgba(255,255,255,0.1)}
+.scroll::-webkit-scrollbar{width:8px}
+.scroll::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.16);border-radius:4px}
+@keyframes pulse{0%{transform:scale(0.5);opacity:0.8}100%{transform:scale(2.8);opacity:0}}
+@keyframes sheetIn{from{opacity:0;transform:translateY(40px) scale(0.98)}to{opacity:1;transform:none}}
+@keyframes rowIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; box-sizing: border-box; background: radial-gradient(ellipse at 50% 45%, #0D1320 0%, #05070B 72%); color: #F4F1EB; overflow: hidden">
+
+<!-- Escena de fondo desenfocada -->
+<div style="position: absolute; left: 0; top: 180px; width: 1440px; height: 540px; filter: blur(3px); opacity: 0.6">
+<sc-for list="{{land}}" as="d" hint-placeholder-count="500">
+<div style="{{d.style}}"></div>
+</sc-for>
+<sc-for list="{{pins}}" as="m" hint-placeholder-count="14">
+<div style="{{m.wrapStyle}}">
+<div style="{{m.ringStyle}}"></div>
+<div style="{{m.dotStyle}}"></div>
+</div>
+</sc-for>
+</div>
+<div style="position: absolute; inset: 0; background: rgba(5,7,11,0.72)"></div>
+
+<!-- Hoja modal -->
+<section role="dialog" aria-label="El archivo" style="position: absolute; left: 50%; top: 48px; bottom: 48px; width: 780px; margin-left: -390px; box-sizing: border-box; display: flex; flex-direction: column; background: rgba(14,16,22,0.9); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.14); border-radius: 26px; box-shadow: 0 50px 120px rgba(0,0,0,0.7); overflow: hidden; animation: sheetIn 700ms cubic-bezier(0.2,0.8,0.2,1) both">
+<div style="flex-shrink: 0; padding: 28px 32px 20px; display: flex; flex-direction: column; gap: 20px; border-bottom: 1px solid rgba(255,255,255,0.1)">
+<div style="display: flex; align-items: flex-start; justify-content: space-between">
+<div style="display: flex; flex-direction: column; gap: 8px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: #E5484D">{{countLabel}}</span>
+<h1 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 40px; line-height: 1; color: #FFFFFF">El archivo</h1>
+</div>
+<a class="xbtn" href="Globo.dc.html" aria-label="Cerrar" style="width: 48px; height: 48px; margin: -6px -10px 0 0; display: flex; align-items: center; justify-content: center; border-radius: 12px; color: #D8D3CA">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</a>
+</div>
+<label style="display: flex; align-items: center; gap: 12px; height: 52px; box-sizing: border-box; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 14px; color: #B9B4AB">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+<input type="text" value="{{q}}" onChange="{{onQ}}" placeholder="Filtrar por nombre, lugar o año…" aria-label="Filtrar el archivo" style="flex-grow: 1; min-width: 0; height: 100%; background: transparent; border: 0; outline: 0; box-shadow: none; color: #F4F1EB; font-size: 15px">
+</label>
+</div>
+
+<div class="scroll" style="flex-grow: 1; min-height: 0; overflow-y: auto; padding: 12px 20px 24px">
+<sc-for list="{{rows}}" as="r" hint-placeholder-count="14">
+<a class="arow" href="Expediente-Cine.dc.html" style="{{r.style}}">
+<span style="width: 64px; flex-shrink: 0; font-family: 'IBM Plex Mono', monospace; font-size: 16px; font-weight: 500; color: #F0C674">{{r.year}}</span>
+<span style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 50%; background: {{r.color}}; box-shadow: 0 0 12px {{r.color}}"></span>
+<span style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 19px; line-height: 1.1; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{r.title}}</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.04em; color: #B9B4AB">{{r.loc}}</span>
+</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: {{r.stColor}}"><span style="width: 7px; height: 7px; border-radius: 50%; background: {{r.stColor}}"></span>{{r.status}}</span>
+<svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#B9B4AB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+</a>
+</sc-for>
+<sc-if value="{{empty}}" hint-placeholder-val="{{false}}">
+<div style="padding: 56px 0; display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+<div style="width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.14); color: #B9B4AB">
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5M8.5 11h5"/></svg>
+</div>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; color: #FFFFFF">Ningún expediente coincide</span>
+<span style="font-size: 14px; color: #B9B4AB">Prueba con otro nombre, lugar o año.</span>
+</div>
+</sc-if>
+</div>
+</section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { q: '' };
+}
+renderVals() {
+const CAT = { serie: '#E5484D', isolated: '#D9788A', kidnapping: '#E0A63A', unsolved: '#5AA0D0' };
+const ST = { open: '#6CB0E0', solved: '#8FCB8A', progress: '#F0B455' };
+const list = [
+{ t: 'Zodiac', loc: 'San Francisco · EE. UU.', y: 1968, cat: 'serie', st: 'open', stl: 'Sin resolver', lat: 37.77, lon: -122.42 },
+{ t: 'Black Dahlia', loc: 'Los Ángeles · EE. UU.', y: 1947, cat: 'isolated', st: 'open', stl: 'Sin resolver', lat: 34.05, lon: -118.24 },
+{ t: 'La mujer de Isdal', loc: 'Bergen · Noruega', y: 1970, cat: 'unsolved', st: 'open', stl: 'Sin resolver', lat: 60.39, lon: 5.32 },
+{ t: 'Madeleine McCann', loc: 'Praia da Luz · Portugal', y: 2007, cat: 'kidnapping', st: 'progress', stl: 'En investigación', lat: 37.09, lon: -8.72 },
+{ t: 'Paso Diátlov', loc: 'Montes Urales · Rusia', y: 1959, cat: 'unsolved', st: 'progress', stl: 'Caso reabierto', lat: 61.75, lon: 59.45 },
+{ t: 'El hombre de Somerton', loc: 'Adelaida · Australia', y: 1948, cat: 'unsolved', st: 'solved', stl: 'Identidad confirmada', lat: -34.93, lon: 138.6 },
+{ t: 'Golden State Killer', loc: 'California · EE. UU.', y: 1974, cat: 'serie', st: 'solved', stl: 'Resuelto (2018)', lat: 38.58, lon: -121.49 },
+{ t: 'Hinterkaifeck', loc: 'Baviera · Alemania', y: 1922, cat: 'unsolved', st: 'open', stl: 'Sin resolver', lat: 48.46, lon: 11.27 },
+{ t: 'Jack el Destripador', loc: 'Londres · Reino Unido', y: 1888, cat: 'serie', st: 'open', stl: 'Sin resolver', lat: 51.51, lon: -0.07 },
+{ t: 'Envenenamientos de Tylenol', loc: 'Chicago · EE. UU.', y: 1982, cat: 'unsolved', st: 'open', stl: 'Sin resolver', lat: 41.88, lon: -87.63 },
+{ t: 'JonBenét Ramsey', loc: 'Boulder · EE. UU.', y: 1996, cat: 'unsolved', st: 'open', stl: 'Sin resolver', lat: 40.02, lon: -105.27 },
+{ t: 'Caso Borden', loc: 'Fall River · EE. UU.', y: 1892, cat: 'isolated', st: 'open', stl: 'Sin condena', lat: 41.7, lon: -71.15 },
+{ t: 'BTK', loc: 'Wichita · EE. UU.', y: 1974, cat: 'serie', st: 'solved', stl: 'Resuelto (2005)', lat: 37.69, lon: -97.34 },
+{ t: 'Meredith Kercher', loc: 'Perugia · Italia', y: 2007, cat: 'isolated', st: 'solved', stl: 'Caso cerrado', lat: 43.11, lon: 12.39 }
+];
+const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const q = norm(this.state.q.trim());
+const sorted = list.slice().sort((a, b) => b.y - a.y || a.t.localeCompare(b.t));
+const shown = sorted.filter((c) => !q || norm(c.t + ' ' + c.loc + ' ' + c.y).indexOf(q) !== -1);
+const rows = shown.map((c, i) => ({
+title: c.t, loc: c.loc, year: String(c.y), color: CAT[c.cat], status: c.stl, stColor: ST[c.st],
+style: 'display:flex;align-items:center;gap:16px;padding:0 16px;height:76px;border-radius:16px;border-bottom:1px solid rgba(255,255,255,0.06);animation:rowIn 500ms cubic-bezier(0.2,0.8,0.2,1) ' + (Math.min(i, 10) * 40 + 250) + 'ms both'
+}));
+const LAND = {
+0: [[21, 32], [39, 40], [55, 56]], 1: [[9, 19], [21, 33], [49, 50], [54, 71]], 2: [[2, 22], [23, 31], [37, 71]],
+3: [[2, 16], [20, 24], [26, 28], [31, 32], [37, 71]], 4: [[3, 16], [21, 24], [35, 35], [38, 71]], 5: [[4, 16], [20, 25], [34, 35], [36, 71]],
+6: [[5, 25], [35, 71]], 7: [[10, 25], [34, 40], [45, 64]], 8: [[11, 24], [34, 37], [38, 38], [41, 64]], 9: [[12, 23], [34, 63]],
+10: [[13, 20], [33, 63]], 11: [[12, 18], [20, 21], [33, 49], [50, 62]], 12: [[16, 19], [21, 23], [33, 47], [45, 48], [50, 53], [55, 58], [60, 60]],
+13: [[17, 19], [20, 24], [33, 46], [47, 47], [51, 52], [55, 57], [60, 60]], 14: [[18, 19], [20, 26], [33, 47], [52, 52], [55, 56], [57, 59]],
+15: [[20, 29], [36, 46], [55, 56], [57, 59], [60, 61], [63, 65]], 16: [[20, 29], [36, 45], [55, 56], [57, 59], [62, 66]],
+17: [[20, 30], [37, 44], [56, 58], [63, 66]], 18: [[21, 30], [37, 44], [57, 60], [62, 64]], 19: [[22, 30], [38, 45], [59, 66]],
+20: [[22, 28], [38, 45], [58, 66]], 21: [[22, 28], [38, 43], [58, 66]], 22: [[22, 27], [39, 43], [59, 66]], 23: [[22, 26], [60, 66], [69, 70]],
+24: [[22, 26], [65, 65], [69, 70]], 25: [[22, 25], [69, 70]], 26: [[22, 25]]
+};
+const land = [];
+Object.keys(LAND).forEach((r) => {
+LAND[r].forEach((rg) => {
+for (let col = rg[0]; col <= rg[1]; col++) {
+const x = (col + 0.5) * 20, y = (Number(r) + 0.5) * 20;
+land.push({ style: 'position:absolute;left:' + (x - 2.5) + 'px;top:' + (y - 2.5) + 'px;width:5px;height:5px;border-radius:50%;background:#33405A;opacity:' + (0.45 + ((col * 7 + Number(r) * 13) % 6) / 10) });
+}
+});
+});
+const pins = list.map((c, i) => ({
+wrapStyle: 'position:absolute;left:' + (c.lon + 180) * 4 + 'px;top:' + (80 - c.lat) * 4 + 'px;width:0;height:0',
+ringStyle: 'position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;border:2px solid ' + CAT[c.cat] + ';animation:pulse 3.2s ease-out ' + ((i * 0.43) % 3).toFixed(2) + 's infinite',
+dotStyle: 'position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:' + CAT[c.cat] + ';box-shadow:0 0 12px ' + CAT[c.cat]
+}));
+return {
+land, pins, rows, q: this.state.q, empty: shown.length === 0,
+countLabel: q ? shown.length + ' DE ' + list.length + ' EXPEDIENTES' : list.length + ' EXPEDIENTES',
+onQ: (e) => this.setState({ q: e.target.value })
+};
+}
+}
+</script>
+</body>
+</html>

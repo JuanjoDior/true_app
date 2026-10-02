@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Portada cinemática</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#07080B;font-family:'Noto Sans',system-ui,sans-serif}
+a{color:#F4F1EB;text-decoration:none}a:hover{color:#FFFFFF}
+button{font-family:inherit;cursor:pointer}
+.poster{transition:transform .45s cubic-bezier(.2,.8,.2,1),box-shadow .45s,opacity .35s}
+.poster:hover{transform:translateY(-12px) scale(1.06);box-shadow:0 34px 70px rgba(0,0,0,.65);z-index:5}
+.row:hover .poster:not(:hover){opacity:.45}
+.poster .base{transition:opacity .3s}
+.poster:hover .base{opacity:0}
+.poster .more{opacity:0;transform:translateY(14px);transition:opacity .4s,transform .45s cubic-bezier(.2,.8,.2,1)}
+.poster:hover .more{opacity:1;transform:none}
+.cta{transition:transform .25s,background .25s}
+.cta:hover{transform:scale(1.04)}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes pulse{0%{transform:scale(.5);opacity:.9}100%{transform:scale(2.6);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</helmet>
+<div style="width: 1440px; height: 2300px; box-sizing: border-box; background: #07080B; color: #F4F1EB; overflow: hidden">
+
+<!-- HÉROE: carrusel de casos en el foco -->
+<section style="position: relative; width: 1440px; height: 740px; overflow: hidden; background: #07080B">
+<sc-for list="{{slides}}" as="s" hint-placeholder-count="5">
+<div style="{{s.layerStyle}}">
+<div style="{{s.bgStyle}}"></div>
+<div style="{{s.yearStyle}}">{{s.year}}</div>
+<div style="{{s.reticleStyle}}">
+<div style="position: absolute; inset: 0; border-radius: 50%; border: 1px solid {{s.ring}}"></div>
+<div style="position: absolute; inset: 60px; border-radius: 50%; border: 1px solid {{s.ring}}"></div>
+<div style="position: absolute; inset: 120px; border-radius: 50%; border: 1px solid {{s.ring}}"></div>
+<div style="position: absolute; left: 0; right: 0; top: 50%; height: 1px; background: {{s.ring}}"></div>
+<div style="position: absolute; top: 0; bottom: 0; left: 50%; width: 1px; background: {{s.ring}}"></div>
+<div style="{{s.sweepStyle}}"></div>
+<div style="{{s.pulseStyle}}"></div>
+<div style="position: absolute; left: 50%; top: 50%; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: {{s.glow}}; border: 3px solid #07080B; box-shadow: 0 0 24px {{s.glow}}"></div>
+<span style="position: absolute; left: 0; right: 0; bottom: -34px; text-align: center; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; color: #C9C4BB">{{s.coords}}</span>
+</div>
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 900px; background: linear-gradient(90deg, rgba(7,8,11,0.92) 0%, rgba(7,8,11,0.6) 55%, rgba(7,8,11,0) 100%)"></div>
+<div style="{{s.contentStyle}}">
+<div style="display: flex; align-items: center; gap: 14px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.22em; color: {{s.glow}}">EN EL FOCO</span>
+<span style="width: 32px; height: 1px; background: rgba(255,255,255,0.35)"></span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; color: #C9C4BB">{{s.n}} / 5</span>
+</div>
+<h1 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 92px; line-height: 0.96; letter-spacing: -0.01em; color: #FFFFFF">{{s.title}}</h1>
+<div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+<span style="height: 28px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid {{s.glow}}; border-radius: 6px; color: {{s.glow}}; font-size: 13px; font-weight: 600">{{s.category}}</span>
+<span style="font-size: 15px; color: #E4E0D8">{{s.loc}} · {{s.year}}</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: {{s.stColor}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{s.stColor}}"></span>{{s.status}}</span>
+</div>
+<p style="margin: 0; max-width: 560px; font-size: 18px; line-height: 1.6; color: #D8D3CA">{{s.summary}}</p>
+<div style="display: flex; gap: 14px; margin-top: 6px">
+<a class="cta" href="Expediente.dc.html" style="height: 54px; padding: 0 30px; display: flex; align-items: center; gap: 10px; background: #F4F1EB; border-radius: 10px; color: #0B0C10; font-size: 16px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Abrir expediente
+</a>
+<a class="cta" href="Cine-Mapa.dc.html" style="height: 54px; padding: 0 28px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.22); border-radius: 10px; color: #FFFFFF; font-size: 16px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3"/></svg>Ver en el mapa
+</a>
+</div>
+</div>
+</div>
+</sc-for>
+
+<div style="position: absolute; left: 0; right: 0; bottom: 0; height: 220px; background: linear-gradient(180deg, rgba(7,8,11,0) 0%, #07080B 100%); pointer-events: none"></div>
+
+<!-- Progreso del carrusel -->
+<div style="position: absolute; left: 80px; right: 80px; bottom: 40px; display: flex; gap: 14px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+<button type="button" onClick="{{t.pick}}" style="flex: 1; min-width: 0; height: 52px; padding: 0; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; background: transparent; border: 0; text-align: left">
+<span style="font-size: 13px; font-weight: 600; color: {{t.color}}; transition: color 0.3s">{{t.title}}</span>
+<span style="width: 100%; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.22); overflow: hidden"><span style="{{t.barStyle}}"></span></span>
+</button>
+</sc-for>
+</div>
+
+<!-- Navegación -->
+<header style="position: absolute; left: 0; right: 0; top: 0; height: 96px; box-sizing: border-box; padding: 0 80px; display: flex; align-items: center; gap: 48px; background: linear-gradient(180deg, rgba(7,8,11,0.85) 0%, rgba(7,8,11,0) 100%)">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 36px; height: 36px; border-radius: 10px; background: #E5484D; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; color: #FFFFFF">T</div>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; letter-spacing: 0.1em">TRUE</span>
+</div>
+<nav aria-label="Secciones" style="display: flex; gap: 8px">
+<a href="Cine-Portada.dc.html" style="height: 44px; padding: 0 16px; display: flex; align-items: center; font-size: 15px; font-weight: 600; color: #FFFFFF">Inicio</a>
+<a href="Cine-Mapa.dc.html" style="height: 44px; padding: 0 16px; display: flex; align-items: center; font-size: 15px; font-weight: 500; color: #C9C4BB">Mapa</a>
+<button type="button" style="height: 44px; padding: 0 16px; background: transparent; border: 0; font-size: 15px; font-weight: 500; color: #C9C4BB">Archivo</button>
+<button type="button" style="height: 44px; padding: 0 16px; background: transparent; border: 0; font-size: 15px; font-weight: 500; color: #C9C4BB">Formulario</button>
+</nav>
+<div style="flex-grow: 1"></div>
+<label style="width: 300px; height: 44px; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.16); border-radius: 999px; color: #D8D3CA">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+<input type="text" placeholder="Buscar por nombre, lugar o año…" aria-label="Buscar casos" style="flex-grow: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #FFFFFF; font-family: inherit; font-size: 14px">
+</label>
+</header>
+</section>
+
+<!-- FILA: Novedades -->
+<section class="row" style="position: relative; padding: 24px 0 56px 80px">
+<div style="display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px">
+<h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 30px">Novedades</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; color: #B9B4AB">ÚLTIMAS ACTUALIZACIONES DEL ARCHIVO</span>
+</div>
+<div style="display: flex; gap: 16px; padding-bottom: 20px; overflow: hidden">
+<sc-for list="{{news}}" as="p" hint-placeholder-count="6">
+<a class="poster" href="Expediente.dc.html" style="{{p.style}}">
+<div style="{{p.yearStyle}}">{{p.year}}</div>
+<span style="position: absolute; left: 14px; top: 14px; height: 26px; padding: 0 10px; display: inline-flex; align-items: center; background: rgba(7,8,11,0.6); border: 1px solid {{p.glow}}; border-radius: 6px; font-size: 12px; font-weight: 600; color: #FFFFFF">{{p.news}}</span>
+<div class="base" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 60px 18px 18px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(7,8,11,0) 0%, rgba(7,8,11,0.92) 100%)">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px; line-height: 1.05; color: #FFFFFF">{{p.title}}</span>
+<span style="font-size: 13px; color: #D8D3CA">{{p.loc}} · {{p.year}}</span>
+</div>
+<div class="more" style="position: absolute; inset: 0; box-sizing: border-box; padding: 18px; display: flex; flex-direction: column; justify-content: flex-end; gap: 10px; background: linear-gradient(180deg, rgba(7,8,11,0.5) 0%, rgba(7,8,11,0.95) 55%)">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 22px; line-height: 1.05; color: #FFFFFF">{{p.title}}</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: {{p.stColor}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{p.stColor}}"></span>{{p.status}}</span>
+<span style="font-size: 13px; line-height: 1.5; color: #D8D3CA">{{p.summary}}</span>
+<span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #FFFFFF">Abrir expediente
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+</div>
+</a>
+</sc-for>
+</div>
+<button type="button" aria-label="Siguientes novedades" style="position: absolute; right: 16px; top: 190px; width: 52px; height: 52px; display: flex; align-items: center; justify-content: center; background: rgba(20,22,28,0.85); border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; color: #FFFFFF; z-index: 6">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+</button>
+</section>
+
+<!-- FILA: Sin resolver -->
+<section class="row" style="position: relative; padding: 0 0 64px 80px">
+<div style="display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px">
+<h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 30px">Sin resolver</h2>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; color: #B9B4AB">CASOS ABIERTOS QUE SIGUEN ESPERANDO RESPUESTA</span>
+</div>
+<div style="display: flex; gap: 16px; padding-bottom: 20px; overflow: hidden">
+<sc-for list="{{open}}" as="p" hint-placeholder-count="4">
+<a class="poster" href="Expediente.dc.html" style="{{p.style}}">
+<div style="{{p.yearStyle}}">{{p.year}}</div>
+<div class="base" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 50px 20px 18px; display: flex; flex-direction: column; gap: 6px; background: linear-gradient(180deg, rgba(7,8,11,0) 0%, rgba(7,8,11,0.9) 100%)">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 26px; line-height: 1.05; color: #FFFFFF">{{p.title}}</span>
+<span style="font-size: 13px; color: #D8D3CA">{{p.loc}} · {{p.year}}</span>
+</div>
+<div class="more" style="position: absolute; inset: 0; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; background: linear-gradient(180deg, rgba(7,8,11,0.45) 0%, rgba(7,8,11,0.95) 60%)">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 22px; color: #FFFFFF">{{p.title}}</span>
+<span style="font-size: 13px; line-height: 1.5; color: #D8D3CA">{{p.summary}}</span>
+</div>
+</a>
+</sc-for>
+</div>
+</section>
+
+<!-- Invitación al mapa -->
+<section style="position: relative; width: 1440px; height: 540px; overflow: hidden; background: radial-gradient(ellipse at 50% 60%, #101722 0%, #07080B 72%)">
+<sc-for list="{{land}}" as="d" hint-placeholder-count="500">
+<div style="{{d.style}}"></div>
+</sc-for>
+<sc-for list="{{pins}}" as="m" hint-placeholder-count="14">
+<div style="{{m.wrapStyle}}">
+<div style="{{m.ringStyle}}"></div>
+<div style="{{m.dotStyle}}"></div>
+</div>
+</sc-for>
+<div style="position: absolute; inset: 0; background: linear-gradient(90deg, rgba(7,8,11,0.94) 0%, rgba(7,8,11,0.55) 38%, rgba(7,8,11,0) 62%), linear-gradient(180deg, #07080B 0%, rgba(7,8,11,0) 22%, rgba(7,8,11,0) 78%, #07080B 100%); pointer-events: none"></div>
+<div style="position: absolute; left: 80px; top: 130px; width: 520px; display: flex; flex-direction: column; gap: 18px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.22em; color: #E5484D">EL MAPA</span>
+<h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 56px; line-height: 1; color: #FFFFFF">El archivo, punto por punto</h2>
+<p style="margin: 0; font-size: 17px; line-height: 1.6; color: #D8D3CA">Cada caso tiene su lugar. Acércate, sigue las conexiones entre casos y recorre décadas con la línea de tiempo.</p>
+<a class="cta" href="Cine-Mapa.dc.html" style="align-self: flex-start; height: 54px; padding: 0 30px; display: flex; align-items: center; gap: 10px; background: #F4F1EB; border-radius: 10px; color: #0B0C10; font-size: 16px; font-weight: 600">Abrir el mapa
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+</div>
+</section>
+
+<footer style="box-sizing: border-box; height: 120px; padding: 0 80px; display: flex; align-items: center; justify-content: space-between; border-top: 1px solid #1B1E26">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 16px; letter-spacing: 0.1em; color: #C9C4BB">TRUE</span>
+<span style="font-size: 13px; color: #B9B4AB">Crímenes reales · documentados con respeto. Las víctimas se nombran con respeto.</span>
+</footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2300}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { slide: 0 };
+}
+componentDidMount() {
+this.startTimer();
+}
+componentWillUnmount() {
+clearInterval(this._t);
+}
+startTimer() {
+clearInterval(this._t);
+this._t = setInterval(() => this.setState({ slide: (this.state.slide + 1) % 5 }), 7000);
+}
+renderVals() {
+const CAT = {
+serie: { label: 'Asesinos en serie', c: '#E5484D', base: '#2A0B10' },
+isolated: { label: 'Asesinato aislado', c: '#D9788A', base: '#2A1219' },
+kidnapping: { label: 'Secuestro', c: '#E0A63A', base: '#2B1E0A' },
+unsolved: { label: 'Caso sin resolver', c: '#5AA0D0', base: '#0B1F2E' }
+};
+const ST = { open: '#6CB0E0', solved: '#8FCB8A', progress: '#F0B455' };
+const C = {
+zodiac: { t: 'Zodiac', loc: 'San Francisco', y: 1968, lat: 37.77, lon: -122.42, cat: 'serie', st: 'open', stl: 'Sin resolver', sum: 'Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.' },
+dahlia: { t: 'Black Dahlia', loc: 'Los Ángeles', y: 1947, lat: 34.05, lon: -118.24, cat: 'isolated', st: 'open', stl: 'Sin resolver', sum: 'Hallazgo del cuerpo de Elizabeth Short, de 22 años, en enero de 1947. El caso sigue sin imputación.' },
+isdal: { t: 'La mujer de Isdal', loc: 'Bergen', y: 1970, lat: 60.39, lon: 5.32, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Hallazgo de una mujer sin identificar en el valle de Isdal, en Noruega, en 1970.' },
+mccann: { t: 'Madeleine McCann', loc: 'Praia da Luz', y: 2007, lat: 37.09, lon: -8.72, cat: 'kidnapping', st: 'progress', stl: 'En investigación', sum: 'Desaparición de una niña de tres años en el Algarve, en mayo de 2007. La investigación sigue en curso.' },
+dyatlov: { t: 'Paso Diátlov', loc: 'Montes Urales', y: 1959, lat: 61.75, lon: 59.45, cat: 'unsolved', st: 'progress', stl: 'Caso reabierto', sum: 'Muerte de nueve excursionistas en los Urales en febrero de 1959. Caso reabierto en 2019.' },
+somerton: { t: 'El hombre de Somerton', loc: 'Adelaida', y: 1948, lat: -34.93, lon: 138.6, cat: 'unsolved', st: 'solved', stl: 'Identidad confirmada', sum: 'Hombre sin identificar hallado en una playa de Adelaida en 1948. Su identidad se confirmó en 2022.' },
+gsk: { t: 'Golden State Killer', loc: 'California', y: 1974, lat: 38.58, lon: -121.49, cat: 'serie', st: 'solved', stl: 'Resuelto (2018)', sum: 'Serie de agresiones en California durante los años 70 y 80. Fue identificado y detenido en 2018.' },
+hinter: { t: 'Hinterkaifeck', loc: 'Baviera', y: 1922, lat: 48.46, lon: 11.27, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Asesinato de seis personas en una granja aislada de Baviera en 1922.' },
+ripper: { t: 'Jack el Destripador', loc: 'Londres', y: 1888, lat: 51.51, lon: -0.07, cat: 'serie', st: 'open', stl: 'Sin resolver', sum: 'Serie de asesinatos en el barrio de Whitechapel durante 1888. El autor nunca fue identificado.' },
+tylenol: { t: 'Envenenamientos de Tylenol', loc: 'Chicago', y: 1982, lat: 41.88, lon: -87.63, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Envenenamientos con cápsulas adulteradas en Chicago en 1982. Nunca se identificó al responsable.' },
+jonbenet: { t: 'JonBenét Ramsey', loc: 'Boulder', y: 1996, lat: 40.02, lon: -105.27, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Muerte de una niña de seis años en Boulder, Colorado, en diciembre de 1996.' },
+borden: { t: 'Caso Borden', loc: 'Fall River', y: 1892, lat: 41.7, lon: -71.15, cat: 'isolated', st: 'open', stl: 'Sin condena', sum: 'Doble asesinato en Fall River, Massachusetts, en 1892. La acusada fue absuelta.' },
+btk: { t: 'BTK', loc: 'Wichita', y: 1974, lat: 37.69, lon: -97.34, cat: 'serie', st: 'solved', stl: 'Resuelto (2005)', sum: 'Serie de asesinatos en Wichita entre 1974 y 1991. El autor fue detenido en 2005.' },
+kercher: { t: 'Meredith Kercher', loc: 'Perugia', y: 2007, lat: 43.11, lon: 12.39, cat: 'isolated', st: 'solved', stl: 'Caso cerrado', sum: 'Asesinato de una estudiante británica en Perugia en 2007.' }
+};
+const coords = (c) => Math.abs(c.lat).toFixed(2) + '° ' + (c.lat >= 0 ? 'N' : 'S') + ' · ' + Math.abs(c.lon).toFixed(2) + '° ' + (c.lon >= 0 ? 'E' : 'O');
+const heroIds = ['zodiac', 'dahlia', 'isdal', 'mccann', 'dyatlov'];
+const cur = this.state.slide;
+const ease = 'cubic-bezier(0.2,0.8,0.2,1)';
+const slides = heroIds.map((id, i) => {
+const c = C[id], m = CAT[c.cat], a = i === cur;
+return {
+title: c.t, year: String(c.y), loc: c.loc, n: String(i + 1), glow: m.c, ring: m.c + '55',
+category: m.label, status: c.stl, stColor: ST[c.st], summary: c.sum, coords: coords(c),
+layerStyle: 'position:absolute;inset:0;pointer-events:' + (a ? 'auto' : 'none'),
+bgStyle: 'position:absolute;inset:0;background:radial-gradient(900px 620px at 76% 40%,' + m.c + '4D,transparent 65%),radial-gradient(700px 500px at 18% 95%,' + m.c + '22,transparent 70%),linear-gradient(120deg,' + m.base + ' 0%,#07080B 78%);opacity:' + (a ? 1 : 0) + ';transform:' + (a ? 'scale(1)' : 'scale(1.1)') + ';transition:' + (a ? 'opacity 900ms ease,transform 8000ms linear' : 'opacity 900ms ease,transform 0s linear 900ms'),
+yearStyle: "position:absolute;right:30px;top:70px;font-family:'Noto Serif',serif;font-weight:700;font-size:520px;line-height:1;color:rgba(255,255,255,0.05);opacity:" + (a ? 1 : 0) + ';transform:translateX(' + (a ? 0 : 70) + 'px);transition:opacity 1100ms ' + ease + ',transform 1300ms ' + ease,
+reticleStyle: 'position:absolute;left:940px;top:150px;width:380px;height:380px;opacity:' + (a ? 1 : 0) + ';transform:scale(' + (a ? 1 : 0.86) + ');transition:opacity 1000ms ' + ease + ' 200ms,transform 1300ms ' + ease + ' 200ms',
+sweepStyle: 'position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,transparent 0deg,' + m.c + '40 70deg,transparent 71deg);animation:spin 6s linear infinite',
+pulseStyle: 'position:absolute;left:50%;top:50%;width:16px;height:16px;margin:-8px 0 0 -8px;border-radius:50%;border:2px solid ' + m.c + ';animation:pulse 2.4s ease-out infinite',
+contentStyle: 'position:absolute;left:80px;bottom:150px;width:700px;display:flex;flex-direction:column;gap:20px;opacity:' + (a ? 1 : 0) + ';transform:translateY(' + (a ? 0 : 28) + 'px);transition:' + (a ? 'opacity 900ms ' + ease + ' 350ms,transform 1000ms ' + ease + ' 350ms' : 'opacity 350ms ease,transform 350ms ease')
+};
+});
+const tabs = heroIds.map((id, i) => ({
+title: C[id].t,
+color: i === cur ? '#FFFFFF' : '#A7A29A',
+pick: () => { this.setState({ slide: i }); this.startTimer(); },
+barStyle: i === cur ? 'display:block;height:100%;background:#FFFFFF;transform-origin:left;animation:fill 7000ms linear forwards' : 'display:block;height:100%;background:#FFFFFF;transform-origin:left;transform:scaleX(' + (i < cur ? 1 : 0) + ')'
+}));
+const poster = (id, news, w, h, yr) => {
+const c = C[id], m = CAT[c.cat];
+return {
+title: c.t, loc: c.loc, year: String(c.y), news, glow: m.c, summary: c.sum, status: c.stl, stColor: ST[c.st],
+style: 'position:relative;display:block;flex-shrink:0;width:' + w + 'px;height:' + h + 'px;border-radius:14px;overflow:hidden;border:1px solid rgba(255,255,255,0.08);background:radial-gradient(' + w + 'px ' + h + 'px at 80% 0%,' + m.c + '40,transparent 65%),linear-gradient(160deg,' + m.base + ' 0%,#07080B 100%)',
+yearStyle: "position:absolute;right:-6px;top:" + yr + "px;font-family:'Noto Serif',serif;font-weight:700;font-size:" + Math.round(h * 0.42) + 'px;line-height:1;color:rgba(255,255,255,0.08)'
+};
+};
+const news = [
+poster('dyatlov', 'Caso reabierto', 236, 350, 60),
+poster('somerton', 'Identidad confirmada', 236, 350, 60),
+poster('dahlia', 'Nueva fuente', 236, 350, 60),
+poster('gsk', 'Estado actualizado', 236, 350, 60),
+poster('isdal', 'Nuevo expediente', 236, 350, 60),
+poster('hinter', 'Nuevo expediente', 236, 350, 60)
+];
+const open = ['zodiac', 'ripper', 'tylenol', 'jonbenet'].map((id) => poster(id, '', 400, 225, 10));
+
+// Mapa de puntos: una celda = 5º de longitud y 5º de latitud (20 px).
+const LAND = {
+0: [[21, 32], [39, 40], [55, 56]], 1: [[9, 19], [21, 33], [49, 50], [54, 71]], 2: [[2, 22], [23, 31], [37, 71]],
+3: [[2, 16], [20, 24], [26, 28], [31, 32], [37, 71]], 4: [[3, 16], [21, 24], [35, 35], [38, 71]], 5: [[4, 16], [20, 25], [34, 35], [36, 71]],
+6: [[5, 25], [35, 71]], 7: [[10, 25], [34, 40], [45, 64]], 8: [[11, 24], [34, 37], [38, 38], [41, 64]], 9: [[12, 23], [34, 63]],
+10: [[13, 20], [33, 63]], 11: [[12, 18], [20, 21], [33, 49], [50, 62]], 12: [[16, 19], [21, 23], [33, 47], [45, 48], [50, 53], [55, 58], [60, 60]],
+13: [[17, 19], [20, 24], [33, 46], [47, 47], [51, 52], [55, 57], [60, 60]], 14: [[18, 19], [20, 26], [33, 47], [52, 52], [55, 56], [57, 59]],
+15: [[20, 29], [36, 46], [55, 56], [57, 59], [60, 61], [63, 65]], 16: [[20, 29], [36, 45], [55, 56], [57, 59], [62, 66]],
+17: [[20, 30], [37, 44], [56, 58], [63, 66]], 18: [[21, 30], [37, 44], [57, 60], [62, 64]], 19: [[22, 30], [38, 45], [59, 66]],
+20: [[22, 28], [38, 45], [58, 66]], 21: [[22, 28], [38, 43], [58, 66]], 22: [[22, 27], [39, 43], [59, 66]], 23: [[22, 26], [60, 66], [69, 70]],
+24: [[22, 26], [65, 65], [69, 70]], 25: [[22, 25], [69, 70]], 26: [[22, 25]]
+};
+const land = [];
+Object.keys(LAND).forEach((r) => {
+LAND[r].forEach((rg) => {
+for (let col = rg[0]; col <= rg[1]; col++) {
+const x = (col + 0.5) * 20, y = (Number(r) + 0.5) * 20;
+const op = 0.45 + ((col * 7 + Number(r) * 13) % 6) / 10;
+land.push({ style: 'position:absolute;left:' + (x - 2.5) + 'px;top:' + (y - 2.5) + 'px;width:5px;height:5px;border-radius:50%;background:#33405A;opacity:' + op });
+}
+});
+});
+const pins = Object.keys(C).map((id, i) => {
+const c = C[id], m = CAT[c.cat];
+const x = (c.lon + 180) * 4, y = (80 - c.lat) * 4;
+return {
+wrapStyle: 'position:absolute;left:' + x + 'px;top:' + y + 'px;width:0;height:0',
+ringStyle: 'position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;border:2px solid ' + m.c + ';animation:pulse 2.8s ease-out ' + (i * 0.37).toFixed(2) + 's infinite',
+dotStyle: 'position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:' + m.c + ';box-shadow:0 0 14px ' + m.c
+};
+});
+return { slides, tabs, news, open, land, pins };
+}
+}
+</script>
+</body>
+</html>

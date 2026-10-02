@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Globo interactivo</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070B;font-family:'Noto Sans',system-ui,sans-serif}
+a{color:#F4F1EB;text-decoration:none}a:hover{color:#FFFFFF}
+button{font-family:inherit;cursor:pointer}
+.cta{transition:transform .25s}
+.cta:hover{transform:scale(1.04)}
+.rel{transition:background .25s,transform .25s}
+.rel:hover{background:rgba(255,255,255,0.1);transform:translateX(4px)}
+@keyframes pulse{0%{transform:scale(0.5);opacity:0.9}100%{transform:scale(2.8);opacity:0}}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes twinkle{0%,100%{opacity:0.2}50%{opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; box-sizing: border-box; background: radial-gradient(ellipse at 70% 50%, #0B1220 0%, #05070B 70%); color: #F4F1EB; overflow: hidden">
+
+<!-- Estrellas -->
+<sc-for list="{{stars}}" as="s" hint-placeholder-count="70">
+<div style="{{s.style}}"></div>
+</sc-for>
+
+<!-- Halo de color por caso -->
+<sc-for list="{{halos}}" as="h" hint-placeholder-count="6">
+<div style="{{h.style}}"></div>
+</sc-for>
+
+<!-- Globo -->
+<div style="{{stageStyle}}">
+<div style="{{bodyStyle}}"></div>
+<div style="{{globeStyle}}">
+<sc-for list="{{dots}}" as="d" hint-placeholder-count="600">
+<div style="{{d.style}}"></div>
+</sc-for>
+<sc-for list="{{arcDots}}" as="a" hint-placeholder-count="80">
+<div style="{{a.style}}"></div>
+</sc-for>
+<sc-for list="{{pins}}" as="m" hint-placeholder-count="14">
+<div style="{{m.wrapStyle}}">
+<button type="button" aria-label="{{m.title}}" onClick="{{m.pick}}" style="{{m.btnStyle}}">
+<span style="{{m.ringStyle}}"></span>
+<span style="{{m.dotStyle}}"></span>
+</button>
+</div>
+</sc-for>
+</div>
+<div style="{{shadeStyle}}"></div>
+</div>
+
+<!-- Etiquetas proyectadas (caso y conectados) -->
+<sc-for list="{{labels}}" as="l" hint-placeholder-count="3">
+<span style="{{l.style}}">{{l.text}}</span>
+</sc-for>
+
+<div style="position: absolute; left: 0; top: 0; bottom: 0; width: 980px; background: linear-gradient(90deg, rgba(5,7,11,0.95) 0%, rgba(5,7,11,0.7) 50%, rgba(5,7,11,0) 100%); pointer-events: none; opacity: {{homeOpacity}}; transition: opacity 700ms ease"></div>
+
+<!-- PORTADA: carrusel que dirige el globo -->
+<div style="{{homeLayer}}">
+<sc-for list="{{slides}}" as="s" hint-placeholder-count="5">
+<div style="{{s.layerStyle}}">
+<div style="{{s.yearStyle}}">{{s.year}}</div>
+<div style="{{s.contentStyle}}">
+<div style="display: flex; align-items: center; gap: 14px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.22em; color: {{s.glow}}">EN EL FOCO</span>
+<span style="width: 32px; height: 1px; background: rgba(255,255,255,0.35)"></span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em; color: #C9C4BB">{{s.n}} / 5</span>
+</div>
+<h1 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 88px; line-height: 0.96; letter-spacing: -0.01em; color: #FFFFFF">{{s.title}}</h1>
+<div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap">
+<span style="height: 28px; padding: 0 12px; display: inline-flex; align-items: center; border: 1px solid {{s.glow}}; border-radius: 6px; color: {{s.glow}}; font-size: 13px; font-weight: 600">{{s.category}}</span>
+<span style="font-size: 15px; color: #E4E0D8">{{s.loc}} · {{s.year}}</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; color: {{s.stColor}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{s.stColor}}"></span>{{s.status}}</span>
+</div>
+<p style="margin: 0; max-width: 540px; font-size: 18px; line-height: 1.6; color: #D8D3CA">{{s.summary}}</p>
+<div style="display: flex; gap: 14px; margin-top: 6px">
+<a class="cta" href="Expediente-Cine.dc.html" style="height: 54px; padding: 0 30px; display: flex; align-items: center; gap: 10px; background: #F4F1EB; border-radius: 10px; color: #0B0C10; font-size: 16px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>Abrir expediente
+</a>
+<button type="button" class="cta" onClick="{{s.explore}}" style="height: 54px; padding: 0 28px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.24); border-radius: 10px; color: #FFFFFF; font-size: 16px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg>Explorar el globo
+</button>
+</div>
+</div>
+<span style="{{s.coordsStyle}}">{{s.coords}}</span>
+</div>
+</sc-for>
+<div style="position: absolute; left: 80px; width: 680px; bottom: 40px; display: flex; gap: 14px">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+<button type="button" onClick="{{t.pick}}" style="flex: 1; min-width: 0; height: 52px; padding: 0; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; background: transparent; border: 0; text-align: left">
+<span style="font-size: 13px; font-weight: 600; color: {{t.color}}; transition: color 0.3s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%">{{t.title}}</span>
+<span style="width: 100%; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.22); overflow: hidden"><span style="{{t.barStyle}}"></span></span>
+</button>
+</sc-for>
+</div>
+</div>
+
+<!-- EXPLORAR: título, filtros, ficha y línea de tiempo -->
+<div style="{{exploreLayer}}">
+<div style="position: absolute; left: 40px; top: 112px; display: flex; flex-direction: column; gap: 16px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.22em; color: #E5484D">GLOBO DE CASOS</span>
+<h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 44px; line-height: 1; color: #FFFFFF">El archivo</h2>
+</div>
+<div style="display: flex; gap: 8px">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+<button type="button" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+</sc-for>
+</div>
+</div>
+
+<aside style="{{cardStyle}}">
+<div style="{{card.headStyle}}">
+<div style="{{card.ghostStyle}}">{{card.year}}</div>
+<span style="position: absolute; left: 20px; top: 20px; height: 28px; padding: 0 12px; display: inline-flex; align-items: center; background: rgba(5,7,11,0.6); border: 1px solid {{card.glow}}; border-radius: 6px; color: {{card.glow}}; font-size: 13px; font-weight: 600">{{card.category}}</span>
+<button type="button" aria-label="Volver a la vista del mundo" onClick="{{reset}}" style="position: absolute; right: 8px; top: 8px; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; color: #FFFFFF">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+</div>
+<div style="padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 36px; line-height: 1.02; color: #FFFFFF">{{card.title}}</h2>
+<span style="font-size: 14px; color: #D8D3CA">{{card.loc}} · {{card.year}}</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: {{card.stColor}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{card.stColor}}"></span>{{card.status}}</span>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 1.6; color: #D8D3CA">{{card.summary}}</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid rgba(255,255,255,0.12); border-bottom: 1px solid rgba(255,255,255,0.12)">
+<div style="padding: 12px 0; display: flex; flex-direction: column; gap: 5px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">AÑO</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #F0C674">{{card.year}}</span>
+</div>
+<div style="padding: 12px 0; display: flex; flex-direction: column; gap: 5px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">CONEXIONES</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 15px; color: #F0C674">{{card.count}}</span>
+</div>
+<div style="padding: 12px 0; display: flex; flex-direction: column; gap: 5px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">COORDS</span>
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #F0C674; line-height: 1.35">{{card.lat}}<br>{{card.lon}}</span>
+</div>
+</div>
+<sc-for list="{{card.related}}" as="r" hint-placeholder-count="2">
+<button type="button" class="rel" onClick="{{r.pick}}" style="display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; text-align: left; color: #F4F1EB">
+<span style="width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; background: {{r.color}}"></span>
+<span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 15px">{{r.title}}</span>
+<span style="font-size: 12px; color: #C9C4BB">{{r.rel}}</span>
+</span>
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#C9C4BB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</button>
+</sc-for>
+<a class="cta" href="Expediente-Cine.dc.html" style="height: 52px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #F4F1EB; border-radius: 10px; color: #0B0C10; font-size: 15px; font-weight: 600">Abrir expediente
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+</div>
+</aside>
+
+<div style="{{hintStyle}}">Selecciona un punto para volar hasta el caso</div>
+<div style="position: absolute; left: 40px; bottom: 140px; display: flex; gap: 16px; padding: 10px 16px; background: rgba(12,14,19,0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px">
+<sc-for list="{{legend}}" as="l" hint-placeholder-count="4">
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: #E4E0D8"><span style="width: 10px; height: 10px; border-radius: 50%; background: {{l.color}}"></span>{{l.label}}</span>
+</sc-for>
+</div>
+
+<div style="position: absolute; left: 40px; right: 40px; bottom: 28px; height: 96px; box-sizing: border-box; padding: 0 28px; display: flex; align-items: center; gap: 28px; background: rgba(12,14,19,0.72); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 18px">
+<div style="width: 150px; display: flex; flex-direction: column; gap: 2px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">HASTA</span>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 52px; line-height: 1; color: #FFFFFF">{{year}}</span>
+</div>
+<button type="button" aria-label="{{playLabel}}" onClick="{{togglePlay}}" style="width: 52px; height: 52px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #F4F1EB; border: 0; border-radius: 50%; color: #0B0C10">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="{{playIcon}}"/></svg>
+</button>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 4px">
+<div style="position: relative; height: 10px; margin: 0 8px">
+<sc-for list="{{ticks}}" as="t" hint-placeholder-count="14">
+<span style="{{t.style}}"></span>
+</sc-for>
+</div>
+<input type="range" min="1888" max="2025" value="{{year}}" onChange="{{onYear}}" aria-label="Año" style="width: 100%; margin: 0; height: 24px; accent-color: #E5484D; background: transparent">
+<div style="display: flex; justify-content: space-between; font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #B9B4AB"><span>1888</span><span>2025</span></div>
+</div>
+<div style="display: flex; padding: 3px; gap: 3px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 12px">
+<button type="button" onClick="{{reset}}" style="{{worldBtn}}">Mundo</button>
+<button type="button" onClick="{{detail}}" style="{{detailBtn}}">Detalle</button>
+</div>
+</div>
+</div>
+
+<!-- Navegación -->
+<header style="position: absolute; left: 0; right: 0; top: 0; height: 96px; box-sizing: border-box; padding: 0 40px 0 80px; display: flex; align-items: center; gap: 48px; background: linear-gradient(180deg, rgba(5,7,11,0.9) 0%, rgba(5,7,11,0) 100%)">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 36px; height: 36px; border-radius: 10px; background: #E5484D; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; color: #FFFFFF">T</div>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; letter-spacing: 0.1em">TRUE</span>
+</div>
+<nav aria-label="Secciones" style="display: flex; gap: 8px">
+<button type="button" onClick="{{goHome}}" style="{{navHome}}">Inicio</button>
+<button type="button" onClick="{{goExplore}}" style="{{navGlobe}}">Globo</button>
+<a href="Archivo.dc.html" style="height: 44px; padding: 0 16px; display: flex; align-items: center; font-size: 15px; font-weight: 500; color: #C9C4BB">Archivo</a>
+<a href="Acceso.dc.html" style="height: 44px; padding: 0 16px; display: flex; align-items: center; font-size: 15px; font-weight: 500; color: #C9C4BB">Formulario</a>
+</nav>
+<div style="flex-grow: 1"></div>
+<label style="width: 300px; height: 44px; box-sizing: border-box; display: flex; align-items: center; gap: 10px; padding: 0 16px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.16); border-radius: 999px; color: #D8D3CA">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+<input type="text" placeholder="Buscar por nombre, lugar o año…" aria-label="Buscar casos" style="flex-grow: 1; min-width: 0; background: transparent; border: 0; outline: 0; color: #FFFFFF; font-family: inherit; font-size: 14px">
+</label>
+</header>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { mode: 'home', slide: 0, sel: null, last: 'zodiac', filter: 'all', year: 2025, playing: false, gx: -37.77, gy: 122.42, flight: true };
+this._flightUntil = 0;
+}
+componentDidMount() {
+this.startSlides();
+this._drift = setInterval(() => {
+const s = this.state;
+if (s.mode === 'explore' && !s.sel && Date.now() > this._flightUntil) {
+this.setState({ gy: s.gy - 0.22, flight: false });
+}
+}, 70);
+}
+componentWillUnmount() {
+clearInterval(this._slides);
+clearInterval(this._drift);
+clearInterval(this._p);
+}
+startSlides() {
+clearInterval(this._slides);
+this._slides = setInterval(() => {
+if (this.state.mode === 'home') this.goSlide((this.state.slide + 1) % 5);
+}, 7000);
+}
+nearY(target) {
+return target + 360 * Math.round((this.state.gy - target) / 360);
+}
+fly(lat, lon, extra) {
+this._flightUntil = Date.now() + 2100;
+this.setState(Object.assign({ gx: -lat, gy: this.nearY(-lon), flight: true }, extra || {}));
+}
+goSlide(i) {
+const c = this.cases()[this.heroIds()[i]];
+this.fly(c.lat, c.lon, { slide: i });
+}
+heroIds() {
+return ['zodiac', 'isdal', 'somerton', 'mccann', 'dyatlov'];
+}
+selectCase(id) {
+const c = this.cases()[id];
+this.fly(c.lat, c.lon, { mode: 'explore', sel: id, last: id });
+}
+goHome() {
+const c = this.cases()[this.heroIds()[this.state.slide]];
+this.fly(c.lat, c.lon, { mode: 'home', sel: null });
+}
+goExplore() {
+this._flightUntil = Date.now() + 2100;
+this.setState({ mode: 'explore', sel: null, gx: -18, gy: this.nearY(this.state.gy), flight: true });
+}
+resetView() {
+this._flightUntil = Date.now() + 2100;
+this.setState({ sel: null, gx: -18, flight: true });
+}
+togglePlayFn() {
+if (this.state.playing) {
+clearInterval(this._p);
+this.setState({ playing: false });
+return;
+}
+if (this.state.year >= 2025) this.setState({ year: 1888 });
+this.setState({ playing: true });
+this._p = setInterval(() => {
+const y = this.state.year + 2;
+if (y >= 2025) {
+clearInterval(this._p);
+this.setState({ year: 2025, playing: false });
+} else {
+this.setState({ year: y });
+}
+}, 70);
+}
+cases() {
+return {
+zodiac: { t: 'Zodiac', loc: 'San Francisco', y: 1968, lat: 37.77, lon: -122.42, cat: 'serie', st: 'open', stl: 'Sin resolver', sum: 'Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.' },
+dahlia: { t: 'Black Dahlia', loc: 'Los Ángeles', y: 1947, lat: 34.05, lon: -118.24, cat: 'isolated', st: 'open', stl: 'Sin resolver', sum: 'Hallazgo del cuerpo de Elizabeth Short, de 22 años, en enero de 1947. El caso sigue sin imputación.' },
+isdal: { t: 'La mujer de Isdal', loc: 'Bergen', y: 1970, lat: 60.39, lon: 5.32, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Hallazgo de una mujer sin identificar en el valle de Isdal, en Noruega, en 1970.' },
+mccann: { t: 'Madeleine McCann', loc: 'Praia da Luz', y: 2007, lat: 37.09, lon: -8.72, cat: 'kidnapping', st: 'progress', stl: 'En investigación', sum: 'Desaparición de una niña de tres años en el Algarve, en mayo de 2007. La investigación sigue en curso.' },
+dyatlov: { t: 'Paso Diátlov', loc: 'Montes Urales', y: 1959, lat: 61.75, lon: 59.45, cat: 'unsolved', st: 'progress', stl: 'Caso reabierto', sum: 'Muerte de nueve excursionistas en los Urales en febrero de 1959. Caso reabierto en 2019.' },
+somerton: { t: 'El hombre de Somerton', loc: 'Adelaida', y: 1948, lat: -34.93, lon: 138.6, cat: 'unsolved', st: 'solved', stl: 'Identidad confirmada', sum: 'Hombre sin identificar hallado en una playa de Adelaida en 1948. Su identidad se confirmó en 2022.' },
+gsk: { t: 'Golden State Killer', loc: 'California', y: 1974, lat: 38.58, lon: -121.49, cat: 'serie', st: 'solved', stl: 'Resuelto (2018)', sum: 'Serie de agresiones en California durante los años 70 y 80. Fue identificado y detenido en 2018.' },
+hinter: { t: 'Hinterkaifeck', loc: 'Baviera', y: 1922, lat: 48.46, lon: 11.27, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Asesinato de seis personas en una granja aislada de Baviera en 1922.' },
+ripper: { t: 'Jack el Destripador', loc: 'Londres', y: 1888, lat: 51.51, lon: -0.07, cat: 'serie', st: 'open', stl: 'Sin resolver', sum: 'Serie de asesinatos en el barrio de Whitechapel durante 1888. El autor nunca fue identificado.' },
+tylenol: { t: 'Envenenamientos de Tylenol', loc: 'Chicago', y: 1982, lat: 41.88, lon: -87.63, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Envenenamientos con cápsulas adulteradas en Chicago en 1982. Nunca se identificó al responsable.' },
+jonbenet: { t: 'JonBenét Ramsey', loc: 'Boulder', y: 1996, lat: 40.02, lon: -105.27, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Muerte de una niña de seis años en Boulder, Colorado, en diciembre de 1996.' },
+borden: { t: 'Caso Borden', loc: 'Fall River', y: 1892, lat: 41.7, lon: -71.15, cat: 'isolated', st: 'open', stl: 'Sin condena', sum: 'Doble asesinato en Fall River, Massachusetts, en 1892. La acusada fue absuelta.' },
+btk: { t: 'BTK', loc: 'Wichita', y: 1974, lat: 37.69, lon: -97.34, cat: 'serie', st: 'solved', stl: 'Resuelto (2005)', sum: 'Serie de asesinatos en Wichita entre 1974 y 1991. El autor fue detenido en 2005.' },
+kercher: { t: 'Meredith Kercher', loc: 'Perugia', y: 2007, lat: 43.11, lon: 12.39, cat: 'isolated', st: 'solved', stl: 'Caso cerrado', sum: 'Asesinato de una estudiante británica en Perugia en 2007.' }
+};
+}
+renderVals() {
+const R = 400, P = 2200;
+const CAT = {
+serie: { label: 'Asesinos en serie', c: '#E5484D', base: '#2A0B10' },
+isolated: { label: 'Asesinato aislado', c: '#D9788A', base: '#2A1219' },
+kidnapping: { label: 'Secuestro', c: '#E0A63A', base: '#2B1E0A' },
+unsolved: { label: 'Caso sin resolver', c: '#5AA0D0', base: '#0B1F2E' }
+};
+const ST = { open: '#6CB0E0', solved: '#8FCB8A', progress: '#F0B455' };
+const C = this.cases();
+const pairs = [['zodiac', 'gsk', 'Norte de California'], ['zodiac', 'ripper', 'Sin identificar · desafió a la prensa'], ['isdal', 'somerton', 'Cuerpo sin identificar durante décadas']];
+const relatedOf = (id) => pairs.filter((p) => p[0] === id || p[1] === id).map((p) => ({ id: p[0] === id ? p[1] : p[0], rel: p[2] }));
+const { mode, slide, sel, last, filter, year, playing, gx, gy, flight } = this.state;
+const home = mode === 'home';
+const heroIds = this.heroIds();
+const ease = 'cubic-bezier(0.22,0.8,0.2,1)';
+const rad = (d) => (d * Math.PI) / 180;
+
+// Geometría de la escena según el modo.
+const cx = home ? 1010 : 640, cy = home ? 520 : 455, s = home ? 1 : 0.78;
+const flightTr = 'transform 1900ms cubic-bezier(0.45,0.05,0.2,1)';
+const driftTr = 'transform 80ms linear';
+const stageStyle = 'position:absolute;left:0;top:0;width:0;height:0;perspective:' + P + 'px;transform:translate(' + cx + 'px,' + cy + 'px);transition:transform 1900ms cubic-bezier(0.45,0.05,0.2,1)';
+const Rb = Math.round(R * 1.017);
+const bodyStyle = 'position:absolute;left:' + -Rb + 'px;top:' + -Rb + 'px;width:' + 2 * Rb + 'px;height:' + 2 * Rb + 'px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#1A2638 0%,#0A0F18 55%,#05070B 100%);box-shadow:0 0 0 1px rgba(140,190,240,0.2),inset 0 0 70px rgba(90,160,208,0.2),0 0 150px rgba(90,160,208,0.22);transform:scale(' + s + ');transition:transform 1900ms cubic-bezier(0.45,0.05,0.2,1)';
+const globeStyle = 'position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d;transform:scale3d(' + s + ',' + s + ',' + s + ') rotateX(' + gx.toFixed(2) + 'deg) rotateY(' + gy.toFixed(2) + 'deg);transition:' + (flight ? flightTr : driftTr);
+const shadeStyle = 'position:absolute;left:' + -Rb + 'px;top:' + -Rb + 'px;width:' + 2 * Rb + 'px;height:' + 2 * Rb + 'px;border-radius:50%;pointer-events:none;background:radial-gradient(circle at 36% 30%,rgba(140,190,240,0.16) 0%,rgba(0,0,0,0) 45%),radial-gradient(circle at 50% 50%,rgba(5,7,11,0) 56%,rgba(5,7,11,0.92) 100%);transform:scale(' + s + ');transition:transform 1900ms cubic-bezier(0.45,0.05,0.2,1)';
+
+// Estrellas
+const stars = [];
+for (let i = 0; i < 70; i++) {
+const x = (i * 997) % 1440, y = (i * 571) % 900, z = i % 3 === 0 ? 2 : 1;
+stars.push({ style: 'position:absolute;left:' + x + 'px;top:' + y + 'px;width:' + z + 'px;height:' + z + 'px;border-radius:50%;background:#C9D6EA;animation:twinkle ' + (2.5 + (i % 4)) + 's ease-in-out ' + ((i % 7) * 0.5).toFixed(1) + 's infinite' });
+}
+
+// Halos de color: uno por destacado y uno neutro para explorar.
+const halos = heroIds.map((id, i) => ({
+style: 'position:absolute;left:0;top:0;width:1500px;height:1500px;margin:-750px 0 0 -750px;border-radius:50%;background:radial-gradient(circle,' + CAT[C[id].cat].c + '30 0%,rgba(0,0,0,0) 52%);transform:translate(' + cx + 'px,' + cy + 'px);opacity:' + (home && i === slide ? 1 : 0) + ';transition:opacity 1400ms ease,transform 1900ms cubic-bezier(0.45,0.05,0.2,1)'
+}));
+halos.push({ style: 'position:absolute;left:0;top:0;width:1500px;height:1500px;margin:-750px 0 0 -750px;border-radius:50%;background:radial-gradient(circle,rgba(90,160,208,0.2) 0%,rgba(0,0,0,0) 52%);transform:translate(' + cx + 'px,' + cy + 'px);opacity:' + (home ? 0 : 1) + ';transition:opacity 1400ms ease,transform 1900ms cubic-bezier(0.45,0.05,0.2,1)' });
+
+// Puntos de tierra sobre la esfera: una celda = 5º.
+const LAND = {
+0: [[21, 32], [39, 40], [55, 56]], 1: [[9, 19], [21, 33], [49, 50], [54, 71]], 2: [[2, 22], [23, 31], [37, 71]],
+3: [[2, 16], [20, 24], [26, 28], [31, 32], [37, 71]], 4: [[3, 16], [21, 24], [35, 35], [38, 71]], 5: [[4, 16], [20, 25], [34, 35], [36, 71]],
+6: [[5, 25], [35, 71]], 7: [[10, 25], [34, 40], [45, 64]], 8: [[11, 24], [34, 37], [38, 38], [41, 64]], 9: [[12, 23], [34, 63]],
+10: [[13, 20], [33, 63]], 11: [[12, 18], [20, 21], [33, 49], [50, 62]], 12: [[16, 19], [21, 23], [33, 47], [45, 48], [50, 53], [55, 58], [60, 60]],
+13: [[17, 19], [20, 24], [33, 46], [47, 47], [51, 52], [55, 57], [60, 60]], 14: [[18, 19], [20, 26], [33, 47], [52, 52], [55, 56], [57, 59]],
+15: [[20, 29], [36, 46], [55, 56], [57, 59], [60, 61], [63, 65]], 16: [[20, 29], [36, 45], [55, 56], [57, 59], [62, 66]],
+17: [[20, 30], [37, 44], [56, 58], [63, 66]], 18: [[21, 30], [37, 44], [57, 60], [62, 64]], 19: [[22, 30], [38, 45], [59, 66]],
+20: [[22, 28], [38, 45], [58, 66]], 21: [[22, 28], [38, 43], [58, 66]], 22: [[22, 27], [39, 43], [59, 66]], 23: [[22, 26], [60, 66], [69, 70]],
+24: [[22, 26], [65, 65], [69, 70]], 25: [[22, 25], [69, 70]], 26: [[22, 25]]
+};
+const place = (lat, lon, r) => 'rotateY(' + lon.toFixed(2) + 'deg) rotateX(' + lat.toFixed(2) + 'deg) translateZ(' + r.toFixed(1) + 'px)';
+const dots = [];
+Object.keys(LAND).forEach((rk) => {
+const r = Number(rk);
+const lat = 80 - 5 * r - 2.5;
+const size = Math.max(3.2, 6.4 * Math.cos(rad(lat)) + 0.8);
+LAND[rk].forEach((rg) => {
+for (let col = rg[0]; col <= rg[1]; col++) {
+const lon = -180 + 5 * col + 2.5;
+const op = 0.55 + ((col * 7 + r * 13) % 6) / 12;
+dots.push({ style: 'position:absolute;left:' + (-size / 2).toFixed(2) + 'px;top:' + (-size / 2).toFixed(2) + 'px;width:' + size.toFixed(2) + 'px;height:' + size.toFixed(2) + 'px;border-radius:50%;background:#5C7399;opacity:' + op.toFixed(2) + ';backface-visibility:hidden;transform:' + place(lat, lon, R) });
+}
+});
+});
+
+// Marcadores sobre la esfera
+const relSel = sel ? relatedOf(sel) : [];
+const inFilter = (c) => filter === 'all' || c.st === filter;
+const ids = Object.keys(C);
+const pins = ids.map((id, i) => {
+const c = C[id], m = CAT[c.cat];
+const isSel = id === sel, isRel = relSel.some((r) => r.id === id);
+const shown = c.y <= year, match = inFilter(c);
+const size = isSel ? 18 : 12;
+const opacity = !shown ? 0 : (match ? (sel && !isSel && !isRel ? 0.35 : 1) : 0.12);
+return {
+title: c.t,
+pick: () => this.selectCase(id),
+wrapStyle: 'position:absolute;left:0;top:0;width:0;height:0;backface-visibility:hidden;opacity:' + opacity + ';transition:opacity 500ms ease;transform:' + place(c.lat, c.lon, R + 3),
+btnStyle: 'position:absolute;left:-18px;top:-18px;width:36px;height:36px;padding:0;background:transparent;border:0;pointer-events:' + (shown && match ? 'auto' : 'none'),
+ringStyle: 'position:absolute;left:50%;top:50%;width:' + size + 'px;height:' + size + 'px;margin:' + -size / 2 + 'px 0 0 ' + -size / 2 + 'px;border-radius:50%;border:2px solid ' + m.c + ';animation:pulse ' + (isSel ? '1.8s' : '3s') + ' ease-out ' + ((i * 0.41) % 3).toFixed(2) + 's infinite',
+dotStyle: 'position:absolute;left:50%;top:50%;width:' + size + 'px;height:' + size + 'px;margin:' + -size / 2 + 'px 0 0 ' + -size / 2 + 'px;border-radius:50%;background:' + m.c + ';border:2px solid ' + (isRel ? '#F0C674' : '#05070B') + ';box-sizing:border-box;box-shadow:0 0 ' + (isSel ? 26 : 12) + 'px ' + m.c + ';transition:width 400ms ease,height 400ms ease,margin 400ms ease'
+};
+});
+
+// Arcos: círculo máximo elevado entre casos conectados, dibujado con puntos.
+const arcDots = [];
+pairs.forEach((pr) => {
+const a = C[pr[0]], b = C[pr[1]];
+const on = sel && (sel === pr[0] || sel === pr[1]);
+const va = [Math.cos(rad(a.lat)) * Math.sin(rad(a.lon)), Math.sin(rad(a.lat)), Math.cos(rad(a.lat)) * Math.cos(rad(a.lon))];
+const vb = [Math.cos(rad(b.lat)) * Math.sin(rad(b.lon)), Math.sin(rad(b.lat)), Math.cos(rad(b.lat)) * Math.cos(rad(b.lon))];
+const dotp = Math.max(-1, Math.min(1, va[0] * vb[0] + va[1] * vb[1] + va[2] * vb[2]));
+const om = Math.acos(dotp);
+const N = 26;
+for (let k = 0; k <= N; k++) {
+const t = k / N;
+const w1 = Math.sin((1 - t) * om) / Math.sin(om), w2 = Math.sin(t * om) / Math.sin(om);
+const v = [w1 * va[0] + w2 * vb[0], w1 * va[1] + w2 * vb[1], w1 * va[2] + w2 * vb[2]];
+const lat = (Math.asin(v[1]) * 180) / Math.PI, lon = (Math.atan2(v[0], v[2]) * 180) / Math.PI;
+const h = R + 4 + Math.sin(Math.PI * t) * om * 70;
+arcDots.push({ style: 'position:absolute;left:-2.5px;top:-2.5px;width:5px;height:5px;border-radius:50%;background:#F0C674;box-shadow:0 0 8px #F0C674;backface-visibility:hidden;opacity:' + (on ? 1 : 0) + ';transition:opacity 500ms ease ' + (on ? 900 + k * 35 : 0) + 'ms;transform:' + place(lat, lon, h) });
+}
+});
+
+// Etiquetas proyectadas en 2D (solo con la cámara quieta sobre un caso).
+const project = (lat, lon) => {
+const f = rad(lat), l = rad(lon);
+const p = [R * Math.cos(f) * Math.sin(l), -R * Math.sin(f), R * Math.cos(f) * Math.cos(l)];
+const ay = rad(gy), ax = rad(gx);
+const x1 = p[0] * Math.cos(ay) + p[2] * Math.sin(ay), z1 = -p[0] * Math.sin(ay) + p[2] * Math.cos(ay), y1 = p[1];
+const y2 = y1 * Math.cos(ax) - z1 * Math.sin(ax), z2 = y1 * Math.sin(ax) + z1 * Math.cos(ax);
+const fp = P / (P - s * z2);
+return { x: cx + s * x1 * fp, y: cy + s * y2 * fp, vis: z2 > 40 };
+};
+const labelIds = sel ? [sel].concat(relSel.map((r) => r.id)) : [];
+const labels = [0, 1, 2].map((i) => {
+const id = labelIds[i];
+if (!id) return { text: '', style: 'display:none' };
+const c = C[id], pt = project(c.lat, c.lon);
+const show = !home && pt.vis;
+return { text: c.t, style: 'position:absolute;left:' + (pt.x + 18).toFixed(0) + 'px;top:' + (pt.y - 14).toFixed(0) + 'px;padding:4px 10px;background:rgba(12,14,19,0.85);border-radius:6px;font-family:Noto Serif,serif;font-weight:700;font-size:14px;color:#FFFFFF;white-space:nowrap;pointer-events:none;opacity:' + (show ? 1 : 0) + ';transition:opacity 600ms ease ' + (show ? '1700ms' : '0ms') };
+});
+
+// Portada
+const slides = heroIds.map((id, i) => {
+const c = C[id], m = CAT[c.cat], a = i === slide;
+const coords = Math.abs(c.lat).toFixed(2) + '° ' + (c.lat >= 0 ? 'N' : 'S') + ' · ' + Math.abs(c.lon).toFixed(2) + '° ' + (c.lon >= 0 ? 'E' : 'O');
+return {
+title: c.t, year: String(c.y), loc: c.loc, n: String(i + 1), glow: m.c, category: m.label, status: c.stl, stColor: ST[c.st], summary: c.sum, coords,
+explore: () => this.selectCase(id),
+layerStyle: 'position:absolute;inset:0;pointer-events:' + (a ? 'auto' : 'none'),
+yearStyle: "position:absolute;left:40px;top:90px;font-family:'Noto Serif',serif;font-weight:700;font-size:460px;line-height:1;color:rgba(255,255,255,0.045);opacity:" + (a ? 1 : 0) + ';transform:translateX(' + (a ? 0 : -60) + 'px);transition:opacity 1100ms ' + ease + ',transform 1300ms ' + ease,
+contentStyle: 'position:absolute;left:80px;bottom:150px;width:700px;display:flex;flex-direction:column;gap:20px;opacity:' + (a ? 1 : 0) + ';transform:translateY(' + (a ? 0 : 28) + 'px);transition:' + (a ? 'opacity 900ms ' + ease + ' 450ms,transform 1000ms ' + ease + ' 450ms' : 'opacity 350ms ease,transform 350ms ease'),
+coordsStyle: "position:absolute;right:80px;bottom:44px;font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:0.14em;color:#C9C4BB;opacity:" + (a ? 1 : 0) + ';transition:opacity 700ms ease ' + (a ? '900ms' : '0ms')
+};
+});
+const tabs = heroIds.map((id, i) => ({
+title: C[id].t,
+color: i === slide ? '#FFFFFF' : '#A7A29A',
+pick: () => { this.goSlide(i); this.startSlides(); },
+barStyle: i === slide && home ? 'display:block;height:100%;background:#FFFFFF;transform-origin:left;animation:fill 7000ms linear forwards' : 'display:block;height:100%;background:#FFFFFF;transform-origin:left;transform:scaleX(' + (i < slide ? 1 : 0) + ')'
+}));
+
+// Ficha
+const cc = C[last], cm = CAT[cc.cat];
+const card = {
+title: cc.t, loc: cc.loc, year: String(cc.y), status: cc.stl, stColor: ST[cc.st], summary: cc.sum, glow: cm.c, category: cm.label,
+count: String(relatedOf(last).length),
+lat: Math.abs(cc.lat).toFixed(2) + '° ' + (cc.lat >= 0 ? 'N' : 'S'),
+lon: Math.abs(cc.lon).toFixed(2) + '° ' + (cc.lon >= 0 ? 'E' : 'O'),
+headStyle: 'position:relative;height:130px;overflow:hidden;background:radial-gradient(420px 200px at 80% 0%,' + cm.c + '55,transparent 70%),linear-gradient(160deg,' + cm.base + ',#0B0D12)',
+ghostStyle: "position:absolute;right:-6px;top:26px;font-family:'Noto Serif',serif;font-weight:700;font-size:130px;line-height:1;color:rgba(255,255,255,0.09)",
+related: relatedOf(last).map((r) => ({ title: C[r.id].t, rel: r.rel, color: CAT[C[r.id].cat].c, pick: () => this.selectCase(r.id) }))
+};
+const showCard = !home && sel;
+const cardStyle = 'position:absolute;right:40px;top:112px;width:400px;box-sizing:border-box;overflow:hidden;background:rgba(14,16,22,0.82);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.14);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,0.6);opacity:' + (showCard ? 1 : 0) + ';transform:translateX(' + (showCard ? 0 : 50) + 'px);pointer-events:' + (showCard ? 'auto' : 'none') + ';transition:opacity 600ms ease ' + (showCard ? '1500ms' : '0ms') + ',transform 900ms ' + ease + ' ' + (showCard ? '1500ms' : '0ms');
+const hintStyle = 'position:absolute;left:50%;bottom:150px;transform:translateX(-50%);padding:10px 20px;background:rgba(12,14,19,0.7);border:1px solid rgba(255,255,255,0.12);border-radius:999px;font-size:14px;color:#E4E0D8;white-space:nowrap;opacity:' + (sel ? 0 : 1) + ';transition:opacity 500ms ease';
+
+const chipBase = 'height:40px;padding:0 16px;display:flex;align-items:center;gap:8px;border-radius:999px;font-size:13px;font-weight:500;backdrop-filter:blur(10px);';
+const mk = (key, label) => ({
+label,
+pick: () => this.setState({ filter: key }),
+style: chipBase + (filter === key ? 'background:#F4F1EB;border:1px solid #F4F1EB;color:#0B0C10;font-weight:600' : 'background:rgba(12,14,19,0.7);border:1px solid rgba(255,255,255,0.16);color:#E4E0D8')
+});
+const segOn = 'height:36px;padding:0 18px;border:0;border-radius:9px;background:#F4F1EB;color:#0B0C10;font-size:13px;font-weight:600';
+const segOff = 'height:36px;padding:0 18px;border:0;border-radius:9px;background:transparent;color:#D8D3CA;font-size:13px;font-weight:500';
+const navOn = 'height:44px;padding:0 16px;background:transparent;border:0;font-size:15px;font-weight:600;color:#FFFFFF;box-shadow:inset 0 -2px 0 #E5484D';
+const navOff = 'height:44px;padding:0 16px;background:transparent;border:0;font-size:15px;font-weight:500;color:#C9C4BB';
+
+return {
+stars, halos, stageStyle, bodyStyle, globeStyle, shadeStyle, dots, arcDots, pins, labels, slides, tabs, card, cardStyle, hintStyle,
+homeOpacity: home ? 1 : 0,
+homeLayer: 'position:absolute;inset:0;opacity:' + (home ? 1 : 0) + ';pointer-events:' + (home ? 'auto' : 'none') + ';transition:opacity 600ms ease ' + (home ? '900ms' : '0ms'),
+exploreLayer: 'position:absolute;inset:0;opacity:' + (home ? 0 : 1) + ';pointer-events:' + (home ? 'none' : 'auto') + ';transition:opacity 600ms ease ' + (home ? '0ms' : '700ms'),
+chips: [mk('all', 'Todos'), mk('open', 'Sin resolver'), mk('solved', 'Resuelto'), mk('progress', 'En investigación')],
+legend: [
+{ label: 'Serie', color: CAT.serie.c }, { label: 'Aislado', color: CAT.isolated.c },
+{ label: 'Secuestro', color: CAT.kidnapping.c }, { label: 'Sin resolver', color: CAT.unsolved.c }
+],
+year: String(year),
+ticks: ids.map((id) => {
+const c = C[id];
+return { style: 'position:absolute;left:' + (((c.y - 1888) / 137) * 100).toFixed(2) + '%;top:2px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:' + CAT[c.cat].c + ';opacity:' + (c.y <= year ? 1 : 0.3) };
+}),
+onYear: (e) => this.setState({ year: Number(e.target.value) }),
+togglePlay: () => this.togglePlayFn(),
+playLabel: playing ? 'Pausar' : 'Reproducir',
+playIcon: playing ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M7 4l13 8-13 8z',
+reset: () => this.resetView(),
+detail: () => { if (!sel) this.selectCase(last); },
+worldBtn: sel ? segOff : segOn,
+detailBtn: sel ? segOn : segOff,
+goHome: () => this.goHome(),
+goExplore: () => this.goExplore(),
+navHome: home ? navOn : navOff,
+navGlobe: home ? navOff : navOn
+};
+}
+}
+</script>
+</body>
+</html>

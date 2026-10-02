@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Formulario de casos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070B;font-family:'Noto Sans',system-ui,sans-serif}
+a{color:#F4F1EB;text-decoration:none}a:hover{color:#FFFFFF}
+button{font-family:inherit;cursor:pointer}
+input,textarea,select{font-family:inherit;color-scheme:dark;transition:border-color .2s,box-shadow .2s}
+input:focus,textarea:focus,select:focus{outline:none;border-color:#E5484D !important;box-shadow:0 0 0 3px rgba(229,72,77,0.25)}
+input::placeholder,textarea::placeholder{color:#8B8880}
+.draft{transition:background .25s,transform .25s}
+.draft:hover{background:rgba(255,255,255,0.07);transform:translateX(3px)}
+.tab{transition:background .25s,color .25s}
+.tab:hover{background:rgba(255,255,255,0.1);color:#FFFFFF}
+.mi{transition:background .2s}
+.mi:hover{background:rgba(255,255,255,0.1)}
+summary{cursor:pointer;list-style:none}
+summary::-webkit-details-marker{display:none}
+@keyframes pulse{0%{transform:scale(0.5);opacity:0.9}100%{transform:scale(2.8);opacity:0}}
+@keyframes toast{from{opacity:0;transform:translate(-50%,20px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; box-sizing: border-box; display: flex; flex-direction: column; background: radial-gradient(ellipse at 50% 0%, #0D1320 0%, #05070B 70%); color: #F4F1EB; overflow: hidden">
+
+<!-- Barra superior -->
+<header style="position: relative; z-index: 5; height: 68px; flex-shrink: 0; box-sizing: border-box; padding: 0 24px; display: flex; align-items: center; gap: 16px; background: rgba(10,13,19,0.85); border-bottom: 1px solid rgba(255,255,255,0.1)">
+<a href="Globo.dc.html" aria-label="Volver a la sala" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; color: #D8D3CA">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>
+</a>
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 32px; height: 32px; border-radius: 9px; background: #E5484D; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 18px; color: #FFFFFF">T</div>
+<h1 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 22px">Formulario de casos</h1>
+</div>
+<div style="flex-grow: 1"></div>
+<div style="position: relative">
+<button type="button" onClick="{{toggleMenu}}" style="height: 44px; padding: 0 18px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); border-radius: 12px; color: #F4F1EB; font-size: 14px; font-weight: 500">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h11l3 3v13H5zM8 4v5h7V4M8 20v-6h8v6"/></svg>Copia de seguridad
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+</button>
+<div style="{{menuStyle}}">
+<button type="button" class="mi" style="height: 44px; padding: 0 14px; display: flex; align-items: center; background: transparent; border: 0; border-radius: 8px; color: #F4F1EB; font-size: 14px; text-align: left">Guardar mi trabajo en un fichero</button>
+<button type="button" class="mi" style="height: 44px; padding: 0 14px; display: flex; align-items: center; background: transparent; border: 0; border-radius: 8px; color: #F4F1EB; font-size: 14px; text-align: left">Cargar trabajo desde un fichero</button>
+<div style="height: 1px; margin: 4px 0; background: rgba(255,255,255,0.12)"></div>
+<button type="button" class="mi" style="height: 44px; padding: 0 14px; display: flex; align-items: center; background: transparent; border: 0; border-radius: 8px; color: #F4F1EB; font-size: 14px; text-align: left">Copiar como texto</button>
+<button type="button" class="mi" style="height: 44px; padding: 0 14px; display: flex; align-items: center; background: transparent; border: 0; border-radius: 8px; color: #F4F1EB; font-size: 14px; text-align: left">Pegar un texto copiado</button>
+</div>
+</div>
+<button type="button" onClick="{{copyJson}}" style="{{jsonBtn}}">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 012-2h9"/></svg>Copiar JSON
+</button>
+<button type="button" style="height: 44px; padding: 0 18px; display: flex; align-items: center; gap: 10px; background: #F4F1EB; border: 0; border-radius: 12px; color: #0B0C10; font-size: 14px; font-weight: 600">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Nuevo borrador
+</button>
+</header>
+
+<div style="flex-grow: 1; min-height: 0; display: flex">
+
+<!-- Borradores -->
+<aside style="width: 280px; flex-shrink: 0; box-sizing: border-box; padding: 20px 16px; display: flex; flex-direction: column; gap: 12px; background: rgba(8,10,15,0.7); border-right: 1px solid rgba(255,255,255,0.08)">
+<span style="padding: 0 6px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: #B9B4AB">BORRADORES · 4</span>
+<sc-for list="{{drafts}}" as="d" hint-placeholder-count="4">
+<div class="draft" style="{{d.style}}">
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 17px; color: #FFFFFF; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{d.title}}</span>
+<span style="display: flex; align-items: center; gap: 7px; font-size: 12px; line-height: 1.35; color: {{d.color}}"><span style="width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; background: {{d.color}}"></span>{{d.sub}}</span>
+</div>
+<button type="button" aria-label="Eliminar borrador" style="width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; border-radius: 8px; color: #A7A29A">
+<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>
+</button>
+</div>
+</sc-for>
+</aside>
+
+<!-- Formulario -->
+<main style="flex-grow: 1; min-width: 0; overflow-y: auto; box-sizing: border-box; padding: 0 32px 120px; scroll-behavior: smooth">
+<nav aria-label="Secciones del formulario" style="position: sticky; top: 0; z-index: 4; display: flex; gap: 8px; padding: 16px 0; background: linear-gradient(180deg, rgba(5,7,11,0.96) 70%, rgba(5,7,11,0) 100%); overflow: hidden">
+<sc-for list="{{tabs}}" as="t" hint-placeholder-count="7">
+<a class="tab" href="{{t.href}}" style="height: 40px; padding: 0 16px; flex-shrink: 0; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 999px; color: #D8D3CA; font-size: 13px; font-weight: 500"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: #E5484D">{{t.n}}</span>{{t.label}}</a>
+</sc-for>
+</nav>
+
+<div style="display: flex; flex-direction: column; gap: 20px">
+
+<!-- 1 · Datos básicos -->
+<section id="s1" style="padding: 24px; display: flex; flex-direction: column; gap: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px">
+<div style="display: flex; align-items: center; gap: 12px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #E5484D">01</span><h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px">Datos básicos</h2></div>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Título
+<input type="text" value="{{f.title}}" onChange="{{onTitle}}" placeholder="Nombre del caso" style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px">
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Categoría
+<select value="{{f.cat}}" onChange="{{onCat}}" style="height: 48px; padding: 0 12px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+<option value="serie">Asesinos en serie</option>
+<option value="isolated">Asesinatos aislados</option>
+<option value="kidnapping">Secuestros</option>
+<option value="unsolved">Casos sin resolver</option>
+</select>
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Año
+<input type="text" value="{{f.year}}" onChange="{{onYear}}" placeholder="1968" style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Estado
+<select value="{{f.status}}" onChange="{{onStatus}}" style="height: 48px; padding: 0 12px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+<option value="open">Sin resolver</option>
+<option value="solved">Resuelto</option>
+<option value="progress">En investigación</option>
+</select>
+</label>
+</div>
+</section>
+
+<!-- 2 · Ubicación -->
+<section id="s2" style="padding: 24px; display: flex; flex-direction: column; gap: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px">
+<div style="display: flex; align-items: center; gap: 12px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #E5484D">02</span><h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px">Ubicación</h2></div>
+<div onClick="{{onMap}}" style="position: relative; height: 280px; overflow: hidden; border-radius: 14px; border: 1px solid #2A303B; cursor: crosshair; background: radial-gradient(ellipse at 50% 50%, #101722 0%, #070A10 80%)">
+<sc-for list="{{land}}" as="d" hint-placeholder-count="600">
+<div style="{{d.style}}"></div>
+</sc-for>
+<div style="{{pinWrap}}">
+<div style="{{pinRing}}"></div>
+<div style="{{pinDot}}"></div>
+</div>
+<span style="position: absolute; left: 14px; top: 12px; padding: 6px 12px; background: rgba(12,14,19,0.85); border: 1px solid rgba(255,255,255,0.14); border-radius: 999px; font-size: 13px; color: #E4E0D8">Toca el mapa para situar el caso</span>
+<span style="position: absolute; right: 14px; bottom: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: #A7A29A">Mapa © OpenStreetMap · CARTO</span>
+</div>
+<div style="display: flex; align-items: center; gap: 10px; font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #F0C674">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s7-6.2 7-11a7 7 0 10-14 0c0 4.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>{{coordLine}}
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">País
+<input type="text" defaultValue="EE. UU." style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Región o ciudad
+<input type="text" value="{{f.region}}" onChange="{{onRegion}}" style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+</div>
+<details>
+<summary style="height: 44px; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #C9C4BB">
+<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>Ajuste manual</summary>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding-top: 6px">
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Código ISO
+<input type="text" defaultValue="US" placeholder="ES" style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Latitud
+<input type="text" value="{{f.latTxt}}" readOnly style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Longitud
+<input type="text" value="{{f.lonTxt}}" readOnly style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+</div>
+</details>
+</section>
+
+<!-- 3 · Resumen y ficha -->
+<section id="s3" style="padding: 24px; display: flex; flex-direction: column; gap: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px">
+<div style="display: flex; align-items: center; gap: 12px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #E5484D">03</span><h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px">Resumen y ficha</h2></div>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Resumen del caso
+<textarea rows="4" value="{{f.summary}}" onChange="{{onSummary}}" style="padding: 14px 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px; line-height: 1.55; resize: vertical"></textarea>
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Víctimas
+<input type="text" value="{{f.victims}}" onChange="{{onVictims}}" placeholder="Al menos 5 víctimas confirmadas" style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+<span style="font-size: 12px; font-weight: 400; color: #A7A29A">Descríbelas con respeto, como en el resto del archivo</span>
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Tags
+<input type="text" defaultValue="1960s, ee. uu., cifrado" placeholder="1960s, ee. uu., cifrado" style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+<span style="font-size: 12px; font-weight: 400; color: #A7A29A">Separados por comas</span>
+</label>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px">
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Rango destacado
+<input type="text" placeholder="1 = destacado esta semana" style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Rango de relevancia
+<input type="text" defaultValue="2" style="height: 48px; padding: 0 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+</div>
+</section>
+
+<!-- 4 · Cronología -->
+<section id="s4" style="padding: 24px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px">
+<div style="display: flex; align-items: center; gap: 12px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #E5484D">04</span><h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px">Cronología</h2></div>
+<sc-for list="{{timeline}}" as="r" hint-placeholder-count="3">
+<div style="display: flex; gap: 10px; align-items: flex-end">
+<label style="width: 120px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Fecha
+<input type="text" defaultValue="{{r.date}}" placeholder="1969" style="height: 48px; padding: 0 14px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Qué ocurrió
+<input type="text" defaultValue="{{r.title}}" style="height: 48px; padding: 0 14px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="width: 170px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Tipo
+<select defaultValue="{{r.kind}}" style="height: 48px; padding: 0 10px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 14px">
+<option value="initial">Hecho inicial</option>
+<option value="process">Investigación</option>
+<option value="open">Sigue abierto</option>
+<option value="solved">Resolución</option>
+</select>
+</label>
+<button type="button" aria-label="Quitar hito" style="width: 48px; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid #2A303B; border-radius: 12px; color: #A7A29A">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+</div>
+</sc-for>
+<button type="button" style="align-self: flex-start; height: 44px; padding: 0 18px; display: flex; align-items: center; gap: 8px; background: transparent; border: 1px dashed #4A5160; border-radius: 12px; color: #E4E0D8; font-size: 14px; font-weight: 500">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Añadir hito</button>
+</section>
+
+<!-- 5 · Enlaces -->
+<section id="s5" style="padding: 24px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px">
+<div style="display: flex; align-items: center; gap: 12px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #E5484D">05</span><h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px">Enlaces</h2></div>
+<sc-for list="{{links}}" as="r" hint-placeholder-count="2">
+<div style="display: flex; gap: 10px; align-items: flex-end">
+<label style="width: 210px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Título del enlace
+<input type="text" defaultValue="{{r.title}}" style="height: 48px; padding: 0 14px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">URL
+<input type="text" defaultValue="{{r.url}}" style="height: 48px; padding: 0 14px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="width: 140px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Tipo
+<select defaultValue="{{r.kind}}" style="height: 48px; padding: 0 10px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 14px">
+<option value="podcast">Podcast</option>
+<option value="video">Vídeo</option>
+<option value="doc">Documento</option>
+<option value="pub">Publicación</option>
+<option value="other">Otro</option>
+</select>
+</label>
+<button type="button" aria-label="Quitar enlace" style="width: 48px; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid #2A303B; border-radius: 12px; color: #A7A29A">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+</div>
+</sc-for>
+<button type="button" style="align-self: flex-start; height: 44px; padding: 0 18px; display: flex; align-items: center; gap: 8px; background: transparent; border: 1px dashed #4A5160; border-radius: 12px; color: #E4E0D8; font-size: 14px; font-weight: 500">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Añadir enlace</button>
+</section>
+
+<!-- 6 · Fotografías -->
+<section id="s6" style="padding: 24px; display: flex; flex-direction: column; gap: 14px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px">
+<div style="display: flex; align-items: center; gap: 12px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #E5484D">06</span><h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px">Fotografías</h2></div>
+<div style="display: flex; gap: 10px; align-items: flex-end">
+<label style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">URL de la imagen
+<input type="text" placeholder="https://…" style="height: 48px; padding: 0 14px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<label style="width: 280px; display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">Pie de foto (opcional)
+<input type="text" style="height: 48px; padding: 0 14px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px">
+</label>
+<button type="button" aria-label="Quitar fotografía" style="width: 48px; height: 48px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: 1px solid #2A303B; border-radius: 12px; color: #A7A29A">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+</div>
+<button type="button" style="align-self: flex-start; height: 44px; padding: 0 18px; display: flex; align-items: center; gap: 8px; background: transparent; border: 1px dashed #4A5160; border-radius: 12px; color: #E4E0D8; font-size: 14px; font-weight: 500">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Añadir fotografía</button>
+</section>
+
+<!-- 7 · Capítulos -->
+<section id="s7" style="padding: 24px; display: flex; flex-direction: column; gap: 18px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 18px">
+<div style="display: flex; align-items: center; gap: 12px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 12px; color: #E5484D">07</span><h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 24px">Capítulos</h2></div>
+<sc-for list="{{chapters}}" as="c" hint-placeholder-count="4">
+<label style="display: flex; flex-direction: column; gap: 8px; font-size: 13px; font-weight: 500; color: #C9C4BB">{{c.label}}
+<textarea rows="3" style="padding: 14px 16px; background: #0D1118; border: 1px solid #2A303B; border-radius: 12px; color: #F4F1EB; font-size: 15px; line-height: 1.55; resize: vertical"></textarea>
+</label>
+</sc-for>
+</section>
+</div>
+</main>
+
+<!-- Previsualización -->
+<aside style="width: 400px; flex-shrink: 0; box-sizing: border-box; padding: 20px 20px 0; display: flex; flex-direction: column; gap: 14px; background: rgba(8,10,15,0.7); border-left: 1px solid rgba(255,255,255,0.08); overflow: hidden">
+<span style="padding: 0 4px; font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.18em; color: #B9B4AB">PREVISUALIZACIÓN EN VIVO</span>
+<div style="border: 1px solid rgba(255,255,255,0.14); border-radius: 18px; overflow: hidden; background: rgba(14,16,22,0.9); box-shadow: 0 30px 80px rgba(0,0,0,0.5)">
+<div style="{{pv.headStyle}}">
+<div style="{{pv.ghostStyle}}">{{pv.year}}</div>
+<span style="position: absolute; left: 18px; top: 18px; height: 28px; padding: 0 12px; display: inline-flex; align-items: center; background: rgba(5,7,11,0.6); border: 1px solid {{pv.color}}; border-radius: 6px; color: {{pv.color}}; font-size: 13px; font-weight: 600">{{pv.category}}</span>
+</div>
+<div style="padding: 18px 22px 22px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; flex-direction: column; gap: 6px">
+<h3 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 34px; line-height: 1.02; color: #FFFFFF">{{pv.title}}</h3>
+<span style="font-size: 14px; color: #D8D3CA">{{pv.loc}}</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: {{pv.stColor}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{pv.stColor}}"></span>{{pv.status}}</span>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 1.6; color: #D8D3CA">{{pv.summary}}</p>
+<div style="padding: 10px 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; display: flex; flex-direction: column; gap: 3px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.14em; color: #B9B4AB">VÍCTIMA(S)</span>
+<span style="font-size: 14px; color: #F4F1EB">{{pv.victims}}</span>
+</div>
+<div style="display: flex; gap: 24px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.12)">
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">AÑO</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #F0C674">{{pv.year}}</span></div>
+<div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.12em; color: #B9B4AB">COORDS</span><span style="font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #F0C674">{{pv.coords}}</span></div>
+</div>
+</div>
+</div>
+<div style="padding: 14px 16px; display: flex; flex-direction: column; gap: 9px; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.16em; color: #B9B4AB">CAMPOS OBLIGATORIOS</span>
+<sc-for list="{{checks}}" as="c" hint-placeholder-count="4">
+<span style="display: flex; align-items: center; gap: 10px; font-size: 14px; color: {{c.color}}">
+<span style="width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1.5px solid {{c.color}}; background: {{c.fill}}; font-size: 11px; font-weight: 700; color: #05070B">{{c.mark}}</span>{{c.label}}</span>
+</sc-for>
+</div>
+</aside>
+</div>
+
+<div style="{{toastStyle}}">JSON copiado. Pégalo en assets/data/cases.json</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = {
+title: 'Zodiac', cat: 'serie', year: '1968', status: 'open', lat: 37.77, lon: -122.42, placed: true, region: 'San Francisco',
+summary: 'Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.',
+victims: 'Al menos 5 víctimas confirmadas', menu: false, toast: false
+};
+}
+componentWillUnmount() {
+clearTimeout(this._toast);
+}
+renderVals() {
+const W = 648, H = 280, S = 648 / 360, Y0 = 18;
+const CAT = {
+serie: { label: 'Asesinos en serie', c: '#E5484D', base: '#2A0B10' },
+isolated: { label: 'Asesinatos aislados', c: '#D9788A', base: '#2A1219' },
+kidnapping: { label: 'Secuestros', c: '#E0A63A', base: '#2B1E0A' },
+unsolved: { label: 'Casos sin resolver', c: '#5AA0D0', base: '#0B1F2E' }
+};
+const ST = { open: { l: 'Sin resolver', c: '#6CB0E0' }, solved: { l: 'Resuelto', c: '#8FCB8A' }, progress: { l: 'En investigación', c: '#F0B455' } };
+const s = this.state;
+const cat = CAT[s.cat], st = ST[s.status];
+const titleOk = s.title.trim().length > 0, yearOk = /^\d{3,4}$/.test(s.year.trim()), locOk = s.placed, sumOk = s.summary.trim().length > 0;
+const valid = titleOk && yearOk && locOk && sumOk;
+const fmtLat = (v) => Math.abs(v).toFixed(2) + '° ' + (v >= 0 ? 'N' : 'S');
+const fmtLon = (v) => Math.abs(v).toFixed(2) + '° ' + (v >= 0 ? 'E' : 'O');
+
+const LAND = {
+0: [[21, 32], [39, 40], [55, 56]], 1: [[9, 19], [21, 33], [49, 50], [54, 71]], 2: [[2, 22], [23, 31], [37, 71]],
+3: [[2, 16], [20, 24], [26, 28], [31, 32], [37, 71]], 4: [[3, 16], [21, 24], [35, 35], [38, 71]], 5: [[4, 16], [20, 25], [34, 35], [36, 71]],
+6: [[5, 25], [35, 71]], 7: [[10, 25], [34, 40], [45, 64]], 8: [[11, 24], [34, 37], [38, 38], [41, 64]], 9: [[12, 23], [34, 63]],
+10: [[13, 20], [33, 63]], 11: [[12, 18], [20, 21], [33, 49], [50, 62]], 12: [[16, 19], [21, 23], [33, 47], [45, 48], [50, 53], [55, 58], [60, 60]],
+13: [[17, 19], [20, 24], [33, 46], [47, 47], [51, 52], [55, 57], [60, 60]], 14: [[18, 19], [20, 26], [33, 47], [52, 52], [55, 56], [57, 59]],
+15: [[20, 29], [36, 46], [55, 56], [57, 59], [60, 61], [63, 65]], 16: [[20, 29], [36, 45], [55, 56], [57, 59], [62, 66]],
+17: [[20, 30], [37, 44], [56, 58], [63, 66]], 18: [[21, 30], [37, 44], [57, 60], [62, 64]], 19: [[22, 30], [38, 45], [59, 66]],
+20: [[22, 28], [38, 45], [58, 66]], 21: [[22, 28], [38, 43], [58, 66]], 22: [[22, 27], [39, 43], [59, 66]], 23: [[22, 26], [60, 66], [69, 70]],
+24: [[22, 26], [65, 65], [69, 70]], 25: [[22, 25], [69, 70]], 26: [[22, 25]]
+};
+const land = [];
+Object.keys(LAND).forEach((r) => {
+LAND[r].forEach((rg) => {
+for (let col = rg[0]; col <= rg[1]; col++) {
+const x = (col + 0.5) * 5 * S, y = Y0 + (Number(r) + 0.5) * 5 * S;
+land.push({ style: 'position:absolute;left:' + (x - 2).toFixed(1) + 'px;top:' + (y - 2).toFixed(1) + 'px;width:4px;height:4px;border-radius:50%;background:#33405A;opacity:' + (0.45 + ((col * 7 + Number(r) * 13) % 6) / 10) });
+}
+});
+});
+const px = (s.lon + 180) * S, py = Y0 + (80 - s.lat) * S;
+
+const drafts = [
+{ title: s.title.trim() || 'Sin título', sub: valid ? 'Listo · sin publicar' : 'Incompleto', color: valid ? '#6CB0E0' : '#F0B455', active: true },
+{ title: 'La mujer de Isdal', sub: 'Incompleto', color: '#F0B455' },
+{ title: 'Hinterkaifeck', sub: 'Entregado el 12/09 · pendiente de publicar', color: '#B7A2F0' },
+{ title: 'Golden State Killer', sub: 'Publicado', color: '#8FCB8A' }
+].map((d) => ({
+title: d.title, sub: d.sub, color: d.color,
+style: 'display:flex;align-items:center;gap:8px;padding:14px 10px 14px 16px;border-radius:14px;cursor:pointer;background:' + (d.active ? 'rgba(229,72,77,0.12)' : 'rgba(255,255,255,0.03)') + ';border:1px solid ' + (d.active ? 'rgba(229,72,77,0.45)' : 'rgba(255,255,255,0.08)') + ';box-shadow:' + (d.active ? 'inset 3px 0 0 #E5484D' : 'none')
+}));
+const checks = [
+[titleOk, 'Título'], [yearOk, 'Año (3 o 4 cifras)'], [locOk, 'Punto en el mapa'], [sumOk, 'Resumen del caso']
+].map((c) => ({ label: c[1], color: c[0] ? '#8FCB8A' : '#B9B4AB', fill: c[0] ? '#8FCB8A' : 'transparent', mark: c[0] ? '✓' : '' }));
+
+return {
+f: { title: s.title, cat: s.cat, year: s.year, status: s.status, region: s.region, summary: s.summary, victims: s.victims, latTxt: s.lat.toFixed(4), lonTxt: s.lon.toFixed(4) },
+onTitle: (e) => this.setState({ title: e.target.value }),
+onCat: (e) => this.setState({ cat: e.target.value }),
+onYear: (e) => this.setState({ year: e.target.value }),
+onStatus: (e) => this.setState({ status: e.target.value }),
+onRegion: (e) => this.setState({ region: e.target.value }),
+onSummary: (e) => this.setState({ summary: e.target.value }),
+onVictims: (e) => this.setState({ victims: e.target.value }),
+onMap: (e) => {
+try {
+const r = e.currentTarget.getBoundingClientRect();
+const x = ((e.clientX - r.left) / r.width) * W, y = ((e.clientY - r.top) / r.height) * H;
+const lon = Math.max(-180, Math.min(180, x / S - 180)), lat = Math.max(-58, Math.min(80, 80 - (y - Y0) / S));
+this.setState({ lat, lon, placed: true });
+} catch (err) { /* sin posición */ }
+},
+land,
+pinWrap: 'position:absolute;left:' + px.toFixed(1) + 'px;top:' + py.toFixed(1) + 'px;width:0;height:0;opacity:' + (s.placed ? 1 : 0) + ';transition:left 500ms cubic-bezier(0.22,0.8,0.2,1),top 500ms cubic-bezier(0.22,0.8,0.2,1)',
+pinRing: 'position:absolute;left:-10px;top:-10px;width:20px;height:20px;border-radius:50%;border:2px solid ' + cat.c + ';animation:pulse 1.8s ease-out infinite',
+pinDot: 'position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;box-sizing:border-box;background:' + cat.c + ';border:3px solid #05070B;box-shadow:0 0 22px ' + cat.c,
+coordLine: s.placed ? fmtLat(s.lat) + ' · ' + fmtLon(s.lon) : 'Sin punto marcado',
+drafts, checks,
+tabs: [['s1', 'Datos básicos'], ['s2', 'Ubicación'], ['s3', 'Resumen'], ['s4', 'Cronología'], ['s5', 'Enlaces'], ['s6', 'Fotografías'], ['s7', 'Capítulos']].map((t, i) => ({ href: '#' + t[0], n: '0' + (i + 1), label: t[1] })),
+timeline: [
+{ date: '1968–69', title: 'Primeros ataques confirmados', kind: 'initial' },
+{ date: '1969', title: 'Cartas cifradas a la prensa', kind: 'process' },
+{ date: 'Hoy', title: 'Investigación aún abierta', kind: 'open' }
+],
+links: [
+{ title: 'Wikipedia — Zodiac Killer', url: 'https://es.wikipedia.org/wiki/Zodiac', kind: 'pub' },
+{ title: 'Archivo de prensa', url: 'https://www.sfchronicle.com', kind: 'pub' }
+],
+chapters: [{ label: 'Antecedentes' }, { label: 'Los hechos' }, { label: 'La investigación' }, { label: 'Estado actual' }],
+pv: {
+title: s.title.trim() || 'Sin título', year: s.year.trim() || '—', category: cat.label, color: cat.c, status: st.l, stColor: st.c,
+loc: (s.region.trim() || 'Sin región') + ' · EE. UU.', summary: s.summary.trim() || 'Escribe un resumen para verlo aquí.', victims: s.victims.trim() || '—',
+coords: s.placed ? s.lat.toFixed(2) + ', ' + s.lon.toFixed(2) : '—',
+headStyle: 'position:relative;height:110px;overflow:hidden;background:radial-gradient(420px 200px at 80% 0%,' + cat.c + '55,transparent 70%),linear-gradient(160deg,' + cat.base + ',#0B0D12)',
+ghostStyle: "position:absolute;right:-4px;top:18px;font-family:'Noto Serif',serif;font-weight:700;font-size:110px;line-height:1;color:rgba(255,255,255,0.09)"
+},
+toggleMenu: () => this.setState({ menu: !s.menu }),
+menuStyle: 'position:absolute;right:0;top:52px;width:280px;padding:6px;display:flex;flex-direction:column;background:rgba(18,21,28,0.97);backdrop-filter:blur(16px);border:1px solid rgba(255,255,255,0.14);border-radius:14px;box-shadow:0 24px 60px rgba(0,0,0,0.6);z-index:20;opacity:' + (s.menu ? 1 : 0) + ';transform:translateY(' + (s.menu ? 0 : -8) + 'px);pointer-events:' + (s.menu ? 'auto' : 'none') + ';transition:opacity 200ms ease,transform 250ms ease',
+jsonBtn: 'height:44px;padding:0 18px;display:flex;align-items:center;gap:10px;border-radius:12px;font-size:14px;font-weight:600;' + (valid ? 'background:#E5484D;border:0;color:#FFFFFF' : 'background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);color:#8B8880;cursor:not-allowed'),
+copyJson: () => {
+if (!valid) return;
+this.setState({ toast: true });
+clearTimeout(this._toast);
+this._toast = setTimeout(() => this.setState({ toast: false }), 3000);
+},
+toastStyle: 'position:absolute;left:50%;bottom:32px;transform:translate(-50%,' + (s.toast ? 0 : 20) + 'px);padding:14px 24px;background:rgba(20,24,32,0.96);border:1px solid rgba(143,203,138,0.5);border-radius:12px;font-size:14px;color:#D9F2D6;box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:30;pointer-events:none;opacity:' + (s.toast ? 1 : 0) + ';transition:opacity 300ms ease,transform 400ms cubic-bezier(0.2,0.8,0.2,1)'
+};
+}
+}
+</script>
+</body>
+</html>

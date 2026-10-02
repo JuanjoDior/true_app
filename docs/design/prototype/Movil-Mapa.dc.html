@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Mapa móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070B;font-family:'Noto Sans',system-ui,sans-serif}
+a{color:#F4F1EB;text-decoration:none}a:hover{color:#FFFFFF}
+button{font-family:inherit;cursor:pointer}
+.scroller{scrollbar-width:none}
+.scroller::-webkit-scrollbar{display:none}
+@keyframes pulse{0%{transform:scale(0.5);opacity:0.9}100%{transform:scale(2.8);opacity:0}}
+@keyframes dash{to{stroke-dashoffset:-14}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; box-sizing: border-box; background: #05070B; color: #F4F1EB; overflow: hidden">
+
+<!-- Escena -->
+<div style="position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 40%, #0E1420 0%, #05070B 75%)"></div>
+<div style="{{sceneStyle}}">
+<sc-for list="{{land}}" as="d" hint-placeholder-count="500">
+<div style="{{d.style}}"></div>
+</sc-for>
+<svg width="1440" height="540" viewBox="0 0 1440 540" style="position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible" aria-hidden="true">
+<path d="{{arc0.d}}" vector-effect="non-scaling-stroke" style="{{arc0.style}}"/>
+<path d="{{arc1.d}}" vector-effect="non-scaling-stroke" style="{{arc1.style}}"/>
+<path d="{{arc2.d}}" vector-effect="non-scaling-stroke" style="{{arc2.style}}"/>
+</svg>
+<sc-for list="{{markers}}" as="m" hint-placeholder-count="14">
+<div style="{{m.wrapStyle}}">
+<div style="{{m.scaleStyle}}">
+<button type="button" aria-label="{{m.title}}" onClick="{{m.pick}}" style="{{m.btnStyle}}">
+<span style="{{m.ringStyle}}"></span>
+<span style="{{m.dotStyle}}"></span>
+</button>
+<sc-if value="{{m.showLabel}}" hint-placeholder-val="{{true}}">
+<span style="position: absolute; left: 16px; top: -12px; padding: 3px 9px; background: rgba(12,14,19,0.88); border-radius: 6px; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 13px; color: #FFFFFF; white-space: nowrap">{{m.title}}</span>
+</sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, rgba(5,7,11,0) 50%, rgba(5,7,11,0.85) 100%); pointer-events: none"></div>
+
+<!-- Cabecera y filtros -->
+<header style="position: absolute; left: 0; right: 0; top: 0; padding: 0 12px 0 16px; height: 64px; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; background: linear-gradient(180deg, rgba(5,7,11,0.9) 0%, rgba(5,7,11,0) 100%)">
+<div style="display: flex; align-items: center; gap: 10px">
+<div style="width: 32px; height: 32px; border-radius: 9px; background: #E5484D; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 18px; color: #FFFFFF">T</div>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 18px; letter-spacing: 0.1em">TRUE</span>
+</div>
+<button type="button" aria-label="Buscar" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; color: #FFFFFF">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+</button>
+</header>
+<div class="scroller" style="position: absolute; left: 0; right: 0; top: 64px; padding: 0 16px; display: flex; gap: 8px; overflow-x: auto">
+<sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+<button type="button" onClick="{{c.pick}}" style="{{c.style}}">{{c.label}}</button>
+</sc-for>
+</div>
+
+<!-- Hoja del caso -->
+<section style="{{sheetStyle}}">
+<div style="height: 18px; display: flex; align-items: center; justify-content: center"><div style="width: 36px; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.25)"></div></div>
+<div style="padding: 0 20px 18px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; align-items: center; justify-content: space-between">
+<span style="height: 26px; padding: 0 10px; display: inline-flex; align-items: center; border: 1px solid {{card.glow}}; border-radius: 6px; color: {{card.glow}}; font-size: 12px; font-weight: 600">{{card.category}}</span>
+<button type="button" aria-label="Volver a la vista del mundo" onClick="{{reset}}" style="width: 44px; height: 44px; margin-right: -12px; display: flex; align-items: center; justify-content: center; background: transparent; border: 0; color: #C9C4BB">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 5px">
+<h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 32px; line-height: 1.02; color: #FFFFFF">{{card.title}}</h2>
+<span style="font-size: 14px; color: #D8D3CA">{{card.loc}} · {{card.year}}</span>
+<span style="display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: {{card.stColor}}"><span style="width: 8px; height: 8px; border-radius: 50%; background: {{card.stColor}}"></span>{{card.status}}</span>
+</div>
+<p style="margin: 0; font-size: 14px; line-height: 1.55; color: #D8D3CA">{{card.summary}}</p>
+<div class="scroller" style="display: flex; gap: 8px; overflow-x: auto">
+<sc-for list="{{card.related}}" as="r" hint-placeholder-count="2">
+<button type="button" onClick="{{r.pick}}" style="flex-shrink: 0; height: 44px; padding: 0 14px; display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14); border-radius: 12px; color: #F4F1EB; font-size: 13px; font-weight: 500">
+<span style="width: 9px; height: 9px; border-radius: 50%; background: {{r.color}}"></span>{{r.title}}</button>
+</sc-for>
+</div>
+<div style="display: flex; gap: 10px">
+<a href="Movil-Expediente.dc.html" style="flex-grow: 1; height: 50px; display: flex; align-items: center; justify-content: center; gap: 8px; background: #F4F1EB; border-radius: 12px; color: #0B0C10; font-size: 15px; font-weight: 600">Abrir expediente
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+<button type="button" onClick="{{reset}}" style="height: 50px; padding: 0 18px; background: transparent; border: 1px solid rgba(255,255,255,0.22); border-radius: 12px; color: #F4F1EB; font-size: 14px; font-weight: 500">Mundo</button>
+</div>
+</div>
+</section>
+<div style="{{hintStyle}}">Toca un punto para volar hasta el caso</div>
+
+<!-- Línea de tiempo -->
+<div style="position: absolute; left: 12px; right: 12px; bottom: 80px; height: 60px; box-sizing: border-box; padding: 0 14px; display: flex; align-items: center; gap: 12px; background: rgba(12,14,19,0.78); backdrop-filter: blur(16px); border: 1px solid rgba(255,255,255,0.12); border-radius: 16px">
+<button type="button" aria-label="{{playLabel}}" onClick="{{togglePlay}}" style="width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: #F4F1EB; border: 0; border-radius: 50%; color: #0B0C10">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="{{playIcon}}"/></svg>
+</button>
+<div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px">
+<div style="position: relative; height: 8px; margin: 0 8px">
+<sc-for list="{{ticks}}" as="t" hint-placeholder-count="14">
+<span style="{{t.style}}"></span>
+</sc-for>
+</div>
+<input type="range" min="1888" max="2025" value="{{year}}" onChange="{{onYear}}" aria-label="Año" style="width: 100%; margin: 0; height: 22px; accent-color: #E5484D; background: transparent">
+</div>
+<span style="width: 50px; text-align: right; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 22px; color: #FFFFFF">{{year}}</span>
+</div>
+
+<!-- Barra de pestañas -->
+<nav aria-label="Secciones" style="position: absolute; left: 0; right: 0; bottom: 0; height: 68px; box-sizing: border-box; padding: 0 8px; display: flex; background: rgba(10,13,19,0.88); backdrop-filter: blur(18px); border-top: 1px solid rgba(255,255,255,0.1)">
+<a href="Movil-Portada.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #B9B4AB">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7M6 9.5V20h12V9.5"/></svg><span style="font-size: 11px; font-weight: 500">Inicio</span></a>
+<a href="Movil-Mapa.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #FFFFFF">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.2 3 14.8 0 18M12 3c-3 3.2-3 14.8 0 18"/></svg><span style="font-size: 11px; font-weight: 600">Mapa</span></a>
+<a href="Archivo-Movil.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #B9B4AB">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg><span style="font-size: 11px; font-weight: 500">Archivo</span></a>
+<a href="Acceso-Movil.dc.html" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; color: #B9B4AB">
+<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M12 8v8M8 12h8"/></svg><span style="font-size: 11px; font-weight: 500">Formulario</span></a>
+</nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { sel: 'zodiac', last: 'zodiac', filter: 'all', year: 2025, playing: false };
+}
+componentWillUnmount() {
+clearInterval(this._p);
+}
+togglePlayFn() {
+if (this.state.playing) {
+clearInterval(this._p);
+this.setState({ playing: false });
+return;
+}
+if (this.state.year >= 2025) this.setState({ year: 1888 });
+this.setState({ playing: true });
+this._p = setInterval(() => {
+const y = this.state.year + 2;
+if (y >= 2025) {
+clearInterval(this._p);
+this.setState({ year: 2025, playing: false });
+} else {
+this.setState({ year: y });
+}
+}, 70);
+}
+renderVals() {
+const CAT = {
+serie: { label: 'Asesinos en serie', c: '#E5484D', base: '#2A0B10' },
+isolated: { label: 'Asesinato aislado', c: '#D9788A', base: '#2A1219' },
+kidnapping: { label: 'Secuestro', c: '#E0A63A', base: '#2B1E0A' },
+unsolved: { label: 'Caso sin resolver', c: '#5AA0D0', base: '#0B1F2E' }
+};
+const ST = { open: '#6CB0E0', solved: '#8FCB8A', progress: '#F0B455' };
+const C = {
+zodiac: { t: 'Zodiac', loc: 'San Francisco', y: 1968, lat: 37.77, lon: -122.42, cat: 'serie', st: 'open', stl: 'Sin resolver', sum: 'Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.' },
+dahlia: { t: 'Black Dahlia', loc: 'Los Ángeles', y: 1947, lat: 34.05, lon: -118.24, cat: 'isolated', st: 'open', stl: 'Sin resolver', sum: 'Hallazgo del cuerpo de Elizabeth Short, de 22 años, en enero de 1947. El caso sigue sin imputación.' },
+isdal: { t: 'La mujer de Isdal', loc: 'Bergen', y: 1970, lat: 60.39, lon: 5.32, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Hallazgo de una mujer sin identificar en el valle de Isdal, en Noruega, en 1970.' },
+mccann: { t: 'Madeleine McCann', loc: 'Praia da Luz', y: 2007, lat: 37.09, lon: -8.72, cat: 'kidnapping', st: 'progress', stl: 'En investigación', sum: 'Desaparición de una niña de tres años en el Algarve, en mayo de 2007. La investigación sigue en curso.' },
+dyatlov: { t: 'Paso Diátlov', loc: 'Montes Urales', y: 1959, lat: 61.75, lon: 59.45, cat: 'unsolved', st: 'progress', stl: 'Caso reabierto', sum: 'Muerte de nueve excursionistas en los Urales en febrero de 1959. Caso reabierto en 2019.' },
+somerton: { t: 'El hombre de Somerton', loc: 'Adelaida', y: 1948, lat: -34.93, lon: 138.6, cat: 'unsolved', st: 'solved', stl: 'Identidad confirmada', sum: 'Hombre sin identificar hallado en una playa de Adelaida en 1948. Su identidad se confirmó en 2022.' },
+gsk: { t: 'Golden State Killer', loc: 'California', y: 1974, lat: 38.58, lon: -121.49, cat: 'serie', st: 'solved', stl: 'Resuelto (2018)', sum: 'Serie de agresiones en California durante los años 70 y 80. Fue identificado y detenido en 2018.' },
+hinter: { t: 'Hinterkaifeck', loc: 'Baviera', y: 1922, lat: 48.46, lon: 11.27, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Asesinato de seis personas en una granja aislada de Baviera en 1922.' },
+ripper: { t: 'Jack el Destripador', loc: 'Londres', y: 1888, lat: 51.51, lon: -0.07, cat: 'serie', st: 'open', stl: 'Sin resolver', sum: 'Serie de asesinatos en el barrio de Whitechapel durante 1888. El autor nunca fue identificado.' },
+tylenol: { t: 'Envenenamientos de Tylenol', loc: 'Chicago', y: 1982, lat: 41.88, lon: -87.63, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Envenenamientos con cápsulas adulteradas en Chicago en 1982. Nunca se identificó al responsable.' },
+jonbenet: { t: 'JonBenét Ramsey', loc: 'Boulder', y: 1996, lat: 40.02, lon: -105.27, cat: 'unsolved', st: 'open', stl: 'Sin resolver', sum: 'Muerte de una niña de seis años en Boulder, Colorado, en diciembre de 1996.' },
+borden: { t: 'Caso Borden', loc: 'Fall River', y: 1892, lat: 41.7, lon: -71.15, cat: 'isolated', st: 'open', stl: 'Sin condena', sum: 'Doble asesinato en Fall River, Massachusetts, en 1892. La acusada fue absuelta.' },
+btk: { t: 'BTK', loc: 'Wichita', y: 1974, lat: 37.69, lon: -97.34, cat: 'serie', st: 'solved', stl: 'Resuelto (2005)', sum: 'Serie de asesinatos en Wichita entre 1974 y 1991. El autor fue detenido en 2005.' },
+kercher: { t: 'Meredith Kercher', loc: 'Perugia', y: 2007, lat: 43.11, lon: 12.39, cat: 'isolated', st: 'solved', stl: 'Caso cerrado', sum: 'Asesinato de una estudiante británica en Perugia en 2007.' }
+};
+const pairs = [['zodiac', 'gsk', 'Norte de California'], ['zodiac', 'ripper', 'Sin identificar · desafió a la prensa'], ['isdal', 'somerton', 'Cuerpo sin identificar durante décadas']];
+const pos = (c) => ({ x: (c.lon + 180) * 4, y: (80 - c.lat) * 4 });
+const relatedOf = (id) => pairs.filter((p) => p[0] === id || p[1] === id).map((p) => ({ id: p[0] === id ? p[1] : p[0], rel: p[2] }));
+const { sel, last, filter, year, playing } = this.state;
+const ease = 'cubic-bezier(0.22,0.8,0.2,1)';
+const ids = Object.keys(C);
+
+// Cámara
+let k = 0.62, tx = 195 - 0.62 * 560, ty = 330 - 0.62 * 180;
+const relSel = sel ? relatedOf(sel) : [];
+if (sel) {
+const ps = [pos(C[sel])].concat(relSel.map((r) => pos(C[r.id])));
+const xs = ps.map((p) => p.x), ys = ps.map((p) => p.y);
+const bw = Math.max.apply(null, xs) - Math.min.apply(null, xs), bh = Math.max.apply(null, ys) - Math.min.apply(null, ys);
+const cx = (Math.max.apply(null, xs) + Math.min.apply(null, xs)) / 2, cy = (Math.max.apply(null, ys) + Math.min.apply(null, ys)) / 2;
+k = Math.max(0.6, Math.min(2.4, 340 / (bw + 120), 260 / (bh + 120)));
+tx = 195 - k * cx;
+ty = 235 - k * cy;
+}
+const sceneStyle = 'position:absolute;left:0;top:0;width:1440px;height:540px;transform-origin:0 0;transform:translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + k.toFixed(3) + ');transition:transform 1700ms ' + ease;
+const counter = 'position:absolute;left:0;top:0;width:0;height:0;transform:scale(' + (1 / k).toFixed(4) + ');transition:transform 1700ms ' + ease;
+
+const LAND = {
+0: [[21, 32], [39, 40], [55, 56]], 1: [[9, 19], [21, 33], [49, 50], [54, 71]], 2: [[2, 22], [23, 31], [37, 71]],
+3: [[2, 16], [20, 24], [26, 28], [31, 32], [37, 71]], 4: [[3, 16], [21, 24], [35, 35], [38, 71]], 5: [[4, 16], [20, 25], [34, 35], [36, 71]],
+6: [[5, 25], [35, 71]], 7: [[10, 25], [34, 40], [45, 64]], 8: [[11, 24], [34, 37], [38, 38], [41, 64]], 9: [[12, 23], [34, 63]],
+10: [[13, 20], [33, 63]], 11: [[12, 18], [20, 21], [33, 49], [50, 62]], 12: [[16, 19], [21, 23], [33, 47], [45, 48], [50, 53], [55, 58], [60, 60]],
+13: [[17, 19], [20, 24], [33, 46], [47, 47], [51, 52], [55, 57], [60, 60]], 14: [[18, 19], [20, 26], [33, 47], [52, 52], [55, 56], [57, 59]],
+15: [[20, 29], [36, 46], [55, 56], [57, 59], [60, 61], [63, 65]], 16: [[20, 29], [36, 45], [55, 56], [57, 59], [62, 66]],
+17: [[20, 30], [37, 44], [56, 58], [63, 66]], 18: [[21, 30], [37, 44], [57, 60], [62, 64]], 19: [[22, 30], [38, 45], [59, 66]],
+20: [[22, 28], [38, 45], [58, 66]], 21: [[22, 28], [38, 43], [58, 66]], 22: [[22, 27], [39, 43], [59, 66]], 23: [[22, 26], [60, 66], [69, 70]],
+24: [[22, 26], [65, 65], [69, 70]], 25: [[22, 25], [69, 70]], 26: [[22, 25]]
+};
+const land = [];
+Object.keys(LAND).forEach((r) => {
+LAND[r].forEach((rg) => {
+for (let col = rg[0]; col <= rg[1]; col++) {
+const x = (col + 0.5) * 20, y = (Number(r) + 0.5) * 20;
+land.push({ style: 'position:absolute;left:' + (x - 3.5) + 'px;top:' + (y - 3.5) + 'px;width:7px;height:7px;border-radius:50%;background:#33405A;opacity:' + (0.45 + ((col * 7 + Number(r) * 13) % 6) / 10) });
+}
+});
+});
+
+const inFilter = (c) => filter === 'all' || c.st === filter;
+const markers = ids.map((id, i) => {
+const c = C[id], m = CAT[c.cat], p = pos(c);
+const isSel = id === sel, isRel = relSel.some((r) => r.id === id);
+const shown = c.y <= year, match = inFilter(c);
+const size = isSel ? 20 : 14;
+const opacity = !shown ? 0 : (match ? (sel && !isSel && !isRel ? 0.4 : 1) : 0.12);
+return {
+title: c.t,
+showLabel: isSel || isRel,
+pick: () => this.setState({ sel: id, last: id }),
+wrapStyle: 'position:absolute;left:' + p.x + 'px;top:' + p.y + 'px;width:0;height:0;opacity:' + opacity + ';transition:opacity 500ms ease',
+scaleStyle: counter,
+btnStyle: 'position:absolute;left:-22px;top:-22px;width:44px;height:44px;padding:0;background:transparent;border:0;pointer-events:' + (shown && match ? 'auto' : 'none'),
+ringStyle: 'position:absolute;left:50%;top:50%;width:' + size + 'px;height:' + size + 'px;margin:' + -size / 2 + 'px 0 0 ' + -size / 2 + 'px;border-radius:50%;border:2px solid ' + m.c + ';animation:pulse ' + (isSel ? '1.8s' : '3s') + ' ease-out ' + ((i * 0.41) % 3).toFixed(2) + 's infinite',
+dotStyle: 'position:absolute;left:50%;top:50%;width:' + size + 'px;height:' + size + 'px;margin:' + -size / 2 + 'px 0 0 ' + -size / 2 + 'px;border-radius:50%;background:' + m.c + ';border:2px solid ' + (isRel ? '#F0C674' : '#05070B') + ';box-sizing:border-box;box-shadow:0 0 ' + (isSel ? 24 : 12) + 'px ' + m.c + ';transition:width 400ms ease,height 400ms ease,margin 400ms ease'
+};
+});
+const arcs = pairs.map((pr) => {
+const a = pos(C[pr[0]]), b = pos(C[pr[1]]);
+const dist = Math.hypot(a.x - b.x, a.y - b.y);
+const mx = (a.x + b.x) / 2, cy = Math.min(a.y, b.y) - dist * 0.28 - 20;
+const on = sel && (sel === pr[0] || sel === pr[1]);
+return {
+d: 'M' + a.x + ',' + a.y + ' Q' + mx + ',' + cy + ' ' + b.x + ',' + b.y,
+style: 'fill:none;stroke:#F0C674;stroke-width:1.8;stroke-dasharray:7 7;stroke-linecap:round;opacity:' + (on ? 0.95 : 0) + ';transition:opacity 900ms ease ' + (on ? '600ms' : '0ms') + ';animation:dash 1.2s linear infinite'
+};
+});
+
+const cc = C[last], cm = CAT[cc.cat];
+const card = {
+title: cc.t, loc: cc.loc, year: String(cc.y), status: cc.stl, stColor: ST[cc.st], summary: cc.sum, glow: cm.c, category: cm.label,
+related: relatedOf(last).map((r) => ({ title: C[r.id].t, color: CAT[C[r.id].cat].c, pick: () => this.setState({ sel: r.id, last: r.id }) }))
+};
+const sheetStyle = 'position:absolute;left:12px;right:12px;bottom:148px;box-sizing:border-box;background:rgba(14,16,22,0.88);backdrop-filter:blur(18px);border:1px solid rgba(255,255,255,0.14);border-radius:22px;box-shadow:0 24px 70px rgba(0,0,0,0.6);opacity:' + (sel ? 1 : 0) + ';transform:translateY(' + (sel ? 0 : 40) + 'px);pointer-events:' + (sel ? 'auto' : 'none') + ';transition:opacity 500ms ease ' + (sel ? '800ms' : '0ms') + ',transform 800ms ' + ease + ' ' + (sel ? '800ms' : '0ms');
+const hintStyle = 'position:absolute;left:50%;bottom:152px;transform:translateX(-50%);padding:10px 18px;background:rgba(12,14,19,0.75);border:1px solid rgba(255,255,255,0.12);border-radius:999px;font-size:13px;color:#E4E0D8;white-space:nowrap;opacity:' + (sel ? 0 : 1) + ';transition:opacity 500ms ease';
+
+const base = 'height:40px;padding:0 14px;flex-shrink:0;display:flex;align-items:center;border-radius:999px;font-size:13px;font-weight:500;white-space:nowrap;backdrop-filter:blur(10px);';
+const mk = (key, label) => ({
+label,
+pick: () => this.setState({ filter: key }),
+style: base + (filter === key ? 'background:#F4F1EB;border:1px solid #F4F1EB;color:#0B0C10;font-weight:600' : 'background:rgba(12,14,19,0.75);border:1px solid rgba(255,255,255,0.16);color:#E4E0D8')
+});
+
+return {
+sceneStyle, land, markers, arc0: arcs[0], arc1: arcs[1], arc2: arcs[2], card, sheetStyle, hintStyle,
+chips: [mk('all', 'Todos'), mk('open', 'Sin resolver'), mk('solved', 'Resuelto'), mk('progress', 'En investigación')],
+year: String(year),
+ticks: ids.map((id) => {
+const c = C[id];
+return { style: 'position:absolute;left:' + (((c.y - 1888) / 137) * 100).toFixed(2) + '%;top:1px;width:6px;height:6px;margin-left:-3px;border-radius:50%;background:' + CAT[c.cat].c + ';opacity:' + (c.y <= year ? 1 : 0.3) };
+}),
+onYear: (e) => this.setState({ year: Number(e.target.value) }),
+togglePlay: () => this.togglePlayFn(),
+playLabel: playing ? 'Pausar' : 'Reproducir',
+playIcon: playing ? 'M7 5h4v14H7zM13 5h4v14h-4z' : 'M7 4l13 8-13 8z',
+reset: () => this.setState({ sel: null })
+};
+}
+}
+</script>
+</body>
+</html>

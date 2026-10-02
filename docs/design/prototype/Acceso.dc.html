@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Acceso al formulario</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Noto+Sans:wght@400;500;600&family=Noto+Serif:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#05070B;font-family:'Noto Sans',system-ui,sans-serif}
+a{color:#F4F1EB;text-decoration:none}a:hover{color:#FFFFFF}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit;transition:border-color .2s,box-shadow .2s}
+input:focus{outline:none;border-color:#E5484D !important;box-shadow:0 0 0 3px rgba(229,72,77,0.25)}
+input::placeholder{color:#8B8880}
+.cta{transition:transform .25s,opacity .25s}
+.cta:hover{transform:scale(1.02)}
+.link{transition:color .2s}
+.link:hover{color:#FFFFFF}
+@keyframes pulse{0%{transform:scale(0.5);opacity:0.8}100%{transform:scale(2.8);opacity:0}}
+@keyframes rise{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+@keyframes shake0{0%,100%{transform:translateX(0)}18%{transform:translateX(-10px)}36%{transform:translateX(9px)}54%{transform:translateX(-6px)}72%{transform:translateX(4px)}}
+@keyframes shake1{0%,100%{transform:translateX(0)}18%{transform:translateX(-10px)}36%{transform:translateX(9px)}54%{transform:translateX(-6px)}72%{transform:translateX(4px)}}
+@keyframes ring{0%{box-shadow:0 0 0 0 rgba(229,72,77,0.45)}100%{box-shadow:0 0 0 22px rgba(229,72,77,0)}}
+@keyframes pop{0%{transform:scale(0.6);opacity:0}100%{transform:scale(1);opacity:1}}
+</style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; box-sizing: border-box; background: radial-gradient(ellipse at 50% 45%, #0D1320 0%, #05070B 72%); color: #F4F1EB; overflow: hidden">
+
+<!-- Fondo: mapa de puntos apagado -->
+<div style="position: absolute; left: 0; top: 180px; width: 1440px; height: 540px; opacity: 0.55">
+<sc-for list="{{land}}" as="d" hint-placeholder-count="500">
+<div style="{{d.style}}"></div>
+</sc-for>
+<sc-for list="{{pins}}" as="m" hint-placeholder-count="14">
+<div style="{{m.wrapStyle}}">
+<div style="{{m.ringStyle}}"></div>
+<div style="{{m.dotStyle}}"></div>
+</div>
+</sc-for>
+</div>
+<div style="position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 50%, rgba(5,7,11,0.55) 0%, rgba(5,7,11,0.92) 70%); pointer-events: none"></div>
+
+<header style="position: absolute; left: 0; right: 0; top: 0; height: 96px; box-sizing: border-box; padding: 0 80px; display: flex; align-items: center; justify-content: space-between">
+<div style="display: flex; align-items: center; gap: 12px">
+<div style="width: 36px; height: 36px; border-radius: 10px; background: #E5484D; display: flex; align-items: center; justify-content: center; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; color: #FFFFFF">T</div>
+<span style="font-family: 'Noto Serif', serif; font-weight: 700; font-size: 20px; letter-spacing: 0.1em">TRUE</span>
+</div>
+<a class="link" href="Globo.dc.html" style="height: 44px; display: flex; align-items: center; gap: 10px; color: #C9C4BB; font-family: 'IBM Plex Mono', monospace; font-size: 12px; letter-spacing: 0.14em">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>VOLVER A LA SALA
+</a>
+</header>
+
+<!-- Tarjeta -->
+<div style="position: absolute; left: 50%; top: 50%; width: 440px; margin-left: -220px; margin-top: -250px">
+<div style="{{cardStyle}}">
+<form onSubmit="{{submit}}" style="margin: 0; display: flex; flex-direction: column; gap: 22px">
+<div style="display: flex; flex-direction: column; align-items: flex-start; gap: 18px">
+<div style="width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center; background: rgba(229,72,77,0.12); border: 1px solid rgba(229,72,77,0.5); color: #FF7A7F; animation: ring 2.6s ease-out infinite">
+<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2.5"/><path d="M8 11V8a4 4 0 018 0v3M12 15v2"/></svg>
+</div>
+<div style="display: flex; flex-direction: column; gap: 10px">
+<span style="font-family: 'IBM Plex Mono', monospace; font-size: 11px; letter-spacing: 0.22em; color: #E5484D">ZONA RESERVADA</span>
+<h1 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 34px; line-height: 1.05; color: #FFFFFF">Acceso al formulario de casos</h1>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; color: #D8D3CA">Introduce la clave compartida para continuar.</p>
+</div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 10px">
+<label style="display: flex; align-items: center; gap: 12px; height: 56px; box-sizing: border-box; padding: 0 16px; background: #0D1118; border-radius: 14px; {{fieldBorder}}">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#B9B4AB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="8" cy="15" r="4"/><path d="M11 12l9-9M16 7l3 3M14 9l2 2"/></svg>
+<input type="password" value="{{value}}" onChange="{{onValue}}" placeholder="Clave compartida" aria-label="Clave compartida" aria-invalid="{{invalid}}" autoComplete="off" style="flex-grow: 1; min-width: 0; height: 100%; background: transparent; border: 0; outline: 0; box-shadow: none; color: #F4F1EB; font-size: 16px; letter-spacing: 0.06em">
+</label>
+<sc-if value="{{error}}" hint-placeholder-val="{{false}}">
+<div role="alert" style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: #FF7A7F">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>Clave incorrecta. Inténtalo de nuevo.
+</div>
+</sc-if>
+</div>
+
+<button type="submit" class="cta" style="height: 56px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #F4F1EB; border: 0; border-radius: 14px; color: #0B0C10; font-size: 16px; font-weight: 600">Entrar
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+</button>
+</form>
+</div>
+
+<!-- Estado: acceso concedido -->
+<div style="{{okStyle}}">
+<div style="width: 64px; height: 64px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: rgba(143,203,138,0.14); border: 1px solid rgba(143,203,138,0.6); color: #8FCB8A; animation: pop 500ms cubic-bezier(0.2,0.8,0.2,1) both">
+<svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+</div>
+<h2 style="margin: 0; font-family: 'Noto Serif', serif; font-weight: 700; font-size: 30px; color: #FFFFFF">Acceso concedido</h2>
+<p style="margin: 0; font-size: 15px; line-height: 1.55; text-align: center; color: #D8D3CA">El acceso dura lo que dure esta sesión.</p>
+<a class="cta" href="Formulario-Cine.dc.html" style="align-self: stretch; height: 56px; display: flex; align-items: center; justify-content: center; gap: 10px; background: #F4F1EB; border-radius: 14px; color: #0B0C10; font-size: 16px; font-weight: 600">Abrir el formulario
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+</div>
+</div>
+
+<span style="position: absolute; left: 0; right: 0; bottom: 36px; text-align: center; font-size: 13px; color: #A7A29A">Crímenes reales · documentados con respeto</span>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+constructor(props) {
+super(props);
+this.state = { value: '', error: false, errKey: 0, ok: false };
+}
+renderVals() {
+const { value, error, errKey, ok } = this.state;
+const LAND = {
+0: [[21, 32], [39, 40], [55, 56]], 1: [[9, 19], [21, 33], [49, 50], [54, 71]], 2: [[2, 22], [23, 31], [37, 71]],
+3: [[2, 16], [20, 24], [26, 28], [31, 32], [37, 71]], 4: [[3, 16], [21, 24], [35, 35], [38, 71]], 5: [[4, 16], [20, 25], [34, 35], [36, 71]],
+6: [[5, 25], [35, 71]], 7: [[10, 25], [34, 40], [45, 64]], 8: [[11, 24], [34, 37], [38, 38], [41, 64]], 9: [[12, 23], [34, 63]],
+10: [[13, 20], [33, 63]], 11: [[12, 18], [20, 21], [33, 49], [50, 62]], 12: [[16, 19], [21, 23], [33, 47], [45, 48], [50, 53], [55, 58], [60, 60]],
+13: [[17, 19], [20, 24], [33, 46], [47, 47], [51, 52], [55, 57], [60, 60]], 14: [[18, 19], [20, 26], [33, 47], [52, 52], [55, 56], [57, 59]],
+15: [[20, 29], [36, 46], [55, 56], [57, 59], [60, 61], [63, 65]], 16: [[20, 29], [36, 45], [55, 56], [57, 59], [62, 66]],
+17: [[20, 30], [37, 44], [56, 58], [63, 66]], 18: [[21, 30], [37, 44], [57, 60], [62, 64]], 19: [[22, 30], [38, 45], [59, 66]],
+20: [[22, 28], [38, 45], [58, 66]], 21: [[22, 28], [38, 43], [58, 66]], 22: [[22, 27], [39, 43], [59, 66]], 23: [[22, 26], [60, 66], [69, 70]],
+24: [[22, 26], [65, 65], [69, 70]], 25: [[22, 25], [69, 70]], 26: [[22, 25]]
+};
+const land = [];
+Object.keys(LAND).forEach((r) => {
+LAND[r].forEach((rg) => {
+for (let col = rg[0]; col <= rg[1]; col++) {
+const x = (col + 0.5) * 20, y = (Number(r) + 0.5) * 20;
+land.push({ style: 'position:absolute;left:' + (x - 2.5) + 'px;top:' + (y - 2.5) + 'px;width:5px;height:5px;border-radius:50%;background:#33405A;opacity:' + (0.45 + ((col * 7 + Number(r) * 13) % 6) / 10) });
+}
+});
+});
+const pts = [[37.77, -122.42, '#E5484D'], [34.05, -118.24, '#D9788A'], [60.39, 5.32, '#5AA0D0'], [37.09, -8.72, '#E0A63A'], [61.75, 59.45, '#5AA0D0'], [-34.93, 138.6, '#5AA0D0'], [48.46, 11.27, '#5AA0D0'], [51.51, -0.07, '#E5484D'], [41.88, -87.63, '#5AA0D0'], [40.02, -105.27, '#5AA0D0'], [41.7, -71.15, '#D9788A'], [37.69, -97.34, '#E5484D'], [43.11, 12.39, '#D9788A'], [38.58, -121.49, '#E5484D']];
+const pins = pts.map((p, i) => ({
+wrapStyle: 'position:absolute;left:' + (p[1] + 180) * 4 + 'px;top:' + (80 - p[0]) * 4 + 'px;width:0;height:0',
+ringStyle: 'position:absolute;left:-9px;top:-9px;width:18px;height:18px;border-radius:50%;border:2px solid ' + p[2] + ';animation:pulse 3.2s ease-out ' + ((i * 0.43) % 3).toFixed(2) + 's infinite',
+dotStyle: 'position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:' + p[2] + ';box-shadow:0 0 12px ' + p[2]
+}));
+const glass = 'box-sizing:border-box;padding:36px;background:rgba(14,16,22,0.82);backdrop-filter:blur(20px);border:1px solid rgba(255,255,255,0.14);border-radius:26px;box-shadow:0 40px 100px rgba(0,0,0,0.65);';
+return {
+land, pins, value, error,
+invalid: error,
+onValue: (e) => this.setState({ value: e.target.value, error: false }),
+submit: (e) => {
+if (e && e.preventDefault) e.preventDefault();
+if (this.state.value.trim() === 'demo') this.setState({ ok: true, error: false });
+else this.setState({ error: true, errKey: this.state.errKey + 1 });
+},
+fieldBorder: 'border:1px solid ' + (error ? '#FF7A7F' : '#2A303B') + ';',
+cardStyle: glass + 'opacity:' + (ok ? 0 : 1) + ';pointer-events:' + (ok ? 'none' : 'auto') + ';transition:opacity 300ms ease;animation:' + (error ? 'shake' + (errKey % 2) + ' 420ms ease' : 'rise 800ms cubic-bezier(0.2,0.8,0.2,1) both'),
+okStyle: 'position:absolute;left:0;top:0;width:440px;' + glass + 'display:flex;flex-direction:column;align-items:center;gap:18px;opacity:' + (ok ? 1 : 0) + ';transform:translateY(' + (ok ? 0 : 20) + 'px);pointer-events:' + (ok ? 'auto' : 'none') + ';transition:opacity 400ms ease 200ms,transform 500ms cubic-bezier(0.2,0.8,0.2,1) 200ms'
+};
+}
+}
+</script>
+</body>
+</html>
