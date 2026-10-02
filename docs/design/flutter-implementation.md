@@ -2,7 +2,7 @@
 
 Cómo llevar la dirección D ([`DESIGN.md`](../../DESIGN.md)) al código existente. No cambia la lógica de dominio, datos ni aplicación: **solo presentación**, más un pequeño aumento del contrato de datos.
 
-Estado de partida (verificado en el repositorio): Flutter web, Riverpod 3, `flutter_map` 8, enrutado por hash con `Navigator 2.0` (`AppRouterDelegate`), tema oscuro en `lib/core/theme/app_theme.dart`, pantallas en `lib/features/{home,cases}/presentation/`.
+Estado de partida (verificado en el repositorio): Flutter web (más la entrega de escritorio para Windows; `windows/` se conserva), catálogo y cuentas en Supabase, Riverpod 3, `flutter_map` 8, enrutado por hash con `Navigator 2.0` (`AppRouterDelegate`), tema oscuro en `lib/core/theme/app_theme.dart`, pantallas en `lib/features/{home,cases}/presentation/`.
 
 ---
 
@@ -20,7 +20,7 @@ lib/features/atlas/                                (mapa plano + globo; lógica 
   domain/        land_mask.dart · geo_projection.dart · camera_target.dart
   presentation/  flat_map_scene.dart · globe_scene.dart · map_markers.dart · connection_arcs.dart · year_scrubber.dart
 lib/features/home/presentation/                    (portada: carrusel + filas + invitación al mapa)
-lib/features/cases/presentation/                   (expediente, directorio, acceso, formulario, estados)
+lib/features/cases/presentation/                   (expediente, directorio, inicio de sesión, formulario, estados)
 ```
 
 - `AppColors` (actual) **se conserva** mientras queden pantallas sin migrar; cada slice nuevo usa los tokens `Ds*`. Al migrar la última pantalla se borra `AppColors` y el código muerto (`DESIGN.md` §10).
@@ -37,6 +37,8 @@ lib/features/cases/presentation/                   (expediente, directorio, acce
 
 ## 3. El globo 3D — decisión pendiente
 
+> Decisión **D1** (abierta; bloquea F3). Las decisiones abiertas D1–D5 y su estado se llevan en `odd/tasks/cinematic-design-system.md`. Las reglas de uso de las skills de diseño instaladas (`emil-design-eng`, `ui-ux-pro-max`) están en la sección «Skills de diseño instaladas» de ese mismo archivo; no se duplican aquí.
+
 | Opción | Esfuerzo | Riesgo | Notas |
 | --- | --- | --- | --- |
 | **A. `CustomPainter` propio** (recomendada) | Medio | Bajo | Proyección ortográfica en Dart (fórmulas en `map-and-globe.md` §3). ~650 puntos por fotograma con `canvas.drawPoints`. Sin dependencias. Control total del vuelo y del acabado |
@@ -49,7 +51,7 @@ Recomendación: **A**. Si el rendimiento en web no llega a 60 fps en móviles mo
 
 El diseño dibuja la tierra con **puntos**, no con teselas. Consecuencias:
 
-1. **Se elimina `flutter_map` del mapa principal y del expediente** → desaparecen las peticiones a CARTO y la atribución «© OpenStreetMap · CARTO» de esas pantallas.
+1. **Se elimina `flutter_map` del mapa principal y del expediente** → desaparecen las peticiones a las teselas (hoy Esri `World_Dark_Gray_Base`, no CARTO) y la atribución «Mapa © Esri · OpenStreetMap» de esas pantallas.
 2. ⚠️ **Riesgo — selector de ubicación del formulario.** En el mapa de puntos, 1° ≈ 4 px a escala mundial: pulsar para fijar un punto **no da precisión de ciudad**. Opciones:
    - **(Recomendada)** Mantener `flutter_map` *solo* en el selector del formulario (tema oscuro, con zoom), y conservar su atribución. El resto de pantallas usan el mapa de puntos.
    - Dar zoom/desplazamiento al mapa de puntos del formulario + los campos de «Ajuste manual» (latitud/longitud).
@@ -71,7 +73,7 @@ Por tanto `flutter_map` y `latlong2` **no se eliminan del `pubspec.yaml`** salvo
 | Pulso de marcadores | **Un solo** `AnimationController` global; cada marcador usa `(t + i·0,137) % 1` (no un controlador por marcador) |
 | Arcos discontinuos animados | `Path` cuadrático + `PathMetric` con `dashOffset` animado por el mismo controlador |
 | Radar giratorio | `SweepGradient` + `Transform.rotate` en `CustomPainter`, o `RotationTransition` |
-| Sacudida del acceso | `TweenSequence` de desplazamiento X (±10/9/6/4 px, 420 ms) |
+| Sacudida del inicio de sesión | `TweenSequence` de desplazamiento X (±10/9/6/4 px, 420 ms) |
 | Esqueleto con brillo | `ShaderMask` con `LinearGradient` desplazado por un controlador |
 | Giro de pantalla de lista | `AnimatedSwitcher` y `SliverList` con `Interval` escalonado (40 ms/fila) |
 | Autoavance con pausa | `Timer`/controlador que se reinicia en cada interacción y se detiene con `MediaQuery.disableAnimations` |
@@ -98,7 +100,9 @@ Añadir a `TrueCrimeCase` (opcionales, retrocompatibles):
 | `updatedAt` | `DateTime?` | Ordena la fila «Novedades» |
 | `updateKind` | enum `new · reopened · identityConfirmed · sourceAdded · statusChanged`? | Texto de la insignia |
 
-Actualizar `assets/data/cases.json`, el exportador del formulario (`case_exporter.dart`, `draftToCaseJson`) y la fusión de catálogo (`mergeDraftsIntoCatalog`: `droppedKeys` ya avisa de claves que el borrador no puede expresar) para no perder estos campos al republicar.
+Estado real: `updatedAt` y `updateKind` **no existen** (decisión **D4**, abierta). `TrueCrimeCase` sí tiene ya `photos` (`CasePhoto`: `url`, `caption`); faltan datos, no modelo. El catálogo viene de Supabase (`assets/data/cases.json` se retiró).
+
+Si se aprueba D4, actualizar el payload de Supabase, el exportador del formulario (`case_exporter.dart`, `draftToCaseJson`) y la fusión de catálogo (`mergeDraftsIntoCatalog`: `droppedKeys` ya avisa de claves que el borrador no puede expresar) para no perder estos campos al republicar.
 
 ## 8. Fases (unidades de trabajo)
 
@@ -107,7 +111,7 @@ TDD estricto: prueba que falla → implementación → refactor.
 
 | # | Fase | Contenido | Criterio de aceptación |
 | --- | --- | --- | --- |
-| F0 | Limpieza de plantilla | `DESIGN.md` §10 | `flutter analyze` y `flutter test` en verde; build web OK |
+| F0 | Limpieza de restos reales | `DESIGN.md` §10 (`windows/` se conserva; `android/ ios/ macos/ linux/`: decisión pendiente D5, F0b) | `flutter analyze` y `flutter test` en verde; build web OK |
 | F1 | Sistema de diseño | tokens, tipografía + fuentes, `DsTheme`, átomos (`DsBadge`, `DsStatusLabel`, `DsMonoLabel`, `DsStatCell`, botones, chips, segmentado, panel de cristal, campo, diálogo, aviso, estados) | Pruebas de widget por componente; galería de componentes visible en una ruta de desarrollo |
 | F2 | Motor del mapa plano | `land_mask`, proyección, cámara (objetivos Mundo/Caso/Conexiones), pintor de puntos, marcadores, arcos | Pruebas unitarias de proyección y cámara; golden del mapa en 1440 y 390 |
 | F3 | Motor del globo | proyección ortográfica, orientación, pintor, deriva | Pruebas de las fórmulas (`map-and-globe.md` §3.2); prueba de rendimiento básica |
@@ -115,7 +119,7 @@ TDD estricto: prueba que falla → implementación → refactor.
 | F5 | Explorar | globo en modo explorar, filtros, línea de tiempo, ficha de cristal | Vuelo a caso, arcos y etiquetas; filtro y año reflejados |
 | F6 | Expediente | cabecera, banda de mapa con vistas, cuerpo | Coincide con `Expediente-Cine.dc.html` y `Movil-Expediente.dc.html` |
 | F7 | El archivo | hoja modal/inferior, filtro, filas | Orden por año desc., filtro sin tildes, estados vacío/error |
-| F8 | Acceso + formulario | acceso con clave, 3 paneles, vista previa en vivo, validación, selector de ubicación | Reglas de `draft_validator` intactas; copia de seguridad y exportación siguen funcionando |
+| F8 | Inicio de sesión + formulario | diálogo de inicio de sesión (email + contraseña), sitio reservado para «Enviar a revisión» (sin implementarlo), 3 paneles, vista previa en vivo, validación, selector de ubicación | Reglas de `draft_validator` intactas; copia de seguridad y exportación siguen funcionando |
 | F9 | Estados | cargando, error, no existe, 404, vacíos, diálogos, avisos | Textos literales de `screens.md` §9 |
 | F10 | Móvil | barra inferior, portada, mapa, expediente, formulario < 1200 px | Probado en 390 px; objetivos ≥ 44 px |
 | F11 | Pulido | accesibilidad, movimiento reducido, rendimiento, limpieza de `AppColors` y código muerto | Lista de `DESIGN.md` §7 cumplida |
@@ -124,9 +128,9 @@ Orden recomendado: **F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 
 
 ## 9. Pruebas
 
-- Hoy: ~530 pruebas (README) repartidas en `test/`. Las de **dominio, datos y aplicación no cambian**.
+- Hoy: 636 pruebas aprobadas (verificado el 2026-10-02) repartidas en `test/`. Las de **dominio, datos y aplicación no cambian**.
 - Las de **presentación** (home, dossier, directorio, intake) se reescriben por fase, mantenido los textos literales como contrato.
-- Nuevas: proyección/cámara (puras), generación de puntos de la máscara, orden y filtrado del directorio, validez del formulario, sacudida/estados del acceso, autoavance del carrusel (con `FakeAsync`).
+- Nuevas: proyección/cámara (puras), generación de puntos de la máscara, orden y filtrado del directorio, validez del formulario, sacudida/estados del inicio de sesión, autoavance del carrusel (con `FakeAsync`).
 - *Golden tests* para mapa, portada, expediente y estados en 1440 y 390 px.
 
 ## 10. Riesgos
@@ -141,8 +145,10 @@ Orden recomendado: **F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 
 
 ## 11. Preguntas abiertas
 
+> Corresponden a las decisiones D1–D5 de `odd/tasks/cinematic-design-system.md`, que es donde se registra su estado. D5 (carpetas `android/ ios/ macos/ linux/`; `windows/` se conserva) no figura en la lista de abajo.
+
 1. ¿Globo con `CustomPainter` propio (A), paquete (B) o sin globo (C)?
 2. ¿Selector de ubicación con `flutter_map` (recomendado) o con mapa de puntos + zoom?
 3. ¿Ruta propia `/mapa` o el modo explorar solo como estado de la portada?
 4. ¿Se añaden `updatedAt` y `updateKind` al JSON ahora o se oculta «Novedades» hasta tener datos?
-5. ¿Fotografías reales de los casos? (hoy ningún caso las incluye)
+5. ¿Fotografías reales de los casos? (el modelo ya tiene `photos`; hoy no hay datos)

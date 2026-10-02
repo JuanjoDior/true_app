@@ -28,7 +28,7 @@ Tres ideas lo sostienen:
 
 ## 2. Principios
 
-- **Una cosa que sorprende por pantalla**, el resto se calla (globo en portada, vuelo de cámara en mapa/expediente, radar en cabecera, sacudida en el acceso).
+- **Una cosa que sorprende por pantalla**, el resto se calla (globo en portada, vuelo de cámara en mapa/expediente, radar en cabecera, sacudida en el inicio de sesión).
 - **Todo efecto explica algo**: la cámara vuela para mostrar dónde ocurrió; los arcos dorados muestran relación entre casos; el pulso marca lo seleccionado.
 - **Nada que parezca interactivo y no lo sea.** Se eliminaron los elementos inertes del diseño anterior (ver §10).
 - **Contraste primero.** Texto ≥ 4,5:1 sobre su fondo; el color nunca es el único portador de significado (categoría y estado llevan texto).
@@ -181,14 +181,14 @@ Detalle completo, fórmulas y la máscara de tierra en [`docs/design/map-and-glo
 /mapa                   Globo en modo explorar (escritorio) / Mapa plano (móvil)
 /casos/<slug>           Expediente (mapa 2D protagonista)
 /archivo                El archivo (hoja modal escritorio · hoja inferior móvil)
-/formulario             Acceso con clave → Formulario de casos (3 paneles / 1 panel)
+/formulario             Formulario de casos (3 paneles / 1 panel); sin sesión los borradores son locales
 cualquier otra          Dirección no encontrada
 ```
 
 - Enrutado con hash (`/#/…`) como hoy. `SituationRoomPath` pasa a ser la **Portada**; el modo explorar/mapa es estado de esa misma escena.
 - Escritorio: barra superior (Inicio · Globo · Archivo · Formulario). Móvil: barra inferior (Inicio · Mapa · Archivo · Formulario).
 - «Archivo» abre la hoja modal sobre la escena atenuada (no es una ruta a pantalla completa).
-- «Formulario» pasa por el acceso con clave; la sesión desbloqueada se mantiene mientras dure.
+- «Formulario» abre el formulario directamente: no hay puerta de acceso. El **diálogo de inicio de sesión** (email + contraseña, cuenta de Supabase) se abre desde el pie de cuenta del formulario; sin sesión los borradores funcionan en local.
 
 ## 7. Accesibilidad
 
@@ -214,25 +214,28 @@ cualquier otra          Dirección no encontrada
 - **Filtro de texto** dentro de «El archivo».
 - **Vista previa en vivo**, **lista de campos obligatorios** y **pestañas de sección** en el formulario; el mapa del formulario se puede pulsar para fijar el punto.
 - Botón **«Reintentar»** en estados de error de lectura.
-- Enlace **«Volver a la sala»** en el acceso con clave; estado «Acceso concedido».
+- Enlace **«Volver a la sala»** en el diálogo de inicio de sesión (sustituye al antiguo acceso con clave; ya no existe el estado «Acceso concedido»).
+- Solo se **reserva sitio** en el formulario para «Enviar a revisión» (hoy sin interfaz: el servicio está listo, pero el botón pertenece al cambio CRP); el rediseño no lo implementa.
 
 **Se elimina (no hacía nada)**
 - Píldora «Global ▾», insignia «⌘K», iconos *hub* y marcador del raíl, avatar del raíl, estrella y compartir del expediente, «Seguir el caso».
 - Círculos de densidad falsos del mapa y la leyenda «El halo indica densidad…».
 - Píldora «Crímenes reales…» sobre el mapa (el lema pasa al pie).
-- **Ticker** de actualizaciones (texto inventado en código); lo sustituye la fila **Novedades** (requiere datos reales, §11).
+- **Ticker** de actualizaciones (4 actualizaciones inventadas en código); lo sustituye la fila **Novedades** (requiere datos reales, §11).
 - Botones de archivo/formulario duplicados en la barra (la navegación ya los contiene).
 
 **Se mantiene** (con rediseño visual)
-- Búsqueda global, filtro por estado, línea de tiempo con reproducción, vista Mundo/Detalle, expediente (cronología, fuentes, relacionados, fotos, capítulos), directorio, formulario completo, copia de seguridad, exportación JSON, acceso con clave.
+- Búsqueda global, filtro por estado, línea de tiempo con reproducción, vista Mundo/Detalle, expediente (cronología, fuentes, relacionados, fotos, capítulos), directorio, formulario completo, copia de seguridad, exportación JSON, inicio de sesión (diálogo) desde el pie de cuenta.
 
-## 10. Restos de plantilla a limpiar (independiente del rediseño)
+## 10. Restos reales a limpiar (independiente del rediseño)
 
-`cupertino_icons` sin uso · descripción «Base project…» en `pubspec.yaml`, `web/index.html` y `web/manifest.json` · color `#0175C2` e iconos por defecto de Flutter en `web/` · carpetas `android/ ios/ macos/ linux/ windows/` (despliegue solo web) · `mapSectionGradientProvider`, `MapConfig.attribution`, `AppColors.surface/accentSoft`, `activeCategoryProvider`, `CaseCategoryPresentation.shortLabel/description`, `CaseSourceKind.label` sin referencias.
+`cupertino_icons` sin uso · `mapSectionGradientProvider` · `activeCategoryProvider` (nadie lo escribe) · ticker con 4 actualizaciones inventadas · círculos de densidad fijos en el mapa · mensaje «JSON copiado. Pégalo en assets/data/cases.json» (obsoleto: el catálogo viene de Supabase) · identificador `com.example.true_app` · descripción «Base project…» · `AppColors.surface` y `AppColors.accentSoft` (sin lectores) · campo `CaseCategoryPresentation.description` (sin lectores) · color `#0175C2` en `web/manifest.json` e iconos por defecto de `web/icons/` (por confirmar). Comprobado que **no** son restos: `MapConfig.attribution` (se pinta en la leyenda del mapa) y `shortLabel` (lo usa el buscador).
+
+**Plataformas.** Además de web existe la entrega de escritorio para Windows (`odd/tasks/ivan-usb-delivery.md`): la carpeta `windows/` **se conserva**. `android/ ios/ macos/ linux/`: decisión pendiente D5 (ver `odd/tasks/cinematic-design-system.md`). `BackdropFilter`, `file_picker` y el rendimiento del globo se prueban también en Windows.
 
 ## 11. Datos necesarios
 
-El diseño muestra **Novedades** con etiqueta de tipo («Caso reabierto», «Identidad confirmada», «Nueva fuente», «Estado actualizado», «Nuevo expediente»). El JSON actual no tiene ese dato. Propuesta mínima por caso:
+El diseño muestra **Novedades** con etiqueta de tipo («Caso reabierto», «Identidad confirmada», «Nueva fuente», «Estado actualizado», «Nuevo expediente»). `updatedAt` y `updateKind` **no existen** en `TrueCrimeCase`; añadirlos al contrato (decisión D4, abierta) afecta al payload de Supabase, a `draftToCaseJson` y al catálogo. El catálogo viene de Supabase (`assets/data/cases.json` se retiró). Propuesta mínima por caso:
 
 ```json
 { "updatedAt": "2026-09-12", "updateKind": "reopened" }
@@ -248,5 +251,7 @@ El carrusel «En el foco» usa `featuredRank` (ya existente) ascendente.
 **Pendientes:**
 1. Cómo renderizar el globo en Flutter (ver `docs/design/flutter-implementation.md` §3).
 2. Fuente de datos para Novedades (§11).
-3. Fotografías reales de los casos (hoy ningún caso las trae; el diseño usa marcadores de posición).
-4. Fuente de los resúmenes de los 12 casos que el prototipo rellenó como ejemplo (solo Zodiac y Black Dahlia salen del JSON real).
+3. Fotografías reales de los casos: `TrueCrimeCase` ya tiene `photos` (`CasePhoto`: `url`, `caption`), pero no hay datos; el diseño usa marcadores de posición.
+4. Fuente de los resúmenes de los 12 casos que el prototipo rellenó como ejemplo (solo Zodiac y Black Dahlia salen del catálogo real).
+
+Las decisiones abiertas vigentes del rediseño (D1–D5) se llevan en `odd/tasks/cinematic-design-system.md`.

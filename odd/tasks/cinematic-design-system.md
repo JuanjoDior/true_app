@@ -36,11 +36,20 @@ Los documentos se escribieron contra una versión anterior del código. Hay que 
 - TDD estricto: RED → GREEN → REFACTOR con `flutter test`; goldens en 1440 y 390 px donde el plan lo indica.
 - Una unidad de trabajo por commit, con sus pruebas y documentación; objetivo ≈ 400 líneas autoradas por unidad. Conventional Commits en español, sin atribución de IA. Sin push, PR ni merge sin que el usuario lo pida.
 
+## Skills de diseño instaladas (2026-10-02)
+Instaladas en `~/.claude/skills` y `~/.agents/skills` (MIT, origen y commit en `SOURCE.txt` de cada una): `emil-design-eng` (emilkowalski/skills) y `ui-ux-pro-max` (nextlevelbuilder/ui-ux-pro-max-skill). Revisadas antes de instalar: sin red ni ejecución de comandos; solo `--persist` escribe archivos.
+
+Cómo se usan en el ciclo (la dirección D ya está decidida: **no** se reabre el diseño):
+- `emil-design-eng` — revisión de movimiento y pulido en F1-T1 (tokens de movimiento), F4, F5 y F6. Formato de revisión: tabla Antes / Después / Motivo. Reglas que sí trasladamos a Flutter: frecuencia antes de animar, `ease-out` en entradas, UI < 300 ms, nunca entrar desde `scale(0)`, retroalimentación al pulsar (`scale` 0,97), salida más rápida que entrada, escalonado de 30–80 ms, movimiento reducido. Los términos solo-CSS (`@starting-style`, `clip-path`, `transition: all`) se traducen a `AnimatedScale`, `ClipPath`, curvas `Cubic` y tweens.
+- `ui-ux-pro-max` — consultas focales con `--stack flutter` y `--domain ux` (accesibilidad, objetivos táctiles, carrusel con pausa, contraste en oscuro, formularios); checklist previa a entrega en F11 (`references/pro-rules.md`). **Prohibido** `--design-system` y `--persist`: ya existe `DESIGN.md` y no se genera un sistema paralelo.
+- No se usa `frontend-design` ni `web-design-guidelines` (genera HTML/React y empuja a rediseñar; Flutter web pinta en canvas y casi ninguna regla ARIA/DOM aplica).
+- Cada skill aporta criterios, no certifica nada: la QA visual, el teclado y el foco se comprueban en la ventana real (web y Windows).
+
 ## Plan y comprobaciones
 Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 → F10 → F11. Las fases posteriores a F1 se detallan en tareas concretas al llegar a ellas.
 
-- [ ] D0: Reconciliar `DESIGN.md` y `docs/design/` con los hallazgos 1–7 (acceso, catálogo, plataformas, teselas, datos). Solo documentación; sin TDD (pasivo).
-- [ ] F0a: Retirar código muerto y textos obsoletos: `cupertino_icons`, `mapSectionGradientProvider`, `activeCategoryProvider`, mensaje obsoleto de `export_case_button.dart`, descripción/identificadores de plantilla. Tests existentes en verde.
+- [x] D0: Reconciliar `DESIGN.md` y `docs/design/` con los hallazgos 1–7 (acceso, catálogo, plataformas, teselas, datos). Solo documentación; sin TDD (pasivo). Worker editó `DESIGN.md`, `screens.md` y `flutter-implementation.md`; verificado por búsqueda que `MapConfig.attribution` y `shortLabel` no son restos y que `AppColors.surface/accentSoft`, `CaseCategoryPresentation.description` y `#0175C2` sí lo son (repuestos en `DESIGN.md` §10). Pendiente de revisar contra la pantalla real: cómo es el pie de cuenta del formulario y si el diálogo de sesión tiene candado/mapa de fondo.
+- [ ] F0a: Retirar código muerto y textos obsoletos: `cupertino_icons`, `mapSectionGradientProvider`, `activeCategoryProvider`, `AppColors.surface/accentSoft`, `CaseCategoryPresentation.description`, mensaje obsoleto de `export_case_button.dart` (y su test), color `#0175C2` del manifest, descripción/identificadores de plantilla. Tests existentes en verde.
 - [ ] F0b: Carpetas de plataforma no usadas y restos en `web/` (requiere D5).
 - [ ] F1-T1: Tokens en `lib/core/design/tokens/` (color, espaciado, radios, movimiento, sombras) según `DESIGN.md` §3.
 - [ ] F1-T2: Tipografía y empaquetado de IBM Plex Mono 400/500 (OFL) en `assets/fonts/` + `pubspec.yaml`.

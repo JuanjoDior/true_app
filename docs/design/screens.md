@@ -70,7 +70,7 @@ Debajo del héroe (mismo lenguaje que C, reutilizado en D):
    - Al cargar: vista Mundo → tras 1100 ms la cámara vuela a **Caso**.
    - **Ficha de ubicación** (izq., 360 px): «UBICACIÓN», nombre, «Lugar · año», «LATITUD» / «LONGITUD» mono dorado, «CASOS CONECTADOS» (botones que vuelan al otro caso). Si el caso enfocado no es el del expediente: botón **«Abrir expediente»**.
    - **Leyenda** (der., arriba) y **vistas de cámara** (der., abajo): «Caso · Conexiones · Mundo».
-   - Atribución: «Mapa © OpenStreetMap · CARTO».
+   - Atribución: «Mapa © Esri · OpenStreetMap» (teselas Esri `World_Dark_Gray_Base`, no CARTO; el texto lo fija `map_config_test`).
 3. **Cuerpo:** dos columnas (1fr + 380 px, gap 72).
    - Principal: resumen en serif 30 · caja «VÍCTIMA(S)» · «LOS HECHOS» (capítulos) · «FOTOGRAFÍAS» (240×170, hover escala 1,05) · «CRONOLOGÍA VERIFICADA» (fecha serif 26 a la izquierda, línea degradada, punto con halo).
    - Lateral: celdas «AÑO» y «CONEXIONES» · «FUENTES CITADAS» (tarjetas con hover) · «CASOS RELACIONADOS» (póster apaisado 130 con año fantasma y relación).
@@ -114,20 +114,23 @@ Cabecera 360 (título serif 64) → **mapa 440** con ficha compacta (230 px) arr
 
 ---
 
-## 7. Acceso con clave (`Acceso.dc.html`, `Acceso-Movil.dc.html`)
+## 7. Inicio de sesión (`Acceso.dc.html`, `Acceso-Movil.dc.html`)
+
+Sustituye a la antigua pantalla «Acceso con clave». **No hay puerta de acceso con clave compartida**: el formulario es accesible y los borradores se guardan en local sin sesión. El diálogo a pantalla completa (`intake_sign_in_screen.dart`) se abre desde el **pie de cuenta** del formulario y pide la cuenta de Supabase (email + contraseña). No hay registro ni recuperación de contraseña.
 
 - Fondo: mapa de puntos apagado (55 %) con pulsos tenues + velo oscuro.
-- Cabecera: logo · «VOLVER A LA SALA» (móvil: X).
+- Cabecera: logo · «VOLVER A LA SALA» (móvil: X); cierra el diálogo y vuelve al formulario sin sesión.
 - **Tarjeta de cristal** 440 px (móvil: ancho completo − 32, abajo, 32 px del borde):
   - Icono candado 60×60 con halo rojo pulsante.
   - Kicker «ZONA RESERVADA».
   - **«Acceso al formulario de casos»** (serif 34 / 30).
-  - «Introduce la clave compartida para continuar.»
-  - Campo oculto con icono de llave, placeholder **«Clave compartida»**, 56 alto.
-  - Error (rojo `#FF7A7F`, icono, `role=alert`): **«Clave incorrecta. Inténtalo de nuevo.»** + sacudida horizontal de la tarjeta (420 ms) + borde rojo del campo.
-  - Botón **«Entrar»** (primario, 56 alto).
-  - Éxito: tarjeta de confirmación «Acceso concedido» / «El acceso dura lo que dure esta sesión.» + **«Abrir el formulario»**.
-- Lógica: la clave se valida como hoy (constante compartida, desbloqueo por sesión). En el prototipo la clave de prueba es `demo`.
+  - «Entra con tu email y tu contraseña.»
+  - Campos **«Email»** y **«Contraseña»** (esta oculta), 56 alto.
+  - Error (rojo `#FF7A7F`, icono, `role=alert`) + sacudida horizontal de la tarjeta (420 ms) + borde rojo del campo. Textos reales: «Escribe tu email y tu contraseña.» (campos vacíos) · «El email o la contraseña no son correctos.» · «No se pudo conectar. Revisa la conexión y vuelve a probar.»
+  - Botón **«Entrar»** (primario, 56 alto); mientras espera: **«Entrando…»** (deshabilitado).
+  - Ayuda: «¿Sin cuenta o sin contraseña? Pídesela a quien revisa los casos.»
+  - Éxito: no hay tarjeta de confirmación ni estado «Acceso concedido»; al entrar, el formulario sustituye al diálogo.
+- Lógica: la sesión es la de Supabase (`intake_auth.dart`), no una constante compartida; la clave de prueba `demo` del prototipo **no existe** en la app.
 - Pie: «Crímenes reales · documentados con respeto».
 
 ---
@@ -137,7 +140,7 @@ Cabecera 360 (título serif 64) → **mapa 440** con ficha compacta (230 px) arr
 ### 8.1 Escritorio (≥ 1200 px): tres paneles
 - **Barra superior (68):** volver · logo · «Formulario de casos» · **«Copia de seguridad ▾»** · **«Copiar JSON»** · **«Nuevo borrador»**.
   - Menú de copia de seguridad (280 px, cristal): «Guardar mi trabajo en un fichero» · «Cargar trabajo desde un fichero» · — · «Copiar como texto» · «Pegar un texto copiado».
-  - «Copiar JSON»: deshabilitado (gris, `cursor: not-allowed`, con tooltip «Completa los campos obligatorios para poder exportar») hasta que todo sea válido; activo = rojo. Al pulsar: aviso «JSON copiado. Pégalo en assets/data/cases.json».
+  - «Copiar JSON»: deshabilitado (gris, `cursor: not-allowed`, con tooltip «Completa los campos obligatorios para poder exportar») hasta que todo sea válido; activo = rojo. Al pulsar: aviso de confirmación. El texto actual «JSON copiado. Pégalo en assets/data/cases.json» está **obsoleto** (el catálogo viene de Supabase y `cases.json` se retiró): el texto nuevo se decide en F8.
 - **Borradores (280 px):** «BORRADORES · N». Tarjeta por borrador: título serif 17 (o «Sin título») + subtítulo con punto de color:
   «Incompleto» (ámbar) · «Listo · sin publicar» (azul) · «Entregado el DD/MM · pendiente de publicar» (violeta) · «Publicado» (verde). Icono papelera 36. Activo: fondo rojo 12 %, borde rojo, barra interior izquierda.
 - **Formulario (centro, scroll):** pestañas fijas arriba (píldoras con número): «01 Datos básicos · 02 Ubicación · 03 Resumen · 04 Cronología · 05 Enlaces · 06 Fotografías · 07 Capítulos». Secciones en tarjetas de 24 px de padding:
@@ -150,6 +153,8 @@ Cabecera 360 (título serif 64) → **mapa 440** con ficha compacta (230 px) arr
   7. **Capítulos:** «Antecedentes», «Los hechos», «La investigación», «Estado actual» (multilínea).
   - Bajo 520 px de ancho útil, las filas se apilan.
 - **Previsualización (400 px):** ficha del caso en vivo (cabecera con degradado de categoría, título, lugar, estado, resumen, víctimas, año, coords) + panel **«CAMPOS OBLIGATORIOS»** con ✓ para: «Título», «Año (3 o 4 cifras)», «Punto en el mapa», «Resumen del caso».
+- **Pie de cuenta** del formulario: estado de la sesión y acceso al diálogo de inicio de sesión (§7).
+- **Sitio reservado para «Enviar a revisión»** (barra superior o pie de la previsualización). Hoy no tiene interfaz: el servicio está listo, pero el botón pertenece al cambio CRP; el rediseño deja el hueco y **no lo implementa**.
 - Validez: título + año (3–4 dígitos) + punto + resumen no vacíos (las reglas reales siguen en `draft_validator.dart`).
 
 ### 8.2 < 1200 px
@@ -169,8 +174,10 @@ Un panel: barra con iconos (Borradores, Previsualización, copia de seguridad, c
 | Sala · sin destacado | «El archivo aún no tiene un caso destacado.» | «En cuanto se publiquen expedientes, aquí rotará un caso abierto cada semana.» | — |
 | Formulario · sin borrador (edición) | — | «Crea o selecciona un borrador para editarlo.» | — |
 | Formulario · sin borrador (vista previa) | — | «Crea o selecciona un borrador para previsualizarlo.» | — |
+| Sala · catálogo cargando | — | «Cargando el archivo…» | — |
+| Sala · catálogo con error | — | «No se pudieron cargar los casos.» | **Reintentar** (ya existe; «Reintentando…» mientras carga) |
 | Diálogo «Restaurar borradores» | «Restaurar borradores» | campo con hint `{"schemaVersion": 1, "drafts": [...]}` | «Cancelar» · «Restaurar» |
-| Avisos | — | «Trabajo guardado. Ya puedes enviar ese fichero.» · «JSON copiado. Pégalo en assets/data/cases.json» · «Cargados N casos. Los que ya tenías siguen aquí.» | — |
+| Avisos | — | «Trabajo guardado. Ya puedes enviar ese fichero.» · «JSON copiado. Pégalo en assets/data/cases.json» (obsoleto, ver §8.1) · «Cargados N casos. Los que ya tenías siguen aquí.» | — |
 
 ### 9.1 Dirección no encontrada (pantalla completa)
 Mapa de puntos con una **estela dorada** desde un caso que se desvanece hacia un punto perdido en mitad del océano (anillos rojos expandiéndose, barrido de radar, «?» parpadeante).
