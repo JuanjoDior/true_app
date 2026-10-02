@@ -52,7 +52,7 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
 - [x] F0a (a456cde; worker + gentle-ai-verify 7/7 PASS, analyze 0, 636 tests; RED observado en el texto del SnackBar, el resto son borrados sin referencias): Retirar código muerto y textos obsoletos: `cupertino_icons`, `mapSectionGradientProvider`, `activeCategoryProvider`, `AppColors.surface/accentSoft`, `CaseCategoryPresentation.description`, mensaje obsoleto de `export_case_button.dart` (y su test), color `#0175C2` del manifest, descripción/identificadores de plantilla. Tests existentes en verde.
 - [x] F0b (verify: analyze 0, 636 tests, build web y Windows OK): Retirar `android/ ios/ macos/ linux/` y sus entradas en `.metadata` (D5 resuelta). Comprobar analyze, tests y build web/Windows.
 - [x] F1-T1 (worker + verify PASS: analyze 0, 667 tests, valores cotejados con DESIGN.md §3; contrastes sobre bgBase 8–17,9:1; hover 250 ms por la regla de movimiento de emil-design-eng): Tokens en `lib/core/design/tokens/` (color, espaciado, radios, movimiento, sombras) según `DESIGN.md` §3.
-- [ ] F1-T2: Tipografía y empaquetado de IBM Plex Mono 400/500 (OFL) en `assets/fonts/` + `pubspec.yaml`.
+- [x] F1-T2 (worker + verify 7/7: analyze 0, 679 tests, build web empaqueta las fuentes; bodyLead en 700 porque la serif solo se empaqueta en Bold): Tipografía y empaquetado de IBM Plex Mono 400/500 (OFL) en `assets/fonts/` + `pubspec.yaml`.
 - [ ] F1-T3: `DsTheme` (inputs, botones, diálogos, snackbars) sin romper las pantallas actuales.
 - [ ] F1-T4: Átomos `DsBadge`, `DsStatusLabel`, `DsMonoLabel`, `DsStatCell`.
 - [ ] F1-T5: `DsButton`, `DsIconButton` (≥ 44 px), `DsFilterChip`, `DsSegmented`.

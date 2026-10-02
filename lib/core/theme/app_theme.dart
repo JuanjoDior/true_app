@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../design/tokens/tokens.dart';
+
 class AppColors {
   static const background = Color(0xFF090A0D);
   static const panel = Color(0xFF14161C);
@@ -49,9 +51,8 @@ class AppColors {
   static const catUnsolved = Color(0xFF5E7891);
 }
 
-/// Familia monoespaciada para etiquetas y coordenadas (estética IBM Plex Mono).
-/// Usa la fuente genérica del sistema como respaldo hasta empaquetar la real.
-const String kMonoFamily = 'monospace';
+/// Familia monoespaciada para etiquetas y coordenadas (IBM Plex Mono empaquetada).
+const String kMonoFamily = DsFontFamilies.mono;
 
 class AppTheme {
   static ThemeData buildTheme() {
