@@ -1,8 +1,28 @@
 import 'dart:async';
 
 import 'package:true_app/features/cases/data/intake_auth.dart';
+import 'package:true_app/features/cases/domain/case_category.dart';
+import 'package:true_app/features/cases/domain/case_draft.dart';
+import 'package:true_app/features/cases/domain/case_status.dart';
 
 const kTestAccount = IntakeAccount(id: 'user-ivan', email: 'ivan@example.com');
+
+/// Borrador con todos los campos obligatorios: pasa la validación de envío.
+CaseDraft submittableTestDraft({
+  String draftId = 'draft-envio',
+  String title = 'Título confidencial del caso',
+}) => CaseDraft(
+  draftId: draftId,
+  title: title,
+  category: CaseCategory.unsolved,
+  year: 2001,
+  status: CaseStatus.open,
+  country: 'España',
+  countryCode: 'ES',
+  regionOrCity: 'Cuenca',
+  latitude: 40.07,
+  longitude: -2.13,
+);
 
 /// Sesión en memoria para los tests del formulario: nada sale a Supabase.
 class FakeIntakeAuth implements IntakeAuth {
@@ -52,10 +72,6 @@ class FakeIntakeAuth implements IntakeAuth {
   @override
   Future<String?> accessTokenForAccount(String accountId) async =>
       _account?.id == accountId ? 'token-$accountId' : null;
-
-  @override
-  Future<String?> accessToken() async =>
-      _account == null ? null : 'token-${_account!.id}';
 
   void _set(IntakeAccount? account) {
     _account = account;

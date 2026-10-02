@@ -33,7 +33,9 @@ El circuito de revisión está en construcción (`odd/tasks/case-review-publish.
 quien redacta podrá enviar un borrador con «Enviar a revisión» y el revisor lo
 aprobará; al aprobarlo aparece en la web al momento. El contenido no se envía al
 iniciar sesión ni se sincroniza en segundo plano. Un envío sin conexión o fallido
-requerirá que quien redacta lo reintente expresamente. Las reglas de acceso de
+requerirá que quien redacta lo reintente expresamente. El servicio de envío
+(`DraftSubmissionService`) ya está listo, pero aún sin interfaz, y nunca reintenta
+en segundo plano. Las reglas de acceso de
 `supabase/migrations/` son lo único que protege los datos: la clave del
 navegador es pública por diseño.
 

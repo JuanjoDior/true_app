@@ -7,7 +7,9 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
 import 'package:true_app/features/cases/application/intake_session_providers.dart';
+import 'package:true_app/features/cases/application/draft_submission_providers.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
+import 'package:true_app/features/cases/data/draft_submission.dart';
 
 import 'test_support/fake_intake_auth.dart';
 
@@ -72,7 +74,10 @@ void main() {
     final requests = <http.Request>[];
     final client = MockClient((request) async {
       requests.add(request);
-      return http.Response('[]', 200);
+      return http.Response(
+        '{"status":"in_review","submitted_at":"2026-09-29T10:00:00+00:00"}',
+        200,
+      );
     });
     final container = ProviderContainer(
       overrides: [
@@ -102,6 +107,19 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 1200));
 
     expect(requests, isEmpty);
+
+    // Contraste: el mismo cliente y la misma sesión sí hacen la petición
+    // cuando se envía a revisión.
+    await container
+        .read(draftSubmissionServiceProvider)
+        .send(
+          DraftSubmission.begin(
+            submittableTestDraft(draftId: keptDraftId),
+            accountId: kTestAccount.id,
+          ),
+        );
+    expect(requests, hasLength(1));
+    expect(requests.single.method, 'POST');
   });
 
   test(

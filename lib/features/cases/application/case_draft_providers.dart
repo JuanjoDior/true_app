@@ -16,7 +16,8 @@ import '../domain/case_timeline_event.dart';
 import '../domain/true_crime_case.dart';
 import 'drafts_backup.dart';
 
-/// Cliente REST compartido, sobreescribible en tests para aislar Supabase.
+/// Cliente HTTP del envío a revisión (`draftSubmissionServiceProvider`),
+/// sobreescribible en tests para que nada salga a la red.
 final caseDraftsHttpClientProvider = Provider<http.Client>((ref) {
   final client = http.Client();
   ref.onDispose(client.close);

@@ -11,15 +11,20 @@ import 'package:supabase_flutter/supabase_flutter.dart'
     show AuthApiException, AuthRetryableFetchException;
 import 'package:true_app/core/config/map_config.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
+import 'package:true_app/features/cases/application/draft_submission_providers.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
 import 'package:true_app/features/cases/application/intake_session_providers.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
+import 'package:true_app/features/cases/data/draft_submission.dart';
 import 'package:true_app/features/cases/data/intake_auth.dart';
 import 'package:true_app/features/cases/domain/case_draft.dart';
 import 'package:true_app/features/cases/presentation/intake/intake_workspace_screen.dart';
 
 import 'test_support/fake_intake_auth.dart';
 import 'test_support/sample_cases.dart';
+
+const _receiptJson =
+    '{"status":"in_review","submitted_at":"2026-09-29T10:00:00+00:00"}';
 
 class _MemoryDraftsStore implements CaseDraftsStore {
   List<CaseDraft> saved = const [
@@ -54,10 +59,6 @@ class _SwitchableIntakeAuth implements IntakeAuth {
   Future<void> signOut() => throw UnimplementedError();
 
   @override
-  Future<String?> accessToken() async =>
-      _account == null ? null : 'token-${_account!.id}';
-
-  @override
   Future<String?> accessTokenForAccount(String accountId) async =>
       _account?.id == accountId ? 'token-$accountId' : null;
 }
@@ -81,9 +82,6 @@ class _BrokenAuth implements IntakeAuth {
   @override
   Future<String?> accessTokenForAccount(String accountId) =>
       throw UnimplementedError();
-
-  @override
-  Future<String?> accessToken() => throw UnimplementedError();
 }
 
 Future<void> _waitForAccount(ProviderContainer container, String? id) async {
@@ -194,7 +192,7 @@ void main() {
       final requests = <http.Request>[];
       final client = MockClient((request) async {
         requests.add(request);
-        return http.Response('', 200);
+        return http.Response(_receiptJson, 200);
       });
       final container = ProviderContainer(
         overrides: [
@@ -218,6 +216,18 @@ void main() {
       expect(container.read(caseDraftsStoreProvider), same(store));
       expect((await store.loadDrafts()).single.title, 'Sólo local');
       expect(requests, isEmpty);
+
+      // Contraste: el mismo cableado sí hace la petición al enviar.
+      await container
+          .read(draftSubmissionServiceProvider)
+          .send(
+            DraftSubmission.begin(
+              submittableTestDraft(),
+              accountId: kTestAccount.id,
+            ),
+          );
+      expect(requests, hasLength(1));
+      expect(requests.single.url.path, endsWith('/rpc/submit_draft_snapshot'));
     });
 
     test(
@@ -238,9 +248,7 @@ void main() {
         final requests = <http.Request>[];
         final client = MockClient((request) async {
           requests.add(request);
-          return request.method == 'GET'
-              ? http.Response('[]', 200)
-              : http.Response('', 201);
+          return http.Response(_receiptJson, 200);
         });
         final container = ProviderContainer(
           overrides: [
@@ -262,6 +270,27 @@ void main() {
         await Future<void>.delayed(const Duration(milliseconds: 1200));
 
         expect(requests, isEmpty);
+
+        // Contraste: el mismo cableado sí envía con la cuenta activa, y una
+        // intención de la cuenta A no sale con la sesión de B.
+        final service = container.read(draftSubmissionServiceProvider);
+        await expectLater(
+          service.send(
+            DraftSubmission.begin(
+              submittableTestDraft(),
+              accountId: kTestAccount.id,
+            ),
+          ),
+          throwsA(isA<SubmissionSessionException>()),
+        );
+        expect(requests, isEmpty);
+        await service.send(
+          DraftSubmission.begin(
+            submittableTestDraft(),
+            accountId: 'user-berta',
+          ),
+        );
+        expect(requests, hasLength(1));
       },
     );
   });
