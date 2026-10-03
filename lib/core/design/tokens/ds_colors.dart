@@ -30,6 +30,8 @@ abstract final class DsColors {
   static const Color ctaFg = Color(0xFF0B0C10);
   static const Color ctaGlass = Color.fromRGBO(255, 255, 255, 0.14);
   static const Color ctaGlassBorder = Color.fromRGBO(255, 255, 255, 0.24);
+  // Punto medio del rango 0,22–0,30 del diseño
+  static const Color ctaOutlineBorder = Color.fromRGBO(255, 255, 255, 0.26);
 
   static const Color landDotFlat = Color(0xFF33405A);
   static const Color landDotGlobe = Color(0xFF5C7399);

@@ -55,7 +55,7 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
 - [x] F1-T2 (worker + verify 7/7: analyze 0, 679 tests, build web empaqueta las fuentes; bodyLead en 700 porque la serif solo se empaqueta en Bold): Tipografía y empaquetado de IBM Plex Mono 400/500 (OFL) en `assets/fonts/` + `pubspec.yaml`.
 - [x] F1-T3 (worker + verify PASS: analyze 0, 705 tests, build web OK; AppTheme retirado. Pendiente en F4/F10: reconciliar DsBreakpoints.desktop=1200 con Breakpoints.sidePanel=880; ThemeData fija estilos de escritorio, los móviles salen de DsTextStylesResolver): `DsTheme` (inputs, botones, diálogos, snackbars) sin romper las pantallas actuales.
 - [x] F1-T4 (worker + verify PASS: analyze 0, 736 tests, build web OK; literales 12/13/24 y espaciado mono 0,18 quedan locales, promover a tokens si se repiten): Átomos `DsBadge`, `DsStatusLabel`, `DsMonoLabel`, `DsStatCell`.
-- [ ] F1-T5 (EN CURSO, 2026-10-02: escrito por worker, SIN commitear ni verificar de forma independiente; analyze 0 y 799 tests en verde. Retoma: gentle-ai-verify, commitear, marcar [x]; revisar que DsSegmented mide 40 px y el diseño pide objetivo de 44 px): `DsButton`, `DsIconButton` (≥ 44 px), `DsFilterChip`, `DsSegmented`.
+- [x] F1-T5 (worker + verify PASS: analyze 0, 799 tests, build web OK; DsSegmented subido a 44 px; pendiente menor: transparente repetido en 3 archivos y tamaños de icono como literales): `DsButton`, `DsIconButton` (≥ 44 px), `DsFilterChip`, `DsSegmented`.
 - [ ] F1-T6: `DsGlassPanel`, `DsFormField`, `DsDialog`, `DsToast`, estados vacío/error.
 - [ ] F2: Motor del mapa plano (máscara de tierra, proyección, cámara, pintor de puntos, marcadores, arcos).
 - [ ] F4: Portada (carrusel, filas, pósters, invitación al mapa) — requiere D3, D4.

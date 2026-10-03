@@ -59,6 +59,7 @@ void main() {
       _expectRgba(DsColors.lineHairline, 0xFFFFFF, 0.10);
       _expectRgba(DsColors.ctaGlass, 0xFFFFFF, 0.14);
       _expectRgba(DsColors.ctaGlassBorder, 0xFFFFFF, 0.24);
+      _expectRgba(DsColors.ctaOutlineBorder, 0xFFFFFF, 0.26);
     });
   });
 
