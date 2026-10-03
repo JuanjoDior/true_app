@@ -51,6 +51,10 @@ void main() {
       expect(DsColors.landDotGlobe, const Color(0xFF5C7399));
     });
 
+    test('transparent is fully transparent black', () {
+      expect(DsColors.transparent, const Color(0x00000000));
+    });
+
     test('translucent tokens match the documented rgba', () {
       _expectRgba(DsColors.surfaceChrome, 0x0A0D13, 0.88);
       _expectRgba(DsColors.surfaceGlass, 0x0E1016, 0.82);

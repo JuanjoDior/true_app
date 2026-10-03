@@ -25,7 +25,6 @@ class DsButton extends StatelessWidget {
   static const double heightDesktop = 52;
   static const double heightMobile = 56;
   static const double hoverScale = 1.04;
-  static const Color _transparent = Color(0x00000000);
 
   @override
   Widget build(BuildContext context) {
@@ -95,7 +94,7 @@ class DsButton extends StatelessWidget {
         background: DsColors.surfaceCard,
         foreground: DsColors.textPlaceholder,
         border: variant == DsButtonVariant.primary
-            ? _transparent
+            ? DsColors.transparent
             : DsColors.lineHairline,
       );
     }
@@ -103,7 +102,7 @@ class DsButton extends StatelessWidget {
       DsButtonVariant.primary => (
         background: DsColors.ctaBg,
         foreground: DsColors.ctaFg,
-        border: _transparent,
+        border: DsColors.transparent,
       ),
       DsButtonVariant.glass => (
         background: DsColors.ctaGlass,
@@ -111,7 +110,7 @@ class DsButton extends StatelessWidget {
         border: DsColors.ctaGlassBorder,
       ),
       DsButtonVariant.outline => (
-        background: _transparent,
+        background: DsColors.transparent,
         foreground: DsColors.textPrimary,
         border: DsColors.ctaOutlineBorder,
       ),

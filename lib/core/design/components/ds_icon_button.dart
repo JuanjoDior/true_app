@@ -16,7 +16,6 @@ class DsIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
 
   static const double size = 44;
-  static const Color _transparent = Color(0x00000000);
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +40,7 @@ class DsIconButton extends StatelessWidget {
           height: size,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: state.hovered ? DsColors.lineHairline : _transparent,
+            color: state.hovered ? DsColors.lineHairline : DsColors.transparent,
             borderRadius: DsRadii.controlBorder,
           ),
           child: Icon(

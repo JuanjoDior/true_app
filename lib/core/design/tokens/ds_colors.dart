@@ -1,6 +1,8 @@
 import 'dart:ui';
 
 abstract final class DsColors {
+  static const Color transparent = Color(0x00000000);
+
   static const Color bgBase = Color(0xFF05070B);
   static const Color bgGlow = Color(0xFF0D1320);
 
