@@ -37,6 +37,13 @@ void main() {
       expect(DsMotion.dash, const Duration(milliseconds: 1200));
     });
 
+    test('globe camera values (map-and-globe 3.3)', () {
+      expect(DsMotion.globeFly, const Duration(milliseconds: 1900));
+      expect(DsMotion.globeDriftStep, const Duration(milliseconds: 70));
+      expect(DsMotion.globeDriftTransition, const Duration(milliseconds: 80));
+      expect(DsMotion.globeDriftTransition, lessThan(DsMotion.globeFly));
+    });
+
     test('mobile carousel advances faster than desktop', () {
       expect(DsMotion.carouselMobile, lessThan(DsMotion.carouselDesktop));
     });

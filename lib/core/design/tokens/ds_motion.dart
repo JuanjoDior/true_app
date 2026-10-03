@@ -16,6 +16,9 @@ abstract final class DsMotion {
   static const Duration pulseSelected = Duration(milliseconds: 1800);
   static const Duration pulseIdle = Duration(seconds: 3);
   static const Duration dash = Duration(milliseconds: 1200);
+  static const Duration globeFly = Duration(milliseconds: 1900);
+  static const Duration globeDriftStep = Duration(milliseconds: 70);
+  static const Duration globeDriftTransition = Duration(milliseconds: 80);
 
   static Duration resolve(Duration duration, {required bool reduceMotion}) =>
       reduceMotion ? Duration.zero : duration;
