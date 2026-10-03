@@ -45,6 +45,14 @@ class DsMapArc {
   final Offset control;
   final Offset labelPoint;
 
+  /// Mismo arco con los puntos transformados; una curva cuadrática es invariante bajo transformaciones afines.
+  DsMapArc mapPoints(Offset Function(Offset point) transform) => DsMapArc._(
+    start: transform(start),
+    end: transform(end),
+    control: transform(control),
+    labelPoint: transform(labelPoint),
+  );
+
   Path get path => Path()
     ..moveTo(start.dx, start.dy)
     ..quadraticBezierTo(control.dx, control.dy, end.dx, end.dy);

@@ -55,6 +55,7 @@ const int _landCellCount = 884;
 const int _landOpacityBuckets = 6;
 const double _borderWidth = 2;
 const int _mouseDevice = 1;
+const Duration _flyDuration = Duration(milliseconds: 1800);
 
 Widget _scene({
   Size size = _desktop,
@@ -132,6 +133,12 @@ Future<void> _pumpScene(
       textScale: textScale,
     ),
   );
+}
+
+// Los pulsos mantienen un reloj en bucle: `pumpAndSettle` no termina con marcadores visibles.
+Future<void> _finishFly(WidgetTester tester) async {
+  await tester.pump();
+  await tester.pump(_flyDuration);
 }
 
 T _painterOf<T extends CustomPainter>(WidgetTester tester) {
@@ -487,7 +494,7 @@ void main() {
       expect(_placement(tester, 'alpha').center, const Offset(704, 340));
 
       await _pumpScene(tester, camera: _zoomed, verticalOffset: 180);
-      await tester.pumpAndSettle();
+      await _finishFly(tester);
       // 2 * (704, 160 + 180) + (-400, -100)
       expect(_placement(tester, 'alpha').center, const Offset(1008, 580));
     });
@@ -498,7 +505,7 @@ void main() {
       await _pumpScene(tester);
       final atWorld = _placement(tester, 'alpha').visual.diameter;
       await _pumpScene(tester, camera: _zoomed);
-      await tester.pumpAndSettle();
+      await _finishFly(tester);
       final atZoom = _placement(tester, 'alpha').visual.diameter;
       expect(atZoom, atWorld);
       expect(atWorld, 12);
@@ -948,7 +955,7 @@ void main() {
     );
 
     testWidgets('the first build shows the camera immediately', (tester) async {
-      await _pumpScene(tester, camera: target);
+      await _pumpScene(tester, camera: target, markers: const []);
       expect(_landPainter(tester).camera, target);
       expect(tester.hasRunningAnimations, isFalse);
     });
@@ -972,7 +979,7 @@ void main() {
 
       await tester.pump(const Duration(milliseconds: 900));
       expect(_landPainter(tester).camera, target);
-      await tester.pumpAndSettle();
+      await tester.pump();
       expect(_landPainter(tester).camera, target);
     });
 
@@ -983,7 +990,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 900));
       final displayed = _landPainter(tester).camera;
       expect(_placement(tester, 'alpha').center, displayed.apply(_alphaScene));
-      await tester.pumpAndSettle();
+      await tester.pump(_flyDuration);
       expect(_placement(tester, 'alpha').center, target.apply(_alphaScene));
     });
 
@@ -1030,12 +1037,14 @@ void main() {
     testWidgets(
       'pumpAndSettle ends and nothing leaks when disposed in flight',
       (tester) async {
-        await _pumpScene(tester);
-        await tester.pumpWidget(_scene(camera: target));
+        await _pumpScene(tester, markers: const []);
+        await tester.pumpWidget(_scene(camera: target, markers: const []));
         await tester.pumpAndSettle();
         expect(tester.hasRunningAnimations, isFalse);
 
-        await tester.pumpWidget(_scene(camera: const DsMapCamera.world()));
+        await tester.pumpWidget(
+          _scene(camera: const DsMapCamera.world(), markers: const []),
+        );
         await tester.pump(const Duration(milliseconds: 300));
         await tester.pumpWidget(const SizedBox.shrink());
         expect(tester.takeException(), isNull);
