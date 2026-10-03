@@ -61,7 +61,8 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
   - [x] F2-T1 (worker + verify PASS: analyze 0, 915 tests; la rejilla tiene 884 celdas únicas, no ~650, docs corregidos): `DsLandGrid` (máscara 72×27, centros de celda, opacidad por celda) y `DsMapProjection` (lon/lat ↔ escena 1440×540). Puro, con pruebas numéricas.
   - [x] F2-T2 (worker + verify PASS + corrección con destinos móviles del prototipo: analyze 0, 949 tests; el prototipo usa min de los dos ajustes, el tope superior no se alcanza): `DsMapCamera` (traslación + escala), objetivos Mundo/Caso/Conexiones/Explorar escritorio/Explorar móvil como funciones puras, interpolación con `ease.fly`.
   - [x] F2-T3 (worker + verify PASS: analyze 0, 987 tests; arco degenerado a==b no es de longitud cero, es finito): Geometría de arcos (control cuadrático, punto medio de la etiqueta) y estados de marcador (tamaños, opacidad por selección/filtro/año). Puro.
-  - [ ] F2-T4: `DsMapScene` (un `CustomPainter` de puntos, marcadores con contraescala `1/k`, pulso, arcos con trazo discontinuo animado, semántica 44×44, movimiento reducido).
+  - [ ] F2-T4a: `DsMapScene` base: capa de tierra (un `CustomPainter`, 884 puntos en 6 cubos de opacidad), cámara animada que reanuda desde el valor actual, marcadores con tamaño fijo en pantalla, toque con zona de 44 px y semántica por marcador.
+  - [ ] F2-T4b: `DsMapScene` efectos: arcos con trazo discontinuo animado y aparición a los 600 ms, etiquetas de relación y de casos relacionados, pulso con un solo ticker, movimiento reducido (sin pulsos, sin vuelo).
 - [ ] F4: Portada (carrusel, filas, pósters, invitación al mapa) — requiere D3, D4.
 - [ ] F5: Explorar (filtros, línea de tiempo, ficha de cristal).
 - [ ] F3: Motor del globo — requiere D1.
