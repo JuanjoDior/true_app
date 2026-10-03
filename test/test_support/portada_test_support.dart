@@ -1,11 +1,15 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/core/design/design.dart';
 import 'package:true_app/features/cases/domain/case_category.dart';
+import 'package:true_app/features/cases/domain/case_photo.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
 import 'package:true_app/features/home/presentation/portada/portada_hero.dart';
 import 'package:true_app/features/home/presentation/portada/portada_hero_keys.dart';
+import 'package:true_app/features/home/presentation/portada/portada_poster_card.dart';
+import 'package:true_app/features/home/presentation/portada/portada_unsolved_row.dart';
 
 const Size laptopSize = Size(1280, 720);
 const Size desktopSize = Size(1440, 900);
@@ -28,6 +32,7 @@ TrueCrimeCase portadaCase({
   double latitude = 37.77,
   double longitude = -122.42,
   String summary = 'Resumen breve del caso.',
+  List<CasePhoto> photos = const [],
 }) {
   return TrueCrimeCase(
     id: id,
@@ -45,6 +50,7 @@ TrueCrimeCase portadaCase({
     sources: const [],
     status: status,
     statusLabel: statusLabel,
+    photos: photos,
   );
 }
 
@@ -110,10 +116,7 @@ final TrueCrimeCase portadaExtraCase = portadaCase(
   longitude: -118.24,
 );
 
-final List<TrueCrimeCase> portadaAllCases = [
-  ...portadaCases,
-  portadaExtraCase,
-];
+final List<TrueCrimeCase> portadaAllCases = [...portadaCases, portadaExtraCase];
 
 // Dos destacados a ambos lados del antimeridiano: el giro debe ir por el camino corto.
 final List<TrueCrimeCase> antimeridianCases = [
@@ -236,4 +239,137 @@ Future<void> pumpStep(WidgetTester tester, Duration total) async {
     await tester.pump(next);
     elapsed += next;
   }
+}
+
+const Size phoneSize = Size(390, 844);
+
+final List<TrueCrimeCase> unsolvedPortadaCases = [
+  portadaCase(id: 'zodiac', title: 'Zodiac Killer', year: 1968),
+  portadaCase(
+    id: 'ripper',
+    title: 'Jack el Destripador',
+    city: 'Londres',
+    country: 'Reino Unido',
+    year: 1888,
+    summary: 'Serie de asesinatos en Whitechapel durante 1888.',
+  ),
+  portadaCase(
+    id: 'tylenol',
+    title: 'Envenenamientos de Tylenol',
+    category: CaseCategory.unsolved,
+    city: 'Chicago',
+    year: 1982,
+  ),
+  portadaCase(
+    id: 'jonbenet',
+    title: 'JonBenét Ramsey',
+    category: CaseCategory.kidnapping,
+    statusLabel: 'Sin condena',
+    city: 'Boulder',
+    year: 1996,
+  ),
+];
+
+TrueCrimeCase unsolvedCaseWithPhoto(String url) => portadaCase(
+  id: 'foto',
+  title: 'Caso con foto',
+  category: CaseCategory.unsolved,
+  photos: [
+    CasePhoto(url: url, caption: 'Primera'),
+    const CasePhoto(url: 'https://example.com/segunda.jpg'),
+  ],
+);
+
+class PosterCallbacks {
+  final List<TrueCrimeCase> opened = [];
+}
+
+Future<void> setSurface(WidgetTester tester, Size size) async {
+  tester.view.physicalSize = size;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+Widget _portadaHost(
+  Size size,
+  bool reduceMotion,
+  double textScale,
+  Widget child,
+) {
+  return Directionality(
+    textDirection: TextDirection.ltr,
+    child: MediaQuery(
+      data: MediaQueryData(
+        size: size,
+        disableAnimations: reduceMotion,
+        textScaler: TextScaler.linear(textScale),
+      ),
+      child: Align(alignment: Alignment.topLeft, child: child),
+    ),
+  );
+}
+
+Future<PosterCallbacks> pumpPortadaUnsolved(
+  WidgetTester tester, {
+  List<TrueCrimeCase>? cases,
+  Size size = desktopSize,
+  bool reduceMotion = false,
+  double textScale = 1,
+}) async {
+  await setSurface(tester, size);
+  final callbacks = PosterCallbacks();
+  await tester.pumpWidget(
+    _portadaHost(
+      size,
+      reduceMotion,
+      textScale,
+      SizedBox(
+        width: size.width,
+        child: PortadaUnsolvedRow(
+          cases: cases ?? unsolvedPortadaCases,
+          onOpenCase: callbacks.opened.add,
+        ),
+      ),
+    ),
+  );
+  return callbacks;
+}
+
+Future<PosterCallbacks> pumpPortadaPoster(
+  WidgetTester tester,
+  TrueCrimeCase crimeCase, {
+  Size size = desktopSize,
+  bool reduceMotion = false,
+  double textScale = 1,
+  bool dimmed = false,
+}) async {
+  await setSurface(tester, size);
+  final callbacks = PosterCallbacks();
+  await tester.pumpWidget(
+    _portadaHost(
+      size,
+      reduceMotion,
+      textScale,
+      Padding(
+        padding: const EdgeInsets.all(48),
+        child: PortadaPosterCard(
+          crimeCase: crimeCase,
+          dimmed: dimmed,
+          onOpen: () => callbacks.opened.add(crimeCase),
+          onHoverChanged: (_) {},
+        ),
+      ),
+    ),
+  );
+  return callbacks;
+}
+
+Future<TestGesture> hoverOver(WidgetTester tester, Finder target) async {
+  final gesture = await tester.createGesture(kind: PointerDeviceKind.mouse);
+  await gesture.addPointer(location: Offset.zero);
+  addTearDown(gesture.removePointer);
+  await gesture.moveTo(tester.getCenter(target));
+  await tester.pump();
+  return gesture;
 }
