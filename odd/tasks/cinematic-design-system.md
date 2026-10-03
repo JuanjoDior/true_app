@@ -58,7 +58,7 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
 - [x] F1-T5 (worker + verify PASS: analyze 0, 799 tests, build web OK; DsSegmented subido a 44 px; pendiente menor: transparente repetido en 3 archivos y tamaños de icono como literales): `DsButton`, `DsIconButton` (≥ 44 px), `DsFilterChip`, `DsSegmented`.
 - [x] F1-T6 (f0488cd, a8b30c2, ca720cf; worker + verify 9/9: analyze 0, 899 tests, build web OK. Pendiente: DsToast.show necesita inset para no tapar la barra inferior de 68 px ni la barra superior; DsStateMessage se centra solo en horizontal): `DsGlassPanel`, `DsFormField`, `DsDialog`, `DsToast`, estados vacío/error.
 - [ ] F2: Motor del mapa plano (`docs/design/map-and-globe.md` §1–2; capa `lib/core/design/map/`, sin importar `features`; recibe datos planos).
-  - [ ] F2-T1: `DsLandGrid` (máscara 72×27, centros de celda, opacidad por celda) y `DsMapProjection` (lon/lat ↔ escena 1440×540). Puro, con pruebas numéricas.
+  - [x] F2-T1 (worker + verify PASS: analyze 0, 915 tests; la rejilla tiene 884 celdas únicas, no ~650, docs corregidos): `DsLandGrid` (máscara 72×27, centros de celda, opacidad por celda) y `DsMapProjection` (lon/lat ↔ escena 1440×540). Puro, con pruebas numéricas.
   - [ ] F2-T2: `DsMapCamera` (traslación + escala), objetivos Mundo/Caso/Conexiones/Explorar escritorio/Explorar móvil como funciones puras, interpolación con `ease.fly`.
   - [ ] F2-T3: Geometría de arcos (control cuadrático, punto medio de la etiqueta) y estados de marcador (tamaños, opacidad por selección/filtro/año). Puro.
   - [ ] F2-T4: `DsMapScene` (un `CustomPainter` de puntos, marcadores con contraescala `1/k`, pulso, arcos con trazo discontinuo animado, semántica 44×44, movimiento reducido).

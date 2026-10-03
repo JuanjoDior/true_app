@@ -41,7 +41,7 @@ lib/features/cases/presentation/                   (expediente, directorio, inic
 
 | Opción | Esfuerzo | Riesgo | Notas |
 | --- | --- | --- | --- |
-| **A. `CustomPainter` propio** (recomendada) | Medio | Bajo | Proyección ortográfica en Dart (fórmulas en `map-and-globe.md` §3). ~650 puntos por fotograma con `canvas.drawPoints`. Sin dependencias. Control total del vuelo y del acabado |
+| **A. `CustomPainter` propio** (recomendada) | Medio | Bajo | Proyección ortográfica en Dart (fórmulas en `map-and-globe.md` §3). 884 puntos por fotograma con `canvas.drawPoints`. Sin dependencias. Control total del vuelo y del acabado |
 | B. Paquete de globo de pub.dev | Bajo | Medio-alto | No evaluados. Habría que verificar mantenimiento, soporte web y si permiten marcadores/arcos/cámara controlada |
 | C. Sin globo: solo mapa plano | Bajo | Ninguno | Pierde el efecto de portada; el resto del diseño no cambia |
 

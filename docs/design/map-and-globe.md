@@ -46,7 +46,7 @@ const kLandMask = <int, List<List<int>>>{
 
 Aspecto por punto: diámetro 5 px (plano escritorio), 6–7 px (móvil); opacidad `0,45 + ((col*7 + fila*13) % 6) / 10`.
 
-Esta tabla tiene **~650 puntos**: en Flutter se dibuja con **un solo `CustomPainter`** (nunca un widget por punto).
+Esta tabla tiene **884 puntos** (887 rangos sumados; los rangos de las filas 11–13 se solapan y cada celda cuenta una vez): en Flutter se dibuja con **un solo `CustomPainter`** (nunca un widget por punto).
 
 ## 2. Mapa plano 2D
 
@@ -145,6 +145,6 @@ Giro y cambio de escala/centro: **1900 ms** `ease.globe` (la deriva usa transici
 
 - Un **único `CustomPainter`** para toda la tierra; `RepaintBoundary` separado para marcadores y arcos.
 - La máscara se convierte **una vez** a una lista de `Offset` (plano) o de vectores unitarios (globo) y se cachea.
-- Globo: proyectar ~650 puntos por fotograma es trivial en CPU; el coste está en compositar, no en calcular.
+- Globo: proyectar 884 puntos por fotograma es trivial en CPU; el coste está en compositar, no en calcular.
 - Evitar `Opacity`/`BackdropFilter` dentro de la escena animada; el cristal solo en fichas estáticas.
 - Con `MediaQuery.disableAnimations`, cortar cámara sin transición y detener pulsos y deriva.
