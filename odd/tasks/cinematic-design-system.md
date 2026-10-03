@@ -23,8 +23,8 @@ Los documentos se escribieron contra una versión anterior del código. Hay que 
 ## Decisiones abiertas (se preguntan una a una, antes de la tarea que las necesita)
 - D1 Globo: `CustomPainter` propio (recomendado) / paquete / sin globo. Bloquea F3.
 - D2 Selector de ubicación del formulario: mantener `flutter_map` solo ahí (recomendado) / mapa de puntos con zoom. Bloquea F8.
-- D3 Ruta propia `/mapa` o modo explorar como estado de la portada. Bloquea F4/F5.
-- D4 `updatedAt`/`updateKind`: añadirlos al contrato (afecta al payload de Supabase, a `draftToCaseJson` y al catálogo) o ocultar «Novedades» hasta tener datos. Bloquea F4.
+- D3 (RESUELTA: ruta propia `/mapa`) Ruta propia `/mapa` o modo explorar como estado de la portada. Bloquea F4/F5.
+- D4 (RESUELTA: ocultar «Novedades» hasta tener datos; no se toca el contrato) `updatedAt`/`updateKind`: añadirlos al contrato (afecta al payload de Supabase, a `draftToCaseJson` y al catálogo) o ocultar «Novedades» hasta tener datos. Bloquea F4.
 - D5 Carpetas de plataforma: **resuelta (2026-10-02)**: se conserva `windows/` y se retiran `android/ ios/ macos/ linux/`.
 
 ## Principios de código limpio (todas las tareas)
