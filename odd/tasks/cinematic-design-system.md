@@ -21,7 +21,7 @@ Los documentos se escribieron contra una versión anterior del código. Hay que 
 7. Restos reales por limpiar: `cupertino_icons`, `mapSectionGradientProvider`, `activeCategoryProvider` (nadie lo escribe), ticker con 4 actualizaciones inventadas, círculos de densidad fijos, mensaje «JSON copiado. Pégalo en assets/data/cases.json» (obsoleto), `com.example.true_app`, descripción «Base project…».
 
 ## Decisiones abiertas (se preguntan una a una, antes de la tarea que las necesita)
-- D1 Globo: `CustomPainter` propio (recomendado) / paquete / sin globo. Bloquea F3.
+- D1 (RESUELTA: `CustomPainter` propio, sin dependencias) Globo: `CustomPainter` propio (recomendado) / paquete / sin globo. Bloquea F3.
 - D2 Selector de ubicación del formulario: mantener `flutter_map` solo ahí (recomendado) / mapa de puntos con zoom. Bloquea F8.
 - D3 (RESUELTA: ruta propia `/mapa`) Ruta propia `/mapa` o modo explorar como estado de la portada. Bloquea F4/F5.
 - D4 (RESUELTA: ocultar «Novedades» hasta tener datos; no se toca el contrato) `updatedAt`/`updateKind`: añadirlos al contrato (afecta al payload de Supabase, a `draftToCaseJson` y al catálogo) o ocultar «Novedades» hasta tener datos. Bloquea F4.
@@ -63,9 +63,13 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
   - [x] F2-T3 (worker + verify PASS: analyze 0, 987 tests; arco degenerado a==b no es de longitud cero, es finito): Geometría de arcos (control cuadrático, punto medio de la etiqueta) y estados de marcador (tamaños, opacidad por selección/filtro/año). Puro.
   - [x] F2-T4a (worker + verify PASS: analyze 0, 1054 tests, build web OK; glow alpha 0,5 y sigma = radio/2 pendientes de revisión visual): `DsMapScene` base: capa de tierra (un `CustomPainter`, 884 puntos en 6 cubos de opacidad), cámara animada que reanuda desde el valor actual, marcadores con tamaño fijo en pantalla, toque con zona de 44 px y semántica por marcador.
   - [x] F2-T4b (worker + verify PASS: analyze 0, 1138 tests, build web OK; un solo commit que excede ~400 líneas por ser una unidad indivisible; pruebas repartidas en 4 archivos + test_support; pendiente revisión visual de brillo, pulso y píldoras): `DsMapScene` efectos: arcos con trazo discontinuo animado y aparición a los 600 ms, etiquetas de relación y de casos relacionados, pulso con un solo ticker, movimiento reducido (sin pulsos, sin vuelo).
-- [ ] F4: Portada (carrusel, filas, pósters, invitación al mapa) — requiere D3, D4.
+- [ ] F4: Portada (tras F3) (carrusel, filas, pósters, invitación al mapa) — requiere D3, D4.
 - [ ] F5: Explorar (filtros, línea de tiempo, ficha de cristal).
-- [ ] F3: Motor del globo — requiere D1.
+- [ ] F3: Motor del globo (`docs/design/map-and-globe.md` §3–4; `lib/core/design/globe/`; D1 resuelta). Se hace ANTES de F4/F5 porque portada y explorar lo montan.
+  - [ ] F3-T1: `DsGlobeMath` puro: vector (lat,lon) → esfera (R 400, R+3 marcadores, R+4+sin(πt)·Ω·70 arcos), rotación rotX·rotY, proyección con perspectiva P=2200 y visibilidad z2>40, tamaño de punto, orientación al objetivo con desenrollado de gy, puntos del arco de círculo máximo.
+  - [ ] F3-T2: `DsGlobeCamera` (gx, gy, escala, centro) + objetivos Portada/Explorar + interpolación (camino corto) + `ease.globe` 1900 ms + deriva 0,22°/70 ms. Puro.
+  - [ ] F3-T3: `DsGlobeScene` base: cuerpo de esfera y sombreado, puntos de tierra (un painter), halo de categoría, marcadores, etiquetas proyectadas, toque 44 px, semántica.
+  - [ ] F3-T4: `DsGlobeScene` efectos: arcos de 27 puntos secuenciales (900 + k·35 ms), deriva, etiquetas diferidas (1700 ms), movimiento reducido.
 - [ ] F6: Expediente.
 - [ ] F7: El archivo (directorio).
 - [ ] F8: Inicio de sesión + formulario — requiere D2.
