@@ -56,7 +56,7 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
 - [x] F1-T3 (worker + verify PASS: analyze 0, 705 tests, build web OK; AppTheme retirado. Pendiente en F4/F10: reconciliar DsBreakpoints.desktop=1200 con Breakpoints.sidePanel=880; ThemeData fija estilos de escritorio, los móviles salen de DsTextStylesResolver): `DsTheme` (inputs, botones, diálogos, snackbars) sin romper las pantallas actuales.
 - [x] F1-T4 (worker + verify PASS: analyze 0, 736 tests, build web OK; literales 12/13/24 y espaciado mono 0,18 quedan locales, promover a tokens si se repiten): Átomos `DsBadge`, `DsStatusLabel`, `DsMonoLabel`, `DsStatCell`.
 - [x] F1-T5 (worker + verify PASS: analyze 0, 799 tests, build web OK; DsSegmented subido a 44 px; pendiente menor: transparente repetido en 3 archivos y tamaños de icono como literales): `DsButton`, `DsIconButton` (≥ 44 px), `DsFilterChip`, `DsSegmented`.
-- [ ] F1-T6: `DsGlassPanel`, `DsFormField`, `DsDialog`, `DsToast`, estados vacío/error.
+- [x] F1-T6 (f0488cd, a8b30c2, ca720cf; worker + verify 9/9: analyze 0, 899 tests, build web OK. Pendiente: DsToast.show necesita inset para no tapar la barra inferior de 68 px ni la barra superior; DsStateMessage se centra solo en horizontal): `DsGlassPanel`, `DsFormField`, `DsDialog`, `DsToast`, estados vacío/error.
 - [ ] F2: Motor del mapa plano (máscara de tierra, proyección, cámara, pintor de puntos, marcadores, arcos).
 - [ ] F4: Portada (carrusel, filas, pósters, invitación al mapa) — requiere D3, D4.
 - [ ] F5: Explorar (filtros, línea de tiempo, ficha de cristal).
