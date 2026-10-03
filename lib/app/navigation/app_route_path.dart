@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 
 /// Estado de ruta de la aplicación [diseño §7.1].
 ///
-/// Sellada a propósito: las tres son todas las rutas que existen, y el
+/// Sellada a propósito: las cuatro son todas las rutas que existen, y el
 /// compilador obliga a tratarlas todas en cada `switch`. Una ruta nueva no
 /// puede colarse sin que salte cada sitio que decide qué pintar.
 @immutable
@@ -20,6 +20,17 @@ final class SituationRoomPath extends AppRoutePath {
 
   @override
   int get hashCode => (SituationRoomPath).hashCode;
+}
+
+/// El mapa a pantalla completa, apilado sobre la raíz como el detalle.
+final class MapPath extends AppRoutePath {
+  const MapPath();
+
+  @override
+  bool operator ==(Object other) => other is MapPath;
+
+  @override
+  int get hashCode => (MapPath).hashCode;
 }
 
 /// El expediente ampliado de un caso, identificado por su slug público.

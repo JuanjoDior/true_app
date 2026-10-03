@@ -18,6 +18,11 @@ class AppRouteController extends ChangeNotifier implements AppNavigation {
   @override
   void openCase(String slug) => _moveTo(CaseDetailPath(slug));
 
+  // La ruta es un único estado: desde un detalle, el mapa lo sustituye y
+  // Atrás vuelve a la raíz, no al detalle.
+  @override
+  void openMap() => _moveTo(const MapPath());
+
   @override
   void showSituationRoom() => _moveTo(const SituationRoomPath());
 

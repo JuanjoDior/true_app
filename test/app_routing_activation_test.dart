@@ -204,6 +204,49 @@ void main() {
     });
   });
 
+  group('la ruta del mapa', () {
+    testWidgets('a map deep link opens the map page', (tester) async {
+      await _pumpApp(tester, location: '/mapa');
+
+      expect(find.byKey(const Key('map-page')), findsOneWidget);
+    });
+
+    testWidgets('the root does not show the map page', (tester) async {
+      await _pumpApp(tester);
+
+      expect(find.byKey(const Key('map-page')), findsNothing);
+    });
+
+    testWidgets('the map page returns to the Situation Room', (tester) async {
+      await _pumpApp(tester, location: '/mapa');
+
+      await tester.tap(find.text('Volver a la portada'));
+      await _settle(tester);
+      // La transición de salida dura más que el bombeo acotado.
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.byKey(const Key('map-page')), findsNothing);
+    });
+
+    testWidgets('a map deep link does not rewrite the workspace', (
+      tester,
+    ) async {
+      final container = await _pumpApp(
+        tester,
+        location: '/mapa',
+        workspace: Workspace.intake,
+      );
+
+      expect(container.read(workspaceProvider), Workspace.intake);
+    });
+
+    testWidgets('a deeper map route is the not-found page', (tester) async {
+      await _pumpApp(tester, location: '/mapa/x');
+
+      expect(find.byKey(const Key('route-not-found')), findsOneWidget);
+    });
+  });
+
   group('la frontera con el workspace', () {
     testWidgets('a deep link renders the dossier over an open intake', (
       tester,

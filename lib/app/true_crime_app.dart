@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/design/design.dart';
 import '../features/cases/presentation/case_detail_page.dart';
 import '../features/home/presentation/home_page.dart';
+import '../features/map/presentation/map_page.dart';
 import 'navigation/app_navigation_scope.dart';
 import 'navigation/app_route_controller.dart';
 import 'navigation/app_route_information_parser.dart';
@@ -33,6 +34,7 @@ class _TrueCrimeAppState extends State<TrueCrimeApp> {
     situationRoomBuilder: (context) => const TrueCrimeHomePage(),
     caseDetailBuilder: (context, slug) =>
         CaseDetailPage(slug: slug, navigation: _controller),
+    mapPageBuilder: (context) => MapPage(navigation: _controller),
     routeNotFoundBuilder: (context, uri) =>
         RouteNotFoundPage(uri: uri, navigation: _controller),
   );

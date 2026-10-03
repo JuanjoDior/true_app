@@ -11,6 +11,7 @@ import 'app_route_path.dart';
 /// reescrituras en el servidor que el despliegue actual de Pages no tiene.
 class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
   static const _casesSegment = 'casos';
+  static const _mapSegment = 'mapa';
 
   @override
   Future<AppRoutePath> parseRouteInformation(
@@ -29,6 +30,10 @@ class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
     if (segments.isEmpty) {
       return const SituationRoomPath();
     }
+    // Exactamente uno: `/mapa/x` no es el mapa.
+    if (segments.length == 1 && segments.first == _mapSegment) {
+      return const MapPath();
+    }
     // Exactamente dos segmentos: `/casos/a/b` no abre el caso 'a'.
     if (segments.length == 2 && segments.first == _casesSegment) {
       return CaseDetailPath(segments[1]);
@@ -44,6 +49,7 @@ class AppRouteInformationParser extends RouteInformationParser<AppRoutePath> {
   Uri _restore(AppRoutePath configuration) {
     return switch (configuration) {
       SituationRoomPath() => Uri.parse('/'),
+      MapPath() => Uri.parse('/$_mapSegment'),
       // Se codifica el slug entero: sin eso, un slug con barra inventaría un
       // segmento y la ruta dejaría de reconocerse a sí misma.
       CaseDetailPath(:final slug) => Uri.parse(

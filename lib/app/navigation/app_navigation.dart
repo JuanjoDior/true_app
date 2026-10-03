@@ -7,6 +7,9 @@ abstract interface class AppNavigation {
   /// Abre el expediente ampliado de [slug].
   void openCase(String slug);
 
+  /// Abre el mapa a pantalla completa.
+  void openMap();
+
   /// Vuelve a la raíz. Qué se ve allí — mapa o intake — lo decide el
   /// workspace, no esta llamada.
   void showSituationRoom();

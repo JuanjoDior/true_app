@@ -30,6 +30,34 @@ void main() {
     });
   });
 
+  group('reconocer el mapa', () {
+    test('the map route is the map', () async {
+      expect(await _parse('/mapa'), isA<MapPath>());
+    });
+
+    test('a trailing slash still resolves the map', () async {
+      expect(await _parse('/mapa/'), isA<MapPath>());
+    });
+
+    test('empty segments are discarded like in the other routes', () async {
+      expect(await _parse('/mapa//'), isA<MapPath>());
+    });
+
+    test('a deeper map route is unknown', () async {
+      expect(await _parse('/mapa/x'), isA<UnknownAppPath>());
+    });
+
+    test('a map-like prefix is unknown', () async {
+      expect(await _parse('/mapas'), isA<UnknownAppPath>());
+    });
+
+    test('an unknown map route keeps its original uri', () async {
+      final path = await _parse('/mapa/x');
+
+      expect((path as UnknownAppPath).uri.toString(), '/mapa/x');
+    });
+  });
+
   group('reconocer un expediente', () {
     test('a case route yields its slug', () async {
       final path = await _parse('/casos/mujer-de-isdal');
@@ -84,6 +112,10 @@ void main() {
       expect(_restore(const SituationRoomPath()), '/');
     });
 
+    test('the map restores to its route', () {
+      expect(_restore(const MapPath()), '/mapa');
+    });
+
     test('a case restores to its route', () {
       expect(
         _restore(const CaseDetailPath('mujer-de-isdal')),
@@ -123,6 +155,12 @@ void main() {
     });
   });
 
+  test('the map survives a full round trip', () async {
+    final restored = await _parse(_restore(const MapPath())!);
+
+    expect(restored, const MapPath());
+  });
+
   group('igualdad de rutas', () {
     // El controlador compara rutas para no duplicar historial, así que la
     // igualdad por valor no es un detalle: es lo que hace que Atrás funcione.
@@ -140,6 +178,18 @@ void main() {
 
     test('the Situation Room is equal to itself', () {
       expect(const SituationRoomPath(), const SituationRoomPath());
+    });
+
+    test('the map is equal to itself', () {
+      expect(const MapPath(), const MapPath());
+    });
+
+    test('the map is not the Situation Room', () {
+      expect(const MapPath(), isNot(const SituationRoomPath()));
+    });
+
+    test('equal map paths share a hash code', () {
+      expect(const MapPath().hashCode, const MapPath().hashCode);
     });
   });
 }

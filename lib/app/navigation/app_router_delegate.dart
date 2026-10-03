@@ -7,6 +7,9 @@ import 'app_route_path.dart';
 /// Construye la página de detalle de un caso a partir de su slug.
 typedef CaseDetailBuilder = Widget Function(BuildContext context, String slug);
 
+/// Construye la página del mapa a pantalla completa.
+typedef MapPageBuilder = Widget Function(BuildContext context);
+
 /// Construye la página de ruta no encontrada, conservando la URI original.
 typedef RouteNotFoundBuilder = Widget Function(BuildContext context, Uri uri);
 
@@ -25,6 +28,7 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
     required this.controller,
     required this.situationRoomBuilder,
     required this.caseDetailBuilder,
+    required this.mapPageBuilder,
     required this.routeNotFoundBuilder,
   }) {
     controller.addListener(notifyListeners);
@@ -33,6 +37,7 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
   final AppRouteController controller;
   final WidgetBuilder situationRoomBuilder;
   final CaseDetailBuilder caseDetailBuilder;
+  final MapPageBuilder mapPageBuilder;
   final RouteNotFoundBuilder routeNotFoundBuilder;
 
   @override
@@ -76,6 +81,13 @@ class AppRouterDelegate extends RouterDelegate<AppRoutePath>
 
     return switch (controller.path) {
       SituationRoomPath() => [root],
+      MapPath() => [
+        root,
+        MaterialPage<void>(
+          key: const ValueKey('map'),
+          child: Builder(builder: mapPageBuilder),
+        ),
+      ],
       CaseDetailPath(:final slug) => [
         root,
         MaterialPage<void>(

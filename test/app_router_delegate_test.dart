@@ -20,6 +20,7 @@ Widget _marker(String label) => Text(label, textDirection: TextDirection.ltr);
     controller: controller,
     situationRoomBuilder: (context) => _marker('sala'),
     caseDetailBuilder: (context, slug) => _marker('detalle:$slug'),
+    mapPageBuilder: (context) => _marker('mapa'),
     routeNotFoundBuilder: (context, uri) => _marker('desconocida:$uri'),
   );
   addTearDown(delegate.dispose);
@@ -103,6 +104,119 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('sala', skipOffstage: false), findsOneWidget);
+    });
+  });
+
+  group('el mapa', () {
+    testWidgets('the map route puts the map page on top', (tester) async {
+      final wired = _wire();
+      await _pumpRouter(tester, wired.delegate);
+
+      wired.controller.openMap();
+      await tester.pumpAndSettle();
+
+      expect(find.text('mapa'), findsOneWidget);
+    });
+
+    testWidgets('the map route keeps the Situation Room underneath', (
+      tester,
+    ) async {
+      final wired = _wire();
+      await _pumpRouter(tester, wired.delegate);
+
+      wired.controller.openMap();
+      await tester.pumpAndSettle();
+
+      expect(find.text('sala', skipOffstage: false), findsOneWidget);
+    });
+
+    testWidgets('the map route builds [root, map] with their keys', (
+      tester,
+    ) async {
+      final wired = _wire();
+      await _pumpRouter(tester, wired.delegate);
+
+      wired.controller.openMap();
+      await tester.pumpAndSettle();
+
+      final navigator = tester.widget<Navigator>(find.byType(Navigator));
+      expect(navigator.pages.map((page) => page.key).toList(), const [
+        ValueKey('situation-room'),
+        ValueKey('map'),
+      ]);
+    });
+
+    testWidgets('a map deep link restores the stack from the start', (
+      tester,
+    ) async {
+      final wired = _wire();
+      await _pumpRouter(tester, wired.delegate);
+
+      await wired.delegate.setNewRoutePath(const MapPath());
+      await tester.pumpAndSettle();
+
+      expect(find.text('mapa'), findsOneWidget);
+    });
+
+    testWidgets('a system pop on the map returns to the Situation Room', (
+      tester,
+    ) async {
+      final wired = _wire();
+      await _pumpRouter(tester, wired.delegate);
+      wired.controller.openMap();
+      await tester.pumpAndSettle();
+
+      await wired.delegate.popRoute();
+      await tester.pumpAndSettle();
+
+      expect(wired.controller.path, isA<SituationRoomPath>());
+    });
+
+    testWidgets('a system pop on the map removes the map page', (tester) async {
+      final wired = _wire();
+      await _pumpRouter(tester, wired.delegate);
+      wired.controller.openMap();
+      await tester.pumpAndSettle();
+
+      await wired.delegate.popRoute();
+      await tester.pumpAndSettle();
+
+      expect(find.text('mapa'), findsNothing);
+    });
+
+    testWidgets('opening a case from the map shows the detail page', (
+      tester,
+    ) async {
+      final wired = _wire();
+      await _pumpRouter(tester, wired.delegate);
+      wired.controller.openMap();
+      await tester.pumpAndSettle();
+
+      wired.controller.openCase('isdal');
+      await tester.pumpAndSettle();
+
+      expect(find.text('detalle:isdal'), findsOneWidget);
+    });
+
+    testWidgets('opening a case from the map removes the map page', (
+      tester,
+    ) async {
+      final wired = _wire();
+      await _pumpRouter(tester, wired.delegate);
+      wired.controller.openMap();
+      await tester.pumpAndSettle();
+
+      wired.controller.openCase('isdal');
+      await tester.pumpAndSettle();
+
+      expect(find.text('mapa', skipOffstage: false), findsNothing);
+    });
+
+    test('the delegate reports the map as its configuration', () {
+      final wired = _wire();
+      wired.controller.openMap();
+
+      expect(wired.delegate.currentConfiguration, const MapPath());
     });
   });
 

@@ -68,9 +68,13 @@ class _FailingRepository implements CasesRepository {
 class _RecordingNavigation implements AppNavigation {
   final opened = <String>[];
   var returns = 0;
+  var mapOpenings = 0;
 
   @override
   void openCase(String slug) => opened.add(slug);
+
+  @override
+  void openMap() => mapOpenings++;
 
   @override
   void showSituationRoom() => returns++;
