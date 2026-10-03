@@ -63,13 +63,18 @@ Desplazamiento vertical de la escena dentro del contenedor: 180 px (pantallas de
 ### 2.2 Cámara
 Se anima un único `Matrix4`: `translate(tx, ty) · scale(k)` con `origin (0,0)`.
 
-| Vista | k | Centrado en |
+| Vista | k | Centrado en → destino en el viewport |
 | --- | --- | --- |
-| **Mundo** | 1 (escritorio: 1 + tx=ty=0) · 0,42 (banda móvil) · 0,62 (mapa móvil) | todo el archivo |
-| **Caso** | 3,4 (escritorio) · 2,2 (móvil) | el caso enfocado, desplazado a `(900, 310)` en la banda del expediente |
-| **Conexiones** | `clamp(1,2..3 ; 820/(bw+240), 420/(bh+220))` | centro del rectángulo que contiene al caso y sus conectados → `(860, 310)` |
+| **Mundo escritorio** | 1 | todo el archivo, `tx = ty = 0` |
+| **Mundo móvil banda** | 0,42 | `(680, 190)` → `(195, 230)` |
+| **Mundo móvil mapa** | 0,62 | `(560, 180)` → `(195, 330)` |
+| **Caso escritorio** | 3,4 | el caso enfocado → `(900, 310)` (banda del expediente) |
+| **Caso móvil** | 2,2 | el caso enfocado → `(195, 230)` |
+| **Conexiones escritorio** | `clamp(1,2 ; 3,0 ; 820/(bw+240), 420/(bh+220))` | centro del rectángulo que contiene al caso y sus conectados → `(860, 310)` |
+| **Conexiones móvil banda** | `clamp(0,5 ; 2,2 ; 340/(bw+120), 200/(bh+100))` | centro del mismo rectángulo → `(195, 210)` |
 
 - `tx = destinoX − k·cx`, `ty = destinoY − k·cy`.
+- En todos los `clamp(lo ; hi ; a, b)` la escala es el **menor** de los dos ajustes `a` y `b`, como en el prototipo; por eso el límite superior no llega a alcanzarse.
 - Curva `ease.fly`, **1700–1900 ms**.
 - En el mapa explorar de escritorio: `k = clamp(1,4 ; 3,2 ; 900/(bw+260), 560/(bh+260))`, destino `(520, 470)` (deja espacio a la ficha de la derecha).
 - En el mapa móvil: `k = clamp(0,6 ; 2,4 ; 340/(bw+120), 260/(bh+120))`, destino `(195, 235)`.
