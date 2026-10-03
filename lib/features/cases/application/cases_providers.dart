@@ -192,6 +192,66 @@ final featuredCaseProvider = Provider<TrueCrimeCase?>((ref) {
   return best;
 });
 
+/// Máximo de casos en el carrusel de la portada.
+const int kFeaturedCasesLimit = 5;
+
+/// Máximo de casos en la fila «Sin resolver» de la portada.
+const int kUnsolvedCasesLimit = 12;
+
+/// Casos destacados de la portada, de menor a mayor `featuredRank`.
+///
+/// Vacío mientras carga o si falla la lectura: la portada decide qué enseñar.
+final featuredCasesProvider = Provider<List<TrueCrimeCase>>((ref) {
+  final cases = ref.watch(casesProvider).value ?? const <TrueCrimeCase>[];
+  final featured = [
+    for (final crimeCase in cases)
+      if (crimeCase.featuredRank != null) crimeCase,
+  ];
+  featured.sort((a, b) {
+    final byRank = a.featuredRank!.compareTo(b.featuredRank!);
+    if (byRank != 0) {
+      return byRank;
+    }
+    final byRelevance = _compareRelevance(a, b);
+    return byRelevance != 0 ? byRelevance : a.title.compareTo(b.title);
+  });
+  return List<TrueCrimeCase>.unmodifiable(featured.take(kFeaturedCasesLimit));
+});
+
+/// Casos sin resolver (`CaseStatus.open`, el chip «Sin resolver»).
+final unsolvedCasesProvider = Provider<List<TrueCrimeCase>>((ref) {
+  final cases = ref.watch(casesProvider).value ?? const <TrueCrimeCase>[];
+  final unsolved = [
+    for (final crimeCase in cases)
+      if (crimeCase.status == CaseStatus.open) crimeCase,
+  ];
+  unsolved.sort((a, b) {
+    final byRelevance = _compareRelevance(a, b);
+    if (byRelevance != 0) {
+      return byRelevance;
+    }
+    final byYear = b.year.compareTo(a.year);
+    return byYear != 0 ? byYear : a.title.compareTo(b.title);
+  });
+  return List<TrueCrimeCase>.unmodifiable(unsolved.take(kUnsolvedCasesLimit));
+});
+
+// Sin `relevanceRank` va al final: un caso sin rango no debe colarse delante.
+int _compareRelevance(TrueCrimeCase a, TrueCrimeCase b) {
+  final aRank = a.relevanceRank;
+  final bRank = b.relevanceRank;
+  if (aRank == bRank) {
+    return 0;
+  }
+  if (aRank == null) {
+    return 1;
+  }
+  if (bRank == null) {
+    return -1;
+  }
+  return aRank.compareTo(bRank);
+}
+
 /// Estadísticas del archivo mostradas en la cabecera.
 final archiveStatsProvider = Provider<ArchiveStats>((ref) {
   final cases = ref.watch(casesProvider).value ?? const <TrueCrimeCase>[];
