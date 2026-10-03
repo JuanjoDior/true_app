@@ -1,7 +1,10 @@
+export 'ds_globe_arc_painter.dart';
+export 'ds_globe_arc_reveal.dart';
 export 'ds_globe_body_painter.dart';
 export 'ds_globe_camera.dart';
 export 'ds_globe_camera_animation.dart';
 export 'ds_globe_camera_targets.dart';
+export 'ds_globe_effects_controller.dart';
 export 'ds_globe_label_painter.dart';
 export 'ds_globe_land_painter.dart';
 export 'ds_globe_marker_projection.dart';

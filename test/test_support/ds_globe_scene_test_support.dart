@@ -22,6 +22,11 @@ const double hitRadius = 22;
 const double tolerance = 1e-6;
 const Duration flyDuration = Duration(milliseconds: 1900);
 const Duration haloFade = Duration(milliseconds: 1400);
+const Duration labelDelay = Duration(milliseconds: 1700);
+const Duration driftStep = Duration(milliseconds: 70);
+const double driftDegreesPerStep = 0.22;
+// Revelación completa de un arco: 900 + 26·35 + 200 ms.
+const Duration arcRevealTotal = Duration(milliseconds: 2010);
 
 // Con la cámara de portada: (1010, 520), z2 = 403.
 const DsMapMarker facing = DsMapMarker(
@@ -71,6 +76,17 @@ const DsMapMarker back = DsMapMarker(
 
 const List<DsMapMarker> sampleMarkers = [facing, east, nearLimb, limb, back];
 
+const DsMapConnection facingEast = DsMapConnection(
+  fromId: 'facing',
+  toId: 'east',
+  label: 'Facing to East',
+);
+const DsMapConnection eastNearLimb = DsMapConnection(
+  fromId: 'east',
+  toId: 'near-limb',
+  label: 'East to Near limb',
+);
+
 DsGlobeProjection projectMarker(DsMapMarker marker, DsGlobeCamera camera) =>
     DsGlobeMath.project(
       DsGlobeMath.surfacePoint(
@@ -94,6 +110,7 @@ Widget buildGlobeScene({
   int? timelineYear,
   Color? haloColor,
   bool showLabels = true,
+  List<DsMapConnection> connections = const [],
   ValueChanged<String>? onMarkerTap,
   bool disableAnimations = false,
   double textScale = 1,
@@ -115,6 +132,7 @@ Widget buildGlobeScene({
         timelineYear: timelineYear,
         haloColor: haloColor,
         showLabels: showLabels,
+        connections: connections,
         onMarkerTap: onMarkerTap,
       ),
     ),
@@ -132,6 +150,7 @@ Future<void> pumpGlobeScene(
   int? timelineYear,
   Color? haloColor,
   bool showLabels = true,
+  List<DsMapConnection> connections = const [],
   ValueChanged<String>? onMarkerTap,
   bool disableAnimations = false,
   double textScale = 1,
@@ -151,6 +170,7 @@ Future<void> pumpGlobeScene(
       timelineYear: timelineYear,
       haloColor: haloColor,
       showLabels: showLabels,
+      connections: connections,
       onMarkerTap: onMarkerTap,
       disableAnimations: disableAnimations,
       textScale: textScale,
@@ -171,6 +191,12 @@ Finder painterFinder<T extends CustomPainter>() =>
 
 DsGlobeCamera displayedCamera(WidgetTester tester) =>
     painterOf<DsGlobeLandPainter>(tester).camera;
+
+DsGlobeArcPainter arcPainter(WidgetTester tester) =>
+    painterOf<DsGlobeArcPainter>(tester);
+
+bool labelsShown(WidgetTester tester) =>
+    painterOf<DsGlobeLabelPainter>(tester).showLabels;
 
 DsMapMarkerLayerPainter markerPainter(WidgetTester tester) =>
     painterOf<DsMapMarkerLayerPainter>(tester);

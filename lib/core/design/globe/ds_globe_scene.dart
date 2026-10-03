@@ -1,18 +1,21 @@
 import 'package:flutter/gestures.dart' show PointerHoverEvent, TapUpDetails;
 import 'package:flutter/widgets.dart';
 
+import '../map/ds_map_connection.dart';
 import '../map/ds_map_marker.dart';
 import '../map/ds_map_marker_layer_painter.dart';
 import '../map/ds_map_marker_layout.dart';
 import '../tokens/ds_motion.dart';
+import 'ds_globe_arc_painter.dart';
 import 'ds_globe_body_painter.dart';
 import 'ds_globe_camera.dart';
 import 'ds_globe_camera_animation.dart';
+import 'ds_globe_effects_controller.dart';
 import 'ds_globe_label_painter.dart';
 import 'ds_globe_land_painter.dart';
 import 'ds_globe_marker_projection.dart';
 
-/// Globo 3D: halo, esfera, tierra, marcadores y etiquetas con cámara animada (doc 3.1–3.4).
+/// Globo 3D: halo, esfera, tierra, arcos, marcadores y etiquetas con cámara animada y deriva (doc 3.1–3.4).
 class DsGlobeScene extends StatefulWidget {
   const DsGlobeScene({
     super.key,
@@ -24,6 +27,7 @@ class DsGlobeScene extends StatefulWidget {
     this.timelineYear,
     this.haloColor,
     this.showLabels = true,
+    this.connections = const [],
     this.onMarkerTap,
   });
 
@@ -41,6 +45,9 @@ class DsGlobeScene extends StatefulWidget {
   /// `null`: sin halo.
   final Color? haloColor;
   final bool showLabels;
+
+  /// Pares ya filtrados por la pantalla; los ids desconocidos u ocultos se omiten.
+  final List<DsMapConnection> connections;
   final ValueChanged<String>? onMarkerTap;
 
   @override
@@ -52,6 +59,8 @@ class _DsGlobeSceneState extends State<DsGlobeScene>
   late final AnimationController _controller;
   late final CurvedAnimation _curve;
   late DsGlobeCameraTween _tween;
+  late final DsGlobeEffectsController _effects;
+  late final Listenable _frames;
   bool _overMarker = false;
 
   @override
@@ -61,28 +70,62 @@ class _DsGlobeSceneState extends State<DsGlobeScene>
     // value 1: la primera cámara se muestra sin animar.
     _controller = AnimationController(vsync: this, value: 1);
     _curve = CurvedAnimation(parent: _controller, curve: DsMotion.easeGlobe);
+    _effects = DsGlobeEffectsController(vsync: this);
+    _frames = Listenable.merge([_controller, _effects]);
+    _controller.addStatusListener(_handleFlightStatus);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _syncEffects();
   }
 
   @override
   void didUpdateWidget(DsGlobeScene oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.camera == oldWidget.camera) return;
-    // Parte de la cámara mostrada ahora, no del destino anterior.
-    _tween = DsGlobeCameraTween(begin: _displayedCamera, end: widget.camera);
-    _controller.duration = DsGlobeCameraAnimation.duration(
-      reduceMotion: MediaQuery.disableAnimationsOf(context),
-    );
-    _controller.forward(from: 0);
+    if (widget.camera != oldWidget.camera) _startFlight();
+    _syncEffects();
   }
 
   @override
   void dispose() {
+    _controller.removeStatusListener(_handleFlightStatus);
+    _effects.dispose();
     _curve.dispose();
     _controller.dispose();
     super.dispose();
   }
 
-  DsGlobeCamera get _displayedCamera => _tween.evaluate(_curve);
+  void _startFlight() {
+    final reduceMotion = MediaQuery.disableAnimationsOf(context);
+    // Parte de la cámara mostrada ahora (con deriva), no del destino anterior.
+    _tween = DsGlobeCameraTween(begin: _displayedCamera, end: widget.camera);
+    _effects.startFlight(reduceMotion: reduceMotion);
+    _controller.duration = DsGlobeCameraAnimation.duration(
+      reduceMotion: reduceMotion,
+    );
+    _controller.forward(from: 0);
+  }
+
+  void _handleFlightStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed) _syncEffects();
+  }
+
+  void _syncEffects() {
+    _effects.sync(
+      arcKeys: DsGlobeArcLayout.keys(
+        connections: widget.connections,
+        markers: widget.markers,
+      ),
+      reduceMotion: MediaQuery.disableAnimationsOf(context),
+      hasSelection: widget.selectedId != null,
+      flying: _controller.isAnimating,
+    );
+  }
+
+  DsGlobeCamera get _displayedCamera =>
+      _tween.evaluate(_curve).drifted(degrees: _effects.driftDegrees);
 
   List<DsGlobePlacedMarker> _placedFor(DsGlobeCamera camera) =>
       DsGlobeMarkerProjection.place(
@@ -128,11 +171,11 @@ class _DsGlobeSceneState extends State<DsGlobeScene>
         onTapUp: _handleTapUp,
         child: SizedBox.expand(
           child: AnimatedBuilder(
-            animation: _controller,
+            animation: _frames,
             builder: (context, _) {
               final camera = _displayedCamera;
               final placed = _placedFor(camera);
-              // Capas de abajo arriba: halo, esfera, tierra, [arcos: T4], sombreado, marcadores, etiquetas.
+              // Capas de abajo arriba: halo, esfera, tierra, arcos, sombreado, marcadores, etiquetas.
               return Stack(
                 fit: StackFit.expand,
                 children: [
@@ -162,7 +205,23 @@ class _DsGlobeSceneState extends State<DsGlobeScene>
                       ),
                     ),
                   ),
-                  // T4: los arcos de 27 puntos van aquí, sobre la tierra y bajo el sombreado.
+                  ExcludeSemantics(
+                    child: IgnorePointer(
+                      child: RepaintBoundary(
+                        child: CustomPaint(
+                          painter: DsGlobeArcPainter(
+                            camera: camera,
+                            arcs: DsGlobeArcLayout.visible(
+                              connections: widget.connections,
+                              placed: placed,
+                            ),
+                            elapsedOf: _effects.arcElapsed,
+                            repaint: _effects.revealRepaint,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                   ExcludeSemantics(
                     child: IgnorePointer(
                       child: CustomPaint(
@@ -177,13 +236,13 @@ class _DsGlobeSceneState extends State<DsGlobeScene>
                       textDirection: Directionality.of(context),
                     ),
                   ),
-                  // T4: las etiquetas diferidas (1700 ms) se controlan con `showLabels`.
                   ExcludeSemantics(
                     child: IgnorePointer(
                       child: CustomPaint(
                         painter: DsGlobeLabelPainter(
                           markers: placed,
-                          showLabels: widget.showLabels,
+                          showLabels:
+                              widget.showLabels && _effects.labelsVisible,
                           textDirection: Directionality.of(context),
                         ),
                       ),

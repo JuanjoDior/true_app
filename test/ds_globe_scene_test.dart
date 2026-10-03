@@ -10,6 +10,7 @@ import 'test_support/ds_globe_scene_test_support.dart';
 
 const int _mouseDevice = 1;
 const double _labelGap = 18;
+const String _selected = 'facing';
 const Color _red = Color(0xFFE5484D);
 const Color _blue = Color(0xFF3E63DD);
 // Fuera de la silueta de la esfera y lejos de cualquier marcador.
@@ -25,28 +26,30 @@ Offset _screenOf(DsMapMarker marker, [DsGlobeCamera? camera]) =>
 
 void main() {
   group('layers', () {
-    testWidgets('are ordered halo, body, land, shading, markers, labels', (
-      tester,
-    ) async {
-      await pumpGlobeScene(tester);
-      final order = [
-        for (final paint in tester.widgetList<CustomPaint>(
-          find.descendant(
-            of: find.byType(DsGlobeScene),
-            matching: find.byType(CustomPaint),
-          ),
-        ))
-          paint.painter.runtimeType,
-      ];
-      expect(order, [
-        DsGlobeHaloPainter,
-        DsGlobeBodyPainter,
-        DsGlobeLandPainter,
-        DsGlobeShadingPainter,
-        DsMapMarkerLayerPainter,
-        DsGlobeLabelPainter,
-      ]);
-    });
+    testWidgets(
+      'are ordered halo, body, land, arcs, shading, markers, labels',
+      (tester) async {
+        await pumpGlobeScene(tester);
+        final order = [
+          for (final paint in tester.widgetList<CustomPaint>(
+            find.descendant(
+              of: find.byType(DsGlobeScene),
+              matching: find.byType(CustomPaint),
+            ),
+          ))
+            paint.painter.runtimeType,
+        ];
+        expect(order, [
+          DsGlobeHaloPainter,
+          DsGlobeBodyPainter,
+          DsGlobeLandPainter,
+          DsGlobeArcPainter,
+          DsGlobeShadingPainter,
+          DsMapMarkerLayerPainter,
+          DsGlobeLabelPainter,
+        ]);
+      },
+    );
 
     testWidgets('the land layer is a single painter in its own boundary', (
       tester,
@@ -75,26 +78,28 @@ void main() {
       );
     });
 
-    testWidgets('halo, shading and labels ignore pointers and semantics', (
-      tester,
-    ) async {
-      await pumpGlobeScene(tester);
-      for (final finder in [
-        painterFinder<DsGlobeHaloPainter>(),
-        painterFinder<DsGlobeBodyPainter>(),
-        painterFinder<DsGlobeShadingPainter>(),
-        painterFinder<DsGlobeLabelPainter>(),
-      ]) {
-        expect(
-          find.ancestor(of: finder, matching: find.byType(IgnorePointer)),
-          findsWidgets,
-        );
-        expect(
-          find.ancestor(of: finder, matching: find.byType(ExcludeSemantics)),
-          findsWidgets,
-        );
-      }
-    });
+    testWidgets(
+      'halo, arcs, shading and labels ignore pointers and semantics',
+      (tester) async {
+        await pumpGlobeScene(tester);
+        for (final finder in [
+          painterFinder<DsGlobeHaloPainter>(),
+          painterFinder<DsGlobeBodyPainter>(),
+          painterFinder<DsGlobeArcPainter>(),
+          painterFinder<DsGlobeShadingPainter>(),
+          painterFinder<DsGlobeLabelPainter>(),
+        ]) {
+          expect(
+            find.ancestor(of: finder, matching: find.byType(IgnorePointer)),
+            findsWidgets,
+          );
+          expect(
+            find.ancestor(of: finder, matching: find.byType(ExcludeSemantics)),
+            findsWidgets,
+          );
+        }
+      },
+    );
 
     testWidgets('the marker layer is neither ignored nor excluded', (
       tester,
@@ -421,7 +426,13 @@ void main() {
 
   group('camera animation', () {
     testWidgets('the first build shows the camera immediately', (tester) async {
-      await pumpGlobeScene(tester, camera: _target, markers: const []);
+      // Con selección, la deriva no mantiene la escena animada.
+      await pumpGlobeScene(
+        tester,
+        camera: _target,
+        markers: const [],
+        selectedId: _selected,
+      );
       expect(displayedCamera(tester), _target);
       expect(tester.hasRunningAnimations, isFalse);
     });
@@ -429,8 +440,11 @@ void main() {
     testWidgets('flies from the old camera to the new one in 1900 ms', (
       tester,
     ) async {
-      await pumpGlobeScene(tester);
-      await tester.pumpWidget(buildGlobeScene(camera: _target));
+      // Con selección, la deriva no sigue animando tras el vuelo.
+      await pumpGlobeScene(tester, selectedId: _selected);
+      await tester.pumpWidget(
+        buildGlobeScene(camera: _target, selectedId: _selected),
+      );
       await tester.pump();
       expect(displayedCamera(tester), coverCamera);
 
@@ -516,9 +530,13 @@ void main() {
     testWidgets('pumpAndSettle terminates after a flight and a halo change', (
       tester,
     ) async {
-      await pumpGlobeScene(tester, haloColor: _red);
+      await pumpGlobeScene(tester, haloColor: _red, selectedId: _selected);
       await tester.pumpWidget(
-        buildGlobeScene(camera: _target, haloColor: _blue),
+        buildGlobeScene(
+          camera: _target,
+          haloColor: _blue,
+          selectedId: _selected,
+        ),
       );
       await tester.pumpAndSettle();
       expect(displayedCamera(tester), _target);

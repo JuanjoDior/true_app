@@ -37,6 +37,11 @@ abstract final class DsGlobeStyle {
   // Marcadores y etiquetas
   static const double labelGap = 18;
 
+  // Arcos de puntos dorados
+  static const double arcDotDiameter = 5;
+  static const double arcGlowRadius = 10;
+  static const double arcGlowAlpha = 0.6;
+
   static Alignment alignmentOf(double fractionX, double fractionY) =>
       Alignment(fractionX * 2 - 1, fractionY * 2 - 1);
 }
