@@ -68,7 +68,7 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
 - [ ] F3: Motor del globo (`docs/design/map-and-globe.md` §3–4; `lib/core/design/globe/`; D1 resuelta). Se hace ANTES de F4/F5 porque portada y explorar lo montan.
   - [x] F3-T1 (worker + verify PASS: analyze 0, 1181 tests; antípodas eligen un círculo máximo arbitrario pero determinista): `DsGlobeMath` puro: vector (lat,lon) → esfera (R 400, R+3 marcadores, R+4+sin(πt)·Ω·70 arcos), rotación rotX·rotY, proyección con perspectiva P=2200 y visibilidad z2>40, tamaño de punto, orientación al objetivo con desenrollado de gy, puntos del arco de círculo máximo.
   - [x] F3-T2 (worker + verify PASS: analyze 0, 1248 tests, build web OK; tokens globeFly 1900, globeDriftStep 70, globeDriftTransition 80): `DsGlobeCamera` (gx, gy, escala, centro) + objetivos Portada/Explorar + interpolación (camino corto) + `ease.globe` 1900 ms + deriva 0,22°/70 ms. Puro.
-  - [ ] F3-T3: `DsGlobeScene` base: cuerpo de esfera y sombreado, puntos de tierra (un painter), halo de categoría, marcadores, etiquetas proyectadas, toque 44 px, semántica.
+  - [x] F3-T3 (worker + verify PASS: analyze 0, 1358 tests, build web OK; tierra 73 llamadas en portada y 54 en explorar con cuantización de 0,5 px; pendiente revisión visual: foco 38/32, brillo 30/25, borde de limbo 60 %, sigma del resplandor 75): `DsGlobeScene` base: cuerpo de esfera y sombreado, puntos de tierra (un painter), halo de categoría, marcadores, etiquetas proyectadas, toque 44 px, semántica.
   - [ ] F3-T4: `DsGlobeScene` efectos: arcos de 27 puntos secuenciales (900 + k·35 ms), deriva, etiquetas diferidas (1700 ms), movimiento reducido.
 - [ ] F6: Expediente.
 - [ ] F7: El archivo (directorio).

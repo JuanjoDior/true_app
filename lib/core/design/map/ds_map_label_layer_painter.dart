@@ -51,7 +51,7 @@ class DsMapLabelLayerPainter extends CustomPainter {
 
   static const double markerLabelGap = 8;
 
-  static const TextStyle _markerStyle = TextStyle(
+  static const TextStyle markerStyle = TextStyle(
     fontFamily: DsFontFamilies.mono,
     fontSize: _fontSize,
     color: DsColors.textStrong,
@@ -83,7 +83,7 @@ class DsMapLabelLayerPainter extends CustomPainter {
             0,
           ),
           opacity: visual.opacity,
-          style: _markerStyle,
+          style: markerStyle,
         ),
       );
     }
@@ -108,11 +108,16 @@ class DsMapLabelLayerPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     for (final spec in specs()) {
-      _paintLabel(canvas, spec);
+      paintLabel(canvas, spec, textDirection);
     }
   }
 
-  void _paintLabel(Canvas canvas, DsMapLabelSpec spec) {
+  /// Dibuja una píldora de etiqueta; la comparte el globo.
+  static void paintLabel(
+    Canvas canvas,
+    DsMapLabelSpec spec,
+    TextDirection textDirection,
+  ) {
     final text = TextPainter(
       text: TextSpan(
         text: spec.text,
