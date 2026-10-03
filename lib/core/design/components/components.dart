@@ -6,6 +6,7 @@ export 'ds_form_field.dart';
 export 'ds_glass_panel.dart';
 export 'ds_icon_button.dart';
 export 'ds_mono_label.dart';
+export 'ds_pressable.dart';
 export 'ds_segmented.dart';
 export 'ds_state_message.dart';
 export 'ds_stat_cell.dart';
