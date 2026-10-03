@@ -6,3 +6,8 @@ export 'ds_map_projection.dart';
 export 'ds_map_arc.dart';
 export 'ds_map_marker_state.dart';
 export 'ds_timeline_range.dart';
+export 'ds_map_land_layer_painter.dart';
+export 'ds_map_marker.dart';
+export 'ds_map_marker_layer_painter.dart';
+export 'ds_map_marker_layout.dart';
+export 'ds_map_scene.dart';
