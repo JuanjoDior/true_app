@@ -1,13 +1,19 @@
+import 'dart:async';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/core/design/design.dart';
 import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/domain/case_photo.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
+import 'package:true_app/features/home/presentation/portada/portada_catalog_status.dart';
+import 'package:true_app/features/home/presentation/portada/portada_footer.dart';
 import 'package:true_app/features/home/presentation/portada/portada_hero.dart';
 import 'package:true_app/features/home/presentation/portada/portada_hero_keys.dart';
+import 'package:true_app/features/home/presentation/portada/portada_map_invite.dart';
 import 'package:true_app/features/home/presentation/portada/portada_poster_card.dart';
 import 'package:true_app/features/home/presentation/portada/portada_unsolved_row.dart';
 
@@ -358,6 +364,106 @@ Future<PosterCallbacks> pumpPortadaPoster(
           dimmed: dimmed,
           onOpen: () => callbacks.opened.add(crimeCase),
           onHoverChanged: (_) {},
+        ),
+      ),
+    ),
+  );
+  return callbacks;
+}
+
+class MapInviteCallbacks {
+  int openMapTaps = 0;
+}
+
+Future<MapInviteCallbacks> pumpPortadaMapInvite(
+  WidgetTester tester, {
+  List<TrueCrimeCase>? cases,
+  Size size = desktopSize,
+  bool reduceMotion = false,
+  double textScale = 1,
+}) async {
+  await setSurface(tester, size);
+  final callbacks = MapInviteCallbacks();
+  await tester.pumpWidget(
+    _portadaHost(
+      size,
+      reduceMotion,
+      textScale,
+      SizedBox(
+        width: size.width,
+        child: PortadaMapInvite(
+          cases: cases ?? portadaAllCases,
+          onOpenMap: () => callbacks.openMapTaps++,
+        ),
+      ),
+    ),
+  );
+  return callbacks;
+}
+
+Future<void> pumpPortadaFooter(
+  WidgetTester tester, {
+  Size size = desktopSize,
+  double textScale = 1,
+}) async {
+  await setSurface(tester, size);
+  await tester.pumpWidget(
+    _portadaHost(
+      size,
+      false,
+      textScale,
+      SizedBox(width: size.width, child: const PortadaFooter()),
+    ),
+  );
+}
+
+AsyncValue<List<TrueCrimeCase>> catalogError() =>
+    AsyncError<List<TrueCrimeCase>>(Exception('sin red'), StackTrace.empty);
+
+// Recarga en curso tras un primer intento: conserva el resultado anterior, de
+// modo que `isLoading` es cierto a la vez que `hasError` (o `hasValue`).
+Future<AsyncValue<List<TrueCrimeCase>>> catalogReloading({
+  required bool previousFailed,
+}) async {
+  var attempts = 0;
+  final provider = FutureProvider<List<TrueCrimeCase>>((ref) {
+    attempts++;
+    if (attempts > 1) return Completer<List<TrueCrimeCase>>().future;
+    return previousFailed
+        ? Future<List<TrueCrimeCase>>.error(Exception('sin red'))
+        : Future.value(portadaCases);
+  });
+  final container = ProviderContainer(retry: (_, _) => null);
+
+  container.listen(provider, (_, _) {});
+  await container.read(provider.future).then((_) {}, onError: (_) {});
+  container.invalidate(provider);
+  final snapshot = container.read(provider);
+  container.dispose();
+  return snapshot;
+}
+
+class CatalogStatusCallbacks {
+  int retries = 0;
+}
+
+Future<CatalogStatusCallbacks> pumpPortadaCatalogStatus(
+  WidgetTester tester,
+  AsyncValue<List<TrueCrimeCase>> catalog, {
+  Size size = desktopSize,
+}) async {
+  await setSurface(tester, size);
+  final callbacks = CatalogStatusCallbacks();
+  await tester.pumpWidget(
+    _portadaHost(
+      size,
+      false,
+      1,
+      SizedBox(
+        width: size.width,
+        child: PortadaCatalogStatus(
+          catalog: catalog,
+          onRetry: () => callbacks.retries++,
         ),
       ),
     ),
