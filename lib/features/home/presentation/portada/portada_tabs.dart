@@ -8,6 +8,8 @@ import 'portada_hero_keys.dart';
 import 'portada_hero_layout.dart';
 
 /// Pestañas del carrusel: nombre del caso y barra que se rellena con el reloj.
+///
+/// En modo compacto (móvil) solo quedan las barras, como las historias del prototipo.
 class PortadaTabs extends StatelessWidget {
   const PortadaTabs({
     super.key,
@@ -16,6 +18,7 @@ class PortadaTabs extends StatelessWidget {
     required this.progress,
     required this.reduceMotion,
     required this.onSelect,
+    this.compact = false,
   });
 
   final List<TrueCrimeCase> featured;
@@ -25,11 +28,12 @@ class PortadaTabs extends StatelessWidget {
   /// Sin reloj: la pestaña activa se marca con la barra llena.
   final bool reduceMotion;
   final ValueChanged<int> onSelect;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Row(
-      spacing: DsSpacing.s10,
+      spacing: compact ? PortadaLayout.compactTabGap : PortadaLayout.tabGap,
       children: [
         for (var i = 0; i < featured.length; i++)
           Expanded(
@@ -39,6 +43,7 @@ class PortadaTabs extends StatelessWidget {
               active: i == activeIndex,
               progress: progress,
               reduceMotion: reduceMotion,
+              compact: compact,
               onSelect: () => onSelect(i),
             ),
           ),
@@ -54,6 +59,7 @@ class _PortadaTab extends StatelessWidget {
     required this.active,
     required this.progress,
     required this.reduceMotion,
+    required this.compact,
     required this.onSelect,
   });
 
@@ -62,6 +68,7 @@ class _PortadaTab extends StatelessWidget {
   final bool active;
   final ValueListenable<double> progress;
   final bool reduceMotion;
+  final bool compact;
   final VoidCallback onSelect;
 
   @override
@@ -85,22 +92,34 @@ class _PortadaTab extends StatelessWidget {
         semanticLabel: title,
         selected: active,
         inMutuallyExclusiveGroup: true,
-        builder: (context, state) => SizedBox(
-          height: PortadaLayout.tabHeight,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _TabName(index: index, title: title, active: active),
-              _TabBar(
-                index: index,
-                active: active,
-                progress: progress,
-                reduceMotion: reduceMotion,
+        builder: (context, state) => compact
+            ? SizedBox(
+                height: PortadaLayout.compactTabHeight,
+                child: Center(
+                  child: _TabBar(
+                    index: index,
+                    active: active,
+                    progress: progress,
+                    reduceMotion: reduceMotion,
+                  ),
+                ),
+              )
+            : SizedBox(
+                height: PortadaLayout.tabHeight,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _TabName(index: index, title: title, active: active),
+                    _TabBar(
+                      index: index,
+                      active: active,
+                      progress: progress,
+                      reduceMotion: reduceMotion,
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }
@@ -125,9 +144,7 @@ class _TabName extends StatelessWidget {
       fontWeight: FontWeight.w600,
     );
     return TweenAnimationBuilder<Color?>(
-      tween: ColorTween(
-        end: active ? DsColors.textStrong : DsColors.textFaint,
-      ),
+      tween: ColorTween(end: active ? DsColors.textStrong : DsColors.textFaint),
       duration: DsMotion.resolve(DsMotion.hover, reduceMotion: reduceMotion),
       curve: DsMotion.easeUi,
       builder: (context, color, _) => Text(
@@ -157,6 +174,7 @@ class _TabBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
+      key: PortadaHeroKeys.tabTrack(index),
       borderRadius: BorderRadius.circular(PortadaLayout.tabBarHeight / 2),
       child: SizedBox(
         height: PortadaLayout.tabBarHeight,
@@ -181,11 +199,13 @@ class _TabBar extends StatelessWidget {
   }
 
   // El Align suelta la restricción apretada del Stack: sin él la barra mediría siempre el ancho completo.
+  // heightFactor 1 es necesario: un ColoredBox sin hijo mide 0 de alto con restricciones sueltas.
   Widget _fill(double fraction) => Align(
     alignment: Alignment.centerLeft,
     child: FractionallySizedBox(
       key: PortadaHeroKeys.tabFill(index),
       widthFactor: fraction.clamp(0, 1),
+      heightFactor: 1,
       child: const ColoredBox(color: DsColors.textStrong),
     ),
   );

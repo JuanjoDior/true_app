@@ -3,7 +3,8 @@ import 'package:flutter/widgets.dart';
 import '../../../../core/design/design.dart';
 import 'portada_hero_layout.dart';
 
-/// Globo en modo portada sobre el lienzo de 1440 px, escalado al ancho disponible.
+/// Globo en modo portada: la cámara de portada sobre su lienzo de diseño,
+/// trasladada y escalada para que la esfera caiga en el sitio que fija el héroe.
 class PortadaGlobeLayer extends StatelessWidget {
   const PortadaGlobeLayer({
     super.key,
@@ -22,20 +23,23 @@ class PortadaGlobeLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final scale = constraints.maxWidth / PortadaLayout.canvasWidth;
-        if (scale <= 0 || !constraints.hasBoundedHeight) {
+        if (!constraints.hasBoundedWidth || !constraints.hasBoundedHeight) {
           return const SizedBox.shrink();
         }
+        final placement = PortadaLayout.globePlacement(constraints.biggest);
+        final scale = placement.radius / (DsGlobeMath.radius * camera.scale);
+        if (scale <= 0) return const SizedBox.shrink();
+        final offset = placement.center - camera.center * scale;
         return ClipRect(
-          child: Transform.scale(
-            scale: scale,
+          child: OverflowBox(
             alignment: Alignment.topLeft,
-            child: OverflowBox(
-              alignment: Alignment.topLeft,
-              minWidth: PortadaLayout.canvasWidth,
-              maxWidth: PortadaLayout.canvasWidth,
-              minHeight: constraints.maxHeight / scale,
-              maxHeight: constraints.maxHeight / scale,
+            minWidth: PortadaLayout.globeCanvasWidth,
+            maxWidth: PortadaLayout.globeCanvasWidth,
+            minHeight: PortadaLayout.globeCanvasHeight,
+            maxHeight: PortadaLayout.globeCanvasHeight,
+            child: Transform(
+              transform: Matrix4.translationValues(offset.dx, offset.dy, 0)
+                ..scaleByDouble(scale, scale, 1, 1),
               child: DsGlobeScene(
                 markers: markers,
                 camera: camera,

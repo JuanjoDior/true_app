@@ -302,8 +302,10 @@ void main() {
     test('el parpadeo cambia la opacidad y la versión estática no', () {
       double alphaAt(Animation<double>? twinkle) {
         final canvas = TestRecordingCanvas();
-        PortadaStarsPainter(stars: PortadaStarField.stars, twinkle: twinkle)
-            .paint(canvas, const Size(1440, 900));
+        PortadaStarsPainter(
+          stars: PortadaStarField.stars,
+          twinkle: twinkle,
+        ).paint(canvas, const Size(1440, 900));
         final circle = canvas.invocations.firstWhere(
           (i) => i.invocation.memberName == #drawCircle,
         );
@@ -384,13 +386,14 @@ void main() {
     ) async {
       await pumpPortadaHero(tester, reduceMotion: true);
 
-      expect(tabFill(tester, 0), 1);
+      // Con el hueco de 14 px el ancho de pestaña ya no es entero: se compara con tolerancia.
+      expect(tabFill(tester, 0), closeTo(1, 1e-9));
       expect(tabFill(tester, 1), 0);
 
       await tapTab(tester, 1);
 
       expect(tabFill(tester, 0), 0);
-      expect(tabFill(tester, 1), 1);
+      expect(tabFill(tester, 1), closeTo(1, 1e-9));
     });
 
     testWidgets('pulsar una pestaña no deja timers pendientes', (tester) async {

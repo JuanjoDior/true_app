@@ -164,11 +164,37 @@ class _PortadaHeroState extends State<PortadaHero>
     }
   }
 
+  Widget _tabs(List<TrueCrimeCase> featured, {required bool compact}) {
+    final tabs = PortadaTabs(
+      featured: featured,
+      activeIndex: _carousel.index,
+      progress: _carousel.progress,
+      reduceMotion: _reduceMotion,
+      compact: compact,
+      onSelect: _carousel.select,
+    );
+    if (compact) {
+      return Positioned(
+        left: PortadaLayout.compactTabsMargin,
+        right: PortadaLayout.compactTabsMargin,
+        top: PortadaLayout.compactTabsTop,
+        child: tabs,
+      );
+    }
+    return Positioned(
+      left: PortadaLayout.margin,
+      bottom: PortadaLayout.tabsBottom,
+      width: PortadaLayout.tabsWidth,
+      child: tabs,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final featured = widget.featured;
     final active = _activeCase;
     final camera = _camera;
+    final compact = MediaQuery.sizeOf(context).width < DsBreakpoints.desktop;
 
     return MouseRegion(
       onEnter: (_) => _setHovered(true),
@@ -208,23 +234,7 @@ class _PortadaHeroState extends State<PortadaHero>
                     onExplore: () => widget.onExploreCase(featured[i]),
                   ),
                 ),
-            if (active != null)
-              Positioned(
-                left: PortadaLayout.margin,
-                bottom: PortadaLayout.tabsBottom,
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(
-                    maxWidth: PortadaLayout.tabsWidth,
-                  ),
-                  child: PortadaTabs(
-                    featured: featured,
-                    activeIndex: _carousel.index,
-                    progress: _carousel.progress,
-                    reduceMotion: _reduceMotion,
-                    onSelect: _carousel.select,
-                  ),
-                ),
-              ),
+            if (active != null) _tabs(featured, compact: compact),
           ],
         ),
       ),

@@ -9,6 +9,7 @@ import 'package:true_app/features/cases/presentation/case_category_presentation.
 import 'package:true_app/features/cases/presentation/design/case_design_mapping.dart';
 import 'package:true_app/features/home/presentation/portada/portada_hero_background.dart';
 import 'package:true_app/features/home/presentation/portada/portada_hero_keys.dart';
+import 'package:true_app/features/home/presentation/portada/portada_hero_layout.dart';
 
 import 'test_support/portada_test_support.dart';
 
@@ -73,31 +74,34 @@ void main() {
       expect(title.style!.fontFamily, DsFontFamilies.display);
       expect(title.style!.fontSize, 88);
       expect(title.style!.height, 0.96);
-      expect(tester.getTopLeft(find.byKey(PortadaHeroKeys.title('zodiac'))).dx,
-          80);
-    });
-
-    testWidgets('resumen 18/1,6, máx. 540 px y 4 líneas con puntos suspensivos', (
-      tester,
-    ) async {
-      final long = portadaCase(
-        id: 'long',
-        title: 'Caso con resumen largo',
-        summary: List.filled(60, 'palabra').join(' '),
+      expect(
+        tester.getTopLeft(find.byKey(PortadaHeroKeys.title('zodiac'))).dx,
+        80,
       );
-      await pumpPortadaHero(tester, featured: [long]);
-
-      final finder = find.byKey(PortadaHeroKeys.summary('long'));
-      final summary = tester.widget<Text>(finder);
-      expect(summary.style!.fontSize, 18);
-      expect(summary.style!.height, 1.6);
-      expect(summary.maxLines, 4);
-      expect(summary.overflow, TextOverflow.ellipsis);
-      expect(tester.getSize(finder).width, lessThanOrEqualTo(540));
-      // El motor redondea cada línea (28,8 → 29 px): se comprueba que no
-      // aparezca una quinta línea, no la altura exacta.
-      expect(tester.getSize(finder).height, lessThan(5 * 18 * 1.6));
     });
+
+    testWidgets(
+      'resumen 18/1,6, máx. 540 px y 4 líneas con puntos suspensivos',
+      (tester) async {
+        final long = portadaCase(
+          id: 'long',
+          title: 'Caso con resumen largo',
+          summary: List.filled(60, 'palabra').join(' '),
+        );
+        await pumpPortadaHero(tester, featured: [long]);
+
+        final finder = find.byKey(PortadaHeroKeys.summary('long'));
+        final summary = tester.widget<Text>(finder);
+        expect(summary.style!.fontSize, 18);
+        expect(summary.style!.height, 1.6);
+        expect(summary.maxLines, 4);
+        expect(summary.overflow, TextOverflow.ellipsis);
+        expect(tester.getSize(finder).width, lessThanOrEqualTo(540));
+        // El motor redondea cada línea (28,8 → 29 px): se comprueba que no
+        // aparezca una quinta línea, no la altura exacta.
+        expect(tester.getSize(finder).height, lessThan(5 * 18 * 1.6));
+      },
+    );
 
     testWidgets('el año fantasma de 460 px queda fuera de la semántica', (
       tester,
@@ -332,25 +336,19 @@ void main() {
     });
 
     for (final size in _sizes) {
-      testWidgets('el lienzo de 1440 px se escala al ancho ${size.width}', (
+      testWidgets('la esfera cabe entera en el héroe de ${size.width.toInt()}', (
         tester,
       ) async {
         await pumpPortadaHero(tester, size: size);
 
-        final globe = find.byType(DsGlobeScene);
-        expect(tester.getSize(globe).width, 1440);
-        final scale = size.width / 1440;
-        expect(
-          tester.getBottomRight(globe).dx - tester.getTopLeft(globe).dx,
-          closeTo(size.width, 1e-6),
-        );
-        expect(
-          tester.getBottomRight(globe).dy - tester.getTopLeft(globe).dy,
-          closeTo(size.height, 1e-6),
-        );
-        final center = tester.getTopLeft(globe) + const Offset(1010, 520) * scale;
-        expect(center.dx, closeTo(1010 * scale, 1e-6));
-        expect(center.dy, closeTo(520 * scale, 1e-6));
+        final globe = globeCircle(tester);
+        final expected = PortadaLayout.globePlacement(size);
+        expect(globe.center.dx, closeTo(expected.center.dx, 1e-6));
+        expect(globe.center.dy, closeTo(expected.center.dy, 1e-6));
+        expect(globe.radius, closeTo(expected.radius, 1e-6));
+        // La cámara de portada no cambia: solo se traslada y escala la escena.
+        expect(globeScene(tester).camera.center, const Offset(1010, 520));
+        expect(globeScene(tester).camera.scale, 1);
       });
     }
   });
@@ -373,7 +371,9 @@ void main() {
       expect(tester.getSize(find.byKey(PortadaHeroKeys.veil)).width, 980);
       expect(tester.getTopLeft(find.byKey(PortadaHeroKeys.veil)).dx, 0);
       final decoration =
-          tester.widget<DecoratedBox>(find.byKey(PortadaHeroKeys.veil)).decoration
+          tester
+                  .widget<DecoratedBox>(find.byKey(PortadaHeroKeys.veil))
+                  .decoration
               as BoxDecoration;
       final gradient = decoration.gradient! as LinearGradient;
       expect(gradient.colors.first, DsColors.bgBase.withValues(alpha: 0.95));
@@ -433,7 +433,8 @@ void main() {
   group('sin desbordes', () {
     final longTitle = portadaCase(
       id: 'long',
-      title: 'Un título larguísimo que ocupa muchas líneas del héroe '
+      title:
+          'Un título larguísimo que ocupa muchas líneas del héroe '
           'para comprobar que nada desborda en ningún tamaño',
       city: 'Una localidad con un nombre extraordinariamente largo',
       country: 'País de nombre también muy largo',
@@ -459,8 +460,10 @@ void main() {
           expect(hero.contains(content.topLeft), isTrue);
           expect(content.bottom, lessThanOrEqualTo(size.height));
           for (var i = 0; i < 6; i++) {
-            expect(tester.getRect(find.byKey(PortadaHeroKeys.tab(i))).bottom,
-                lessThanOrEqualTo(size.height));
+            expect(
+              tester.getRect(find.byKey(PortadaHeroKeys.tab(i))).bottom,
+              lessThanOrEqualTo(size.height),
+            );
           }
         });
       }

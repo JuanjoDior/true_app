@@ -1,9 +1,16 @@
 import 'dart:async';
 
 import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart' show MaterialApp;
 import 'package:flutter/widgets.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:true_app/app/navigation/app_navigation.dart';
+import 'package:true_app/app/navigation/app_navigation_scope.dart';
+import 'package:true_app/features/cases/application/cases_providers.dart';
+import 'package:true_app/features/cases/application/intake_session_providers.dart';
+import 'package:true_app/features/cases/data/cases_repository.dart';
+import 'package:true_app/features/home/presentation/home_page.dart';
 import 'package:true_app/core/design/design.dart';
 import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/domain/case_photo.dart';
@@ -16,6 +23,9 @@ import 'package:true_app/features/home/presentation/portada/portada_hero_keys.da
 import 'package:true_app/features/home/presentation/portada/portada_map_invite.dart';
 import 'package:true_app/features/home/presentation/portada/portada_poster_card.dart';
 import 'package:true_app/features/home/presentation/portada/portada_unsolved_row.dart';
+
+import 'fake_intake_auth.dart';
+import 'sample_cases.dart';
 
 const Size laptopSize = Size(1280, 720);
 const Size desktopSize = Size(1440, 900);
@@ -228,6 +238,20 @@ double tabFill(WidgetTester tester, int index) {
 
 DsGlobeScene globeScene(WidgetTester tester) =>
     tester.widget<DsGlobeScene>(find.byType(DsGlobeScene));
+
+// Círculo del globo en coordenadas globales, leído de la cámara y de la transformación de la escena.
+({Offset center, double radius}) globeCircle(WidgetTester tester) {
+  final finder = find.byType(DsGlobeScene);
+  final scene = tester.widget<DsGlobeScene>(finder);
+  final topLeft = tester.getTopLeft(finder);
+  final scale =
+      (tester.getBottomRight(finder).dx - topLeft.dx) /
+      tester.getSize(finder).width;
+  return (
+    center: topLeft + scene.camera.center * scale,
+    radius: DsGlobeMath.radius * scene.camera.scale * scale,
+  );
+}
 
 // Cámara de portada esperada para un caso, partiendo de `currentGy`.
 DsGlobeCamera expectedCamera(TrueCrimeCase crimeCase, double currentGy) =>
@@ -478,4 +502,60 @@ Future<TestGesture> hoverOver(WidgetTester tester, Finder target) async {
   await gesture.moveTo(tester.getCenter(target));
   await tester.pump();
   return gesture;
+}
+
+class _SilentNavigation implements AppNavigation {
+  @override
+  void openCase(String slug) {}
+
+  @override
+  void openMap() {}
+
+  @override
+  void showSituationRoom() {}
+}
+
+class _FutureRepository implements CasesRepository {
+  _FutureRepository(this._cases);
+
+  final Future<List<TrueCrimeCase>> _cases;
+
+  @override
+  Future<List<TrueCrimeCase>> getCases() => _cases;
+}
+
+// Portada completa con el catálogo llegando de forma asíncrona, como en la app real.
+Future<void> pumpRealShell(
+  WidgetTester tester,
+  Size size, {
+  Duration catalogDelay = const Duration(milliseconds: 300),
+  Duration settle = const Duration(milliseconds: 2500),
+}) async {
+  await setSurface(tester, size);
+  final container = ProviderContainer(
+    overrides: [
+      casesRepositoryProvider.overrideWithValue(
+        _FutureRepository(
+          Future<List<TrueCrimeCase>>.delayed(catalogDelay, () => sampleCases),
+        ),
+      ),
+      intakeAuthProvider.overrideWithValue(FakeIntakeAuth.signedIn()),
+    ],
+    retry: (_, _) => null,
+  );
+  addTearDown(container.dispose);
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        theme: DsTheme.build(),
+        home: AppNavigationScope(
+          navigation: _SilentNavigation(),
+          child: const TrueCrimeHomePage(),
+        ),
+      ),
+    ),
+  );
+  await pumpStep(tester, catalogDelay + settle);
+  addTearDown(() => tester.pumpWidget(const SizedBox.shrink()));
 }

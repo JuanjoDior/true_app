@@ -14,5 +14,6 @@ abstract final class PortadaHeroKeys {
   static Key coords(String caseId) => ValueKey('portada-coords-$caseId');
   static Key tab(int index) => ValueKey('portada-tab-$index');
   static Key tabName(int index) => ValueKey('portada-tab-name-$index');
+  static Key tabTrack(int index) => ValueKey('portada-tab-track-$index');
   static Key tabFill(int index) => ValueKey('portada-tab-fill-$index');
 }
