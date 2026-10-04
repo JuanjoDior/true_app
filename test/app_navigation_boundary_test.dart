@@ -12,7 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 /// el código no puede llegar a esos símbolos.
 ///
 /// El motivo de la regla, resumido del diseño: `workspaceProvider` ya tiene un
-/// dueño (`situation_nav_rail.dart`, que lo pone en intake sin cambiar de
+/// dueño (la carcasa de la portada, que lo pone en intake sin cambiar de
 /// ruta). Un router que lo reescriba en cada ruta raíz crea un segundo dueño, y
 /// dos dueños acaban discrepando sobre qué enseña `/`. Además, escribirlo desde
 /// `setNewRoutePath` o desde el `build` del delegate es exactamente el momento

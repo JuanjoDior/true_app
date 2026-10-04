@@ -171,7 +171,7 @@ final intakeDraftListOpenProvider = StateProvider<bool>((ref) => false);
 final intakePreviewOpenProvider = StateProvider<bool>((ref) => false);
 
 /// Borrador actualmente en edición, resuelto a partir de
-/// [editingDraftIdProvider] (mismo patrón que `selectedCaseProvider`).
+/// [editingDraftIdProvider].
 final editingDraftProvider = Provider<CaseDraft?>((ref) {
   final draftId = ref.watch(editingDraftIdProvider);
   if (draftId == null) {

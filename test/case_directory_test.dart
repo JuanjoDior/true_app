@@ -3,13 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/app/true_crime_app.dart';
 import 'package:true_app/core/config/map_config.dart';
-import 'package:true_app/core/layout/breakpoints.dart';
+import 'package:true_app/core/design/design.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
 import 'package:true_app/features/cases/data/cases_repository.dart';
 import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
 import 'package:true_app/features/cases/presentation/case_detail_page.dart';
+import 'package:true_app/features/home/presentation/portada/portada_shell_keys.dart';
 
 /// El directorio público de expedientes [spec: published-case-directory].
 ///
@@ -63,21 +64,26 @@ final _catalog = [
   _crimeCase(slug: 'antiguo', year: 1948, title: 'El caso antiguo'),
 ];
 
-/// Bombeo acotado: la Sala de Situación nunca se queda quieta, así que
-/// `pumpAndSettle` se agota en lugar de converger.
+/// Bombeo acotado: la portada nunca se queda quieta (carrusel y globo), así
+/// que `pumpAndSettle` se agota en lugar de converger.
 Future<void> _settle(WidgetTester tester) async {
   await tester.pump();
   await tester.pump(const Duration(milliseconds: 450));
 }
 
-/// Las tres topologías reales del diseño, no dos.
+/// Por debajo de `DsBreakpoints.desktop` el acceso es la barra inferior; a
+/// partir de ahí, el enlace de la barra superior.
 const _mobile = Size(500, 900);
-const _desktopNoRail = Size(1000, 900);
-const _desktopWithRail = Size(1300, 900);
+const _tablet = Size(1000, 900);
+const _desktop = Size(1300, 900);
+
+Key _archiveEntryKey(Size size) => size.width < DsBreakpoints.desktop
+    ? PortadaShellKeys.bottomBarArchive
+    : PortadaShellKeys.topBarArchive;
 
 Future<ProviderContainer> _pumpHome(
   WidgetTester tester, {
-  Size size = _desktopWithRail,
+  Size size = _desktop,
   CasesRepository repository = const _StubRepository([]),
 }) async {
   tester.view.physicalSize = size;
@@ -139,22 +145,24 @@ Future<void> _dragUntilFound(
   }
 }
 
+/// Texto dentro de la hoja del directorio: la portada también muestra títulos.
+Finder _inDirectory(String text) => find.descendant(
+  of: find.byKey(const Key('case-directory')),
+  matching: find.text(text),
+);
+
 Future<void> _openDirectory(WidgetTester tester) async {
-  await tester.tap(find.byKey(const Key('open-case-directory')));
+  final size = tester.view.physicalSize / tester.view.devicePixelRatio;
+  await tester.tap(find.byKey(_archiveEntryKey(size)));
   await _settle(tester);
 }
 
 void main() {
-  group('el punto de entrada existe en las tres topologías', () {
-    // El rail sólo aparece a partir de 1100, así que un directorio que
-    // dependiera de él sería inalcanzable en dos de las tres.
+  group('el punto de entrada existe en cada ancho', () {
     for (final (name, size) in [
-      ('mobile below ${Breakpoints.sidePanel.toInt()}', _mobile),
-      (
-        'desktop without rail below ${Breakpoints.navRail.toInt()}',
-        _desktopNoRail,
-      ),
-      ('desktop with rail', _desktopWithRail),
+      ('mobile', _mobile),
+      ('tablet below ${DsBreakpoints.desktop.toInt()}', _tablet),
+      ('desktop', _desktop),
     ]) {
       testWidgets('$name exposes a directory entry point', (tester) async {
         await _pumpHome(
@@ -163,7 +171,7 @@ void main() {
           repository: _StubRepository(_catalog),
         );
 
-        expect(find.byKey(const Key('open-case-directory')), findsOneWidget);
+        expect(find.byKey(_archiveEntryKey(size)), findsOneWidget);
       });
 
       testWidgets('$name can open the directory', (tester) async {
@@ -186,7 +194,7 @@ void main() {
 
       await _openDirectory(tester);
 
-      expect(find.text('El caso reciente'), findsOneWidget);
+      expect(_inDirectory('El caso reciente'), findsOneWidget);
     });
 
     testWidgets('it lists them most recent first', (tester) async {
@@ -242,7 +250,7 @@ void main() {
       await _pumpHome(tester, repository: _StubRepository(_catalog));
       await _openDirectory(tester);
 
-      await tester.tap(find.text('El caso antiguo'));
+      await tester.tap(_inDirectory('El caso antiguo'));
       await _settle(tester);
 
       expect(find.byType(CaseDetailPage), findsOneWidget);
@@ -252,18 +260,24 @@ void main() {
       await _pumpHome(tester, repository: _StubRepository(_catalog));
       await _openDirectory(tester);
 
-      await tester.tap(find.text('El caso antiguo'));
+      await tester.tap(_inDirectory('El caso antiguo'));
       await _settle(tester);
 
       // Por slug: la dirección pública del caso, no su id interno.
-      expect(find.text('El caso antiguo'), findsOneWidget);
+      expect(
+        find.descendant(
+          of: find.byType(CaseDetailPage),
+          matching: find.text('El caso antiguo'),
+        ),
+        findsWidgets,
+      );
     });
 
     testWidgets('the directory closes when a case is opened', (tester) async {
       await _pumpHome(tester, repository: _StubRepository(_catalog));
       await _openDirectory(tester);
 
-      await tester.tap(find.text('El caso antiguo'));
+      await tester.tap(_inDirectory('El caso antiguo'));
       await _settle(tester);
 
       expect(find.byKey(const Key('case-directory')), findsNothing);
@@ -279,9 +293,7 @@ void main() {
       expect(find.byKey(const Key('case-directory')), findsNothing);
     });
 
-    testWidgets('closing it leaves the Situation Room where it was', (
-      tester,
-    ) async {
+    testWidgets('closing it leaves the portada where it was', (tester) async {
       await _pumpHome(tester, repository: _StubRepository(_catalog));
       await _openDirectory(tester);
 
@@ -328,7 +340,7 @@ void main() {
       );
       await _openDirectory(tester);
 
-      await tester.tap(find.text('El caso antiguo'));
+      await tester.tap(_inDirectory('El caso antiguo'));
       await _settle(tester);
 
       // La ruta y la selección del mapa son estados separados [diseño §7.4].
@@ -401,7 +413,7 @@ void main() {
       await _openDirectory(tester);
 
       // El más antiguo: con orden descendente por año, el último de la lista.
-      final last = find.text('Caso 0');
+      final last = _inDirectory('Caso 0');
       // Precondición honesta AQUÍ y sólo aquí: `ListView.builder` no ha
       // construido los elementos lejanos, así que su ausencia significa algo.
       // En un `SingleChildScrollView` esta misma línea sería una aserción que

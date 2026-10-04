@@ -12,14 +12,6 @@ import 'case_search_service.dart';
 /// Caso relacionado: el expediente vinculado y la etiqueta del vínculo.
 typedef RelatedCase = ({TrueCrimeCase crimeCase, String relation});
 
-/// Estadísticas agregadas del archivo para la cabecera.
-typedef ArchiveStats = ({
-  int documented,
-  int unsolved,
-  int yearsCovered,
-  int sources,
-});
-
 final casesRepositoryProvider = Provider<CasesRepository>((ref) {
   return const SupabaseCasesRepository();
 });
@@ -133,22 +125,6 @@ final caseBySlugProvider = Provider.family<AsyncValue<TrueCrimeCase?>, String>((
   });
 });
 
-final selectedCaseProvider = Provider<AsyncValue<TrueCrimeCase?>>((ref) {
-  final selectedCaseId = ref.watch(selectedCaseIdProvider);
-  final casesAsync = ref.watch(casesProvider);
-  return casesAsync.whenData((cases) {
-    if (selectedCaseId == null) {
-      return null;
-    }
-    for (final crimeCase in cases) {
-      if (crimeCase.id == selectedCaseId) {
-        return crimeCase;
-      }
-    }
-    return null;
-  });
-});
-
 /// Capa relacional curada del archivo (conexiones entre casos).
 final caseConnectionsProvider = Provider<List<CaseConnection>>((ref) {
   return kCaseConnections;
@@ -251,31 +227,3 @@ int _compareRelevance(TrueCrimeCase a, TrueCrimeCase b) {
   }
   return aRank.compareTo(bRank);
 }
-
-/// Estadísticas del archivo mostradas en la cabecera.
-final archiveStatsProvider = Provider<ArchiveStats>((ref) {
-  final cases = ref.watch(casesProvider).value ?? const <TrueCrimeCase>[];
-  if (cases.isEmpty) {
-    return (documented: 0, unsolved: 0, yearsCovered: 0, sources: 0);
-  }
-
-  var unsolved = 0;
-  var sources = 0;
-  var minYear = cases.first.year;
-  var maxYear = cases.first.year;
-  for (final crimeCase in cases) {
-    if (crimeCase.status == CaseStatus.open) {
-      unsolved++;
-    }
-    sources += crimeCase.sources.length;
-    if (crimeCase.year < minYear) minYear = crimeCase.year;
-    if (crimeCase.year > maxYear) maxYear = crimeCase.year;
-  }
-
-  return (
-    documented: cases.length,
-    unsolved: unsolved,
-    yearsCovered: maxYear - minYear,
-    sources: sources,
-  );
-});
