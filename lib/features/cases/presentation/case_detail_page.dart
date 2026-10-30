@@ -122,7 +122,7 @@ class _ReturnBar extends StatelessWidget {
           onPressed: onReturn,
           icon: const Icon(Icons.arrow_back, size: 14),
           label: Text(
-            'Volver al archivo',
+            'Volver a la portada',
             style: SituationStyles.mono(
               size: 10,
               weight: FontWeight.w600,

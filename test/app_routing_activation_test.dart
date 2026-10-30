@@ -188,6 +188,22 @@ void main() {
       expect(find.byKey(const Key('route-not-found')), findsOneWidget);
     });
 
+    testWidgets('the not-found page names the portada as the way back', (
+      tester,
+    ) async {
+      await _pumpApp(tester, location: '/ajustes');
+
+      // El botón lleva a la raíz, que es la portada, no el archivo.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('route-not-found-return')),
+          matching: find.text('Volver a la portada'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Volver al archivo'), findsNothing);
+    });
+
     testWidgets('an unknown route is not a missing case', (tester) async {
       // Sintaxis desconocida y caso inexistente son cosas distintas.
       await _pumpApp(tester, location: '/ajustes');

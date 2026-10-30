@@ -55,7 +55,7 @@ class RouteNotFoundPage extends StatelessWidget {
                   key: const Key('route-not-found-return'),
                   onPressed: navigation.showSituationRoom,
                   icon: const Icon(Icons.arrow_back, size: 14),
-                  label: const Text('Volver al archivo'),
+                  label: const Text('Volver a la portada'),
                 ),
               ],
             ),

@@ -232,6 +232,20 @@ void main() {
 
       expect(navigation.returns, 1);
     });
+
+    testWidgets('names the portada as the way back', (tester) async {
+      await _pumpDetail(tester, slug: 'no-existe');
+
+      // Volver lleva a la raíz, que es la portada, no el archivo.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('case-detail-return')),
+          matching: find.text('Volver a la portada'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Volver al archivo'), findsNothing);
+    });
   });
 
   group('caso encontrado', () {
