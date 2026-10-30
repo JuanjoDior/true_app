@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:true_app/core/config/map_config.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
 import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/domain/case_connection.dart';
 import 'package:true_app/features/cases/domain/case_source.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
-import 'package:true_app/features/home/presentation/widgets/situation/case_dossier_content.dart';
 import 'package:true_app/features/home/presentation/widgets/situation/case_dossier_panel.dart';
 import 'package:true_app/features/home/presentation/widgets/situation/dossier_source_group.dart';
 
@@ -18,9 +16,9 @@ import 'test_support/sample_cases.dart';
 ///
 /// Cada parámetro nuevo de `CaseDossierPanel` es OPCIONAL y su omisión deja el
 /// comportamiento de hoy intacto. Ésa es la única razón por la que la
-/// extracción se pudo partir en tres: si `mode` o `relatedCases` fuesen
-/// obligatorios, los seis call sites tendrían que cambiar en la misma edición
-/// que los introduce y no quedaría ningún estado intermedio que compile.
+/// extracción se pudo partir en tres: si `relatedCases` fuese obligatorio, los
+/// call sites tendrían que cambiar en la misma edición que lo introduce y no
+/// quedaría ningún estado intermedio que compile.
 
 TrueCrimeCase _crimeCase({
   String id = 'caso-faro',
@@ -94,36 +92,6 @@ void main() {
       expect(find.text('El caso de la mina'), findsOneWidget);
     });
 
-    testWidgets('an unconfigured panel still clears the map selection', (
-      tester,
-    ) async {
-      final container = await _pumpPanel(
-        tester,
-        CaseDossierPanel(crimeCase: _crimeCase()),
-      );
-      container.read(selectedCaseIdProvider.notifier).state = 'caso-faro';
-
-      await tester.tap(find.text('VOLVER AL MAPA'));
-      await tester.pump();
-
-      expect(container.read(selectedCaseIdProvider), isNull);
-    });
-
-    testWidgets('an unconfigured panel still bumps the recenter tick', (
-      tester,
-    ) async {
-      final container = await _pumpPanel(
-        tester,
-        CaseDossierPanel(crimeCase: _crimeCase()),
-      );
-      final before = container.read(mapRecenterTickProvider);
-
-      await tester.tap(find.text('Centrar'));
-      await tester.pump();
-
-      expect(container.read(mapRecenterTickProvider), before + 1);
-    });
-
     testWidgets('an unconfigured panel still selects a related case', (
       tester,
     ) async {
@@ -191,81 +159,26 @@ void main() {
       expect(find.text('CASOS RELACIONADOS'), findsNothing);
     });
 
-    testWidgets('preview mode suppresses the map chrome', (tester) async {
-      await _pumpPanel(
-        tester,
-        CaseDossierPanel(
-          crimeCase: _crimeCase(),
-          mode: CaseDossierMode.preview,
-        ),
-      );
-
-      expect(find.text('VOLVER AL MAPA'), findsNothing);
-    });
-
-    testWidgets('preview mode still renders the dossier itself', (
-      tester,
-    ) async {
+    testWidgets('the panel renders the dossier itself', (tester) async {
       final crimeCase = _crimeCase();
-      await _pumpPanel(
-        tester,
-        CaseDossierPanel(crimeCase: crimeCase, mode: CaseDossierMode.preview),
-      );
+      await _pumpPanel(tester, CaseDossierPanel(crimeCase: crimeCase));
 
       expect(find.text(crimeCase.title), findsOneWidget);
     });
 
-    testWidgets('preview mode does not touch the map selection', (
+    testWidgets('rendering alone does not touch the case selection', (
       tester,
     ) async {
       final container = await _pumpPanel(
         tester,
-        CaseDossierPanel(
-          crimeCase: _crimeCase(),
-          mode: CaseDossierMode.preview,
-        ),
+        CaseDossierPanel(crimeCase: _crimeCase()),
       );
       container.read(selectedCaseIdProvider.notifier).state = 'caso-faro';
       await tester.pump();
 
-      // Sin cromo de mapa no hay forma de tocarlo, pero el test fija la
-      // consecuencia y no el mecanismo: la previsualización no escribe.
+      // El test fija la consecuencia y no el mecanismo: montar el expediente
+      // no escribe en la selección.
       expect(container.read(selectedCaseIdProvider), 'caso-faro');
-    });
-
-    testWidgets('a host callback replaces the default map write', (
-      tester,
-    ) async {
-      var called = 0;
-      final container = await _pumpPanel(
-        tester,
-        CaseDossierPanel(
-          crimeCase: _crimeCase(),
-          onReturnToMap: () => called++,
-        ),
-      );
-      container.read(selectedCaseIdProvider.notifier).state = 'caso-faro';
-
-      await tester.tap(find.text('VOLVER AL MAPA'));
-      await tester.pump();
-
-      expect(container.read(selectedCaseIdProvider), 'caso-faro');
-    });
-
-    testWidgets('that host callback is the one that runs', (tester) async {
-      var called = 0;
-      await _pumpPanel(
-        tester,
-        CaseDossierPanel(
-          crimeCase: _crimeCase(),
-          onReturnToMap: () => called++,
-        ),
-      );
-
-      await tester.tap(find.text('VOLVER AL MAPA'));
-      await tester.pump();
-
-      expect(called, 1);
     });
 
     testWidgets('source groups reach the shared renderer', (tester) async {

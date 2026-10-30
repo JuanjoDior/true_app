@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:true_app/core/config/map_config.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
 import 'package:true_app/features/cases/data/case_drafts_store.dart';
@@ -70,7 +69,7 @@ TrueCrimeCase _dossierCase({
 /// Monta el expediente con un catálogo y unas conexiones deterministas.
 ///
 /// Devuelve el contenedor para poder leer los providers que el panel escribe:
-/// la selección del mapa y el tic de recentrado son la mitad de su contrato.
+/// la selección del caso relacionado es parte de su contrato.
 Future<ProviderContainer> _pumpDossier(
   WidgetTester tester,
   TrueCrimeCase crimeCase, {
@@ -268,17 +267,7 @@ void main() {
     });
   });
 
-  group('acciones que el panel escribe en el estado del mapa', () {
-    testWidgets('going back to the map clears the selection', (tester) async {
-      final container = await _pumpDossier(tester, _dossierCase());
-      container.read(selectedCaseIdProvider.notifier).state = 'caso-faro';
-
-      await tester.tap(find.text('VOLVER AL MAPA'));
-      await tester.pump();
-
-      expect(container.read(selectedCaseIdProvider), isNull);
-    });
-
+  group('acciones que el panel escribe en el estado', () {
     testWidgets('tapping a related case selects it', (tester) async {
       final container = await _pumpDossier(
         tester,
@@ -298,15 +287,21 @@ void main() {
 
       expect(container.read(selectedCaseIdProvider), 'caso-mina');
     });
+  });
 
-    testWidgets('centering bumps the recenter tick', (tester) async {
-      final container = await _pumpDossier(tester, _dossierCase());
-      final before = container.read(mapRecenterTickProvider);
+  group('sin cromo de mapa', () {
+    testWidgets('the dossier never offers follow, share, star or recenter', (
+      tester,
+    ) async {
+      // El modo mapa se retiró: ningún expediente, ni siquiera el panel sin
+      // configurar, vuelve a ofrecer acciones que nadie usaba en producción.
+      await _pumpDossier(tester, _dossierCase());
 
-      await tester.tap(find.text('Centrar'));
-      await tester.pump();
-
-      expect(container.read(mapRecenterTickProvider), before + 1);
+      expect(find.text('Seguir el caso'), findsNothing);
+      expect(find.text('Centrar'), findsNothing);
+      expect(find.text('VOLVER AL MAPA'), findsNothing);
+      expect(find.byIcon(Icons.ios_share_rounded), findsNothing);
+      expect(find.byIcon(Icons.star_border_rounded), findsNothing);
     });
   });
 

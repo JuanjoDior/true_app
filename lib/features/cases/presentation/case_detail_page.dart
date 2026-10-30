@@ -96,9 +96,6 @@ class _Dossier extends ConsumerWidget {
           child: CaseDossierContent(
             crimeCase: crimeCase,
             relatedCases: ref.watch(relatedCasesProvider(crimeCase.id)),
-            // Sin mapa detrás: el cromo de mapa no tiene sentido en una URL
-            // pública, y volver ya lo ofrece la barra de arriba.
-            mode: CaseDossierMode.preview,
             presentation: DossierPresentation.expanded,
             // Se navega por SLUG, no por id: es la dirección pública del caso.
             onOpenRelatedCase: (related) => navigation.openCase(related.slug),

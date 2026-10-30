@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_theme.dart';
-import '../../../home/presentation/widgets/situation/case_dossier_content.dart';
 import '../../../home/presentation/widgets/situation/case_dossier_panel.dart';
 import '../../../home/presentation/widgets/situation/situation_styles.dart';
 import '../../application/case_draft_providers.dart';
@@ -34,8 +33,6 @@ class IntakePreviewPanel extends ConsumerWidget {
 
     return CaseDossierPanel(
       crimeCase: previewCase,
-      // Sin mapa detrás no hay adónde volver ni qué recentrar.
-      mode: CaseDossierMode.preview,
       // Un borrador no tiene casos relacionados: pasar la lista vacía evita
       // que el panel se ponga a derivarlos del catálogo publicado.
       relatedCases: const [],

@@ -64,9 +64,6 @@ Future<void> _pumpContent(
   WidgetTester tester, {
   TrueCrimeCase? crimeCase,
   List<RelatedCase> relatedCases = const [],
-  CaseDossierMode mode = CaseDossierMode.map,
-  VoidCallback? onReturnToMap,
-  VoidCallback? onCenterMap,
   ValueChanged<TrueCrimeCase>? onOpenRelatedCase,
   List<DossierSourceGroup>? sourceGroups,
 }) async {
@@ -80,9 +77,6 @@ Future<void> _pumpContent(
         body: CaseDossierContent(
           crimeCase: crimeCase ?? _crimeCase(),
           relatedCases: relatedCases,
-          mode: mode,
-          onReturnToMap: onReturnToMap,
-          onCenterMap: onCenterMap,
           onOpenRelatedCase: onOpenRelatedCase,
           sourceGroups: sourceGroups,
         ),
@@ -314,76 +308,16 @@ void main() {
     });
   });
 
-  group('cromo de mapa frente a previsualización', () {
-    testWidgets('map mode offers the return-to-map affordance', (tester) async {
-      await _pumpContent(tester, onReturnToMap: () {});
-
-      expect(find.text('VOLVER AL MAPA'), findsOneWidget);
-    });
-
-    testWidgets('preview mode suppresses the return-to-map affordance', (
-      tester,
-    ) async {
-      await _pumpContent(tester, mode: CaseDossierMode.preview);
-
-      expect(find.text('VOLVER AL MAPA'), findsNothing);
-    });
-
-    testWidgets('map mode offers the recenter control', (tester) async {
-      await _pumpContent(tester, onCenterMap: () {});
-
-      expect(find.text('Centrar'), findsOneWidget);
-    });
-
-    testWidgets('preview mode suppresses the recenter control', (tester) async {
-      await _pumpContent(tester, mode: CaseDossierMode.preview);
-
-      expect(find.text('Centrar'), findsNothing);
-    });
-
-    testWidgets('preview mode suppresses the follow control', (tester) async {
-      await _pumpContent(tester, mode: CaseDossierMode.preview);
-
-      expect(find.text('Seguir el caso'), findsNothing);
-    });
-
-    testWidgets('preview mode still renders the editorial identity', (
-      tester,
-    ) async {
-      // Lo que se suprime es el cromo del mapa, no el expediente. Sin este
-      // test, "preview no pinta nada" pasaría los cuatro anteriores.
+  group('identidad editorial', () {
+    testWidgets('renders the editorial identity of the case', (tester) async {
       final crimeCase = _crimeCase();
-      await _pumpContent(
-        tester,
-        crimeCase: crimeCase,
-        mode: CaseDossierMode.preview,
-      );
+      await _pumpContent(tester, crimeCase: crimeCase);
 
       expect(find.text(crimeCase.title), findsOneWidget);
     });
   });
 
   group('acciones devueltas por callback', () {
-    testWidgets('the return-to-map affordance calls back', (tester) async {
-      var called = 0;
-      await _pumpContent(tester, onReturnToMap: () => called++);
-
-      await tester.tap(find.text('VOLVER AL MAPA'));
-      await tester.pump();
-
-      expect(called, 1);
-    });
-
-    testWidgets('the recenter control calls back', (tester) async {
-      var called = 0;
-      await _pumpContent(tester, onCenterMap: () => called++);
-
-      await tester.tap(find.text('Centrar'));
-      await tester.pump();
-
-      expect(called, 1);
-    });
-
     testWidgets('a related card calls back with its own case', (tester) async {
       final other = _crimeCase(id: 'caso-mina', title: 'El caso de la mina');
       TrueCrimeCase? opened;

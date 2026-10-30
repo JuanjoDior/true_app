@@ -13,17 +13,10 @@ import '../../../../cases/presentation/case_status_presentation.dart';
 import 'dossier_source_group.dart';
 import 'situation_styles.dart';
 
-/// En qué contexto se está leyendo el expediente.
+/// Cómo se dispone el expediente.
 ///
-/// No cambia el contenido editorial, sólo el cromo que lo rodea: el modo mapa
-/// ofrece volver al mapa, seguir el caso y recentrar; la previsualización no
-/// ofrece nada de eso porque no hay mapa detrás al que volver.
-enum CaseDossierMode { map, preview }
-
-/// Cómo se dispone el expediente, que es cosa aparte de qué acciones ofrece.
-///
-/// - [compact] es el panel de siempre: cabecera fija, cuerpo con su propio
-///   scroll y pie. Exige una altura acotada, porque el cuerpo se estira para
+/// - [compact] es el panel de siempre: cabecera fija y cuerpo con su propio
+///   scroll. Exige una altura acotada, porque el cuerpo se estira para
 ///   llenarla.
 /// - [expanded] devuelve el mismo contenido en un flujo continuo, sin scroll
 ///   propio ni altura exigida, para que una página lo componga dentro del
@@ -43,10 +36,7 @@ class CaseDossierContent extends StatelessWidget {
     super.key,
     required this.crimeCase,
     required this.relatedCases,
-    required this.mode,
     this.presentation = DossierPresentation.compact,
-    this.onReturnToMap,
-    this.onCenterMap,
     this.onOpenRelatedCase,
     this.sourceGroups,
   });
@@ -56,15 +46,7 @@ class CaseDossierContent extends StatelessWidget {
   /// Casos relacionados ya resueltos por el host.
   final List<RelatedCase> relatedCases;
 
-  final CaseDossierMode mode;
-
   final DossierPresentation presentation;
-
-  /// Volver atrás desde la cabecera. Qué signifique "atrás" es del host.
-  final VoidCallback? onReturnToMap;
-
-  /// Centrar el caso en el lienzo del host.
-  final VoidCallback? onCenterMap;
 
   /// Abrir el caso relacionado que se pasa. Se entrega el caso entero, no su
   /// id, porque el host ya lo tiene delante y volver a buscarlo sería trabajo
@@ -79,8 +61,6 @@ class CaseDossierContent extends StatelessWidget {
   /// previsualización enseñe los enlaces dos veces [diseño §9.3].
   final List<DossierSourceGroup>? sourceGroups;
 
-  bool get _showsMapChrome => mode == CaseDossierMode.map;
-
   /// Los grupos que de verdad se pintan: los vacíos no dejan un encabezado
   /// huérfano detrás.
   List<DossierSourceGroup> get _visibleGroups => [
@@ -90,11 +70,7 @@ class CaseDossierContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final header = _Header(
-      crimeCase: crimeCase,
-      onReturnToMap: _showsMapChrome ? onReturnToMap : null,
-      showsMapChrome: _showsMapChrome,
-    );
+    final header = _Header(crimeCase: crimeCase);
     final body = Padding(
       padding: const EdgeInsets.fromLTRB(24, 18, 24, 18),
       child: _body(),
@@ -111,7 +87,6 @@ class CaseDossierContent extends StatelessWidget {
         children: [
           header,
           Expanded(child: SingleChildScrollView(child: body)),
-          if (_showsMapChrome) _Footer(onCenter: onCenterMap),
         ],
       ),
       DossierPresentation.expanded => Column(
@@ -205,18 +180,9 @@ class CaseDossierContent extends StatelessWidget {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({
-    required this.crimeCase,
-    required this.onReturnToMap,
-    required this.showsMapChrome,
-  });
+  const _Header({required this.crimeCase});
 
   final TrueCrimeCase crimeCase;
-  final VoidCallback? onReturnToMap;
-
-  /// Volver al mapa, destacar y compartir. Fuera del mapa no significan nada,
-  /// así que la previsualización se queda sólo con la identidad editorial.
-  final bool showsMapChrome;
 
   @override
   Widget build(BuildContext context) {
@@ -225,63 +191,6 @@ class _Header extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (showsMapChrome) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Flexible(
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: GestureDetector(
-                      onTap: onReturnToMap,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.arrow_back,
-                            size: 13,
-                            color: AppColors.textSoft,
-                          ),
-                          const SizedBox(width: 7),
-                          Flexible(
-                            child: Text(
-                              'VOLVER AL MAPA',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: SituationStyles.mono(
-                                size: 10,
-                                weight: FontWeight.w600,
-                                color: AppColors.textSoft,
-                                letterSpacing: 1,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.star_border_rounded,
-                      size: 16,
-                      color: AppColors.textMuted,
-                    ),
-                    SizedBox(width: 10),
-                    Icon(
-                      Icons.ios_share_rounded,
-                      size: 14,
-                      color: AppColors.textMuted,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-          ],
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -717,71 +626,6 @@ class _RelatedCard extends StatelessWidget {
             ),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _Footer extends StatelessWidget {
-  const _Footer({required this.onCenter});
-
-  final VoidCallback? onCenter;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-      decoration: const BoxDecoration(
-        color: AppColors.bar,
-        border: Border(top: BorderSide(color: AppColors.panelMuted)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: AppColors.gold,
-                borderRadius: BorderRadius.circular(8),
-              ),
-              alignment: Alignment.center,
-              child: Text(
-                'Seguir el caso',
-                style: SituationStyles.sans(
-                  size: 13,
-                  weight: FontWeight.w600,
-                  color: const Color(0xFF080A0E),
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 9),
-          MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: onCenter,
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.inputFill,
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppColors.border),
-                ),
-                child: Text(
-                  'Centrar',
-                  style: SituationStyles.sans(
-                    size: 13,
-                    weight: FontWeight.w600,
-                    color: AppColors.textBody,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

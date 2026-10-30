@@ -186,9 +186,9 @@ void main() {
   testWidgets('the preview shows no map chrome', (tester) async {
     await _pumpPreview(tester, const []);
 
-    // La cadena completa: IntakePreviewPanel → CaseDossierPanel(preview) →
-    // CaseDossierContent. Si algún eslabón perdiera el modo, volvería a
-    // aparecer el cromo del mapa dentro del formulario de intake.
+    // La cadena completa: IntakePreviewPanel → CaseDossierPanel →
+    // CaseDossierContent. El expediente ya no tiene cromo de mapa, así que
+    // nada de él puede aparecer dentro del formulario de intake.
     expect(find.text('VOLVER AL MAPA'), findsNothing);
   });
 
