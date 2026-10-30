@@ -14,18 +14,22 @@ class PortadaTopBar extends StatefulWidget {
   const PortadaTopBar({
     super.key,
     required this.initialQuery,
-    required this.onSubmitSearch,
     required this.onHome,
-    required this.onOpenMap,
     required this.onOpenForm,
+    this.onSubmitSearch,
+    this.onOpenMap,
     this.onOpenArchive,
   });
 
   final String initialQuery;
-  final ValueChanged<String> onSubmitSearch;
   final VoidCallback onHome;
-  final VoidCallback onOpenMap;
   final VoidCallback onOpenForm;
+
+  /// Nulo oculta el buscador, también la lupa de la versión estrecha.
+  final ValueChanged<String>? onSubmitSearch;
+
+  /// Nulo oculta el enlace «Mapa».
+  final VoidCallback? onOpenMap;
 
   /// Nulo oculta el enlace: sin navegación no hay directorio al que ir.
   final VoidCallback? onOpenArchive;
@@ -51,7 +55,7 @@ class _PortadaTopBarState extends State<PortadaTopBar> {
     super.dispose();
   }
 
-  void _submit(String value) => widget.onSubmitSearch(value.trim());
+  void _submit(String value) => widget.onSubmitSearch?.call(value.trim());
 
   @override
   Widget build(BuildContext context) {
@@ -95,11 +99,12 @@ class _PortadaTopBarState extends State<PortadaTopBar> {
                 selected: true,
                 onTap: widget.onHome,
               ),
-              _NavLink(
-                key: PortadaShellKeys.topBarMap,
-                label: 'Mapa',
-                onTap: widget.onOpenMap,
-              ),
+              if (widget.onOpenMap != null)
+                _NavLink(
+                  key: PortadaShellKeys.topBarMap,
+                  label: 'Mapa',
+                  onTap: widget.onOpenMap!,
+                ),
               if (widget.onOpenArchive != null)
                 _NavLink(
                   key: PortadaShellKeys.topBarArchive,
@@ -113,23 +118,28 @@ class _PortadaTopBarState extends State<PortadaTopBar> {
               ),
             ],
           ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(
-                  maxWidth: PortadaTopBar.searchWidth,
+          if (widget.onSubmitSearch != null)
+            Expanded(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(
+                    maxWidth: PortadaTopBar.searchWidth,
+                  ),
+                  child: _SearchPill(
+                    controller: _controller,
+                    onSubmit: _submit,
+                  ),
                 ),
-                child: _SearchPill(controller: _controller, onSubmit: _submit),
               ),
             ),
-          ),
         ],
       ),
     );
   }
 
   Widget _compactRow() {
+    final searchable = widget.onSubmitSearch != null;
     return Padding(
       padding: const EdgeInsets.only(
         left: DsSpacing.pageMarginMobile,
@@ -138,7 +148,7 @@ class _PortadaTopBarState extends State<PortadaTopBar> {
       child: Row(
         spacing: DsSpacing.s8,
         children: [
-          if (_searchOpen)
+          if (searchable && _searchOpen)
             Expanded(
               child: _SearchPill(
                 controller: _controller,
@@ -150,12 +160,13 @@ class _PortadaTopBarState extends State<PortadaTopBar> {
             const _Logo(compact: true),
             const Spacer(),
           ],
-          DsIconButton(
-            key: PortadaShellKeys.searchToggle,
-            icon: _searchOpen ? Icons.close_rounded : Icons.search_rounded,
-            semanticLabel: _searchOpen ? 'Cerrar búsqueda' : 'Buscar',
-            onPressed: () => setState(() => _searchOpen = !_searchOpen),
-          ),
+          if (searchable)
+            DsIconButton(
+              key: PortadaShellKeys.searchToggle,
+              icon: _searchOpen ? Icons.close_rounded : Icons.search_rounded,
+              semanticLabel: _searchOpen ? 'Cerrar búsqueda' : 'Buscar',
+              onPressed: () => setState(() => _searchOpen = !_searchOpen),
+            ),
         ],
       ),
     );

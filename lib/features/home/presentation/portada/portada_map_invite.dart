@@ -9,14 +9,12 @@ import 'portada_closing_layout.dart';
 
 /// Invitación al mapa: mapa de puntos decorativo con pulsos y un único botón.
 class PortadaMapInvite extends StatefulWidget {
-  const PortadaMapInvite({
-    super.key,
-    required this.cases,
-    required this.onOpenMap,
-  });
+  const PortadaMapInvite({super.key, required this.cases, this.onOpenMap});
 
   final List<TrueCrimeCase> cases;
-  final VoidCallback onOpenMap;
+
+  /// Nulo oculta el botón; el mapa decorativo y los textos se quedan.
+  final VoidCallback? onOpenMap;
 
   @override
   State<PortadaMapInvite> createState() => _PortadaMapInviteState();
@@ -156,7 +154,7 @@ class _Content extends StatelessWidget {
   const _Content({required this.metrics, required this.onOpenMap});
 
   final PortadaMapInviteMetrics metrics;
-  final VoidCallback onOpenMap;
+  final VoidCallback? onOpenMap;
 
   @override
   Widget build(BuildContext context) {
@@ -192,11 +190,12 @@ class _Content extends StatelessWidget {
               color: DsColors.textBody,
             ),
           ),
-        DsButton(
-          label: 'Abrir el mapa',
-          onPressed: onOpenMap,
-          trailingIcon: Icons.arrow_forward_rounded,
-        ),
+        if (onOpenMap != null)
+          DsButton(
+            label: 'Abrir el mapa',
+            onPressed: onOpenMap,
+            trailingIcon: Icons.arrow_forward_rounded,
+          ),
       ],
     );
 

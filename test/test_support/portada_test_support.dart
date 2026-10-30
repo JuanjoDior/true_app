@@ -153,6 +153,7 @@ Widget buildPortadaHero({
   double textScale = 1,
   bool reduceMotion = false,
   int initialIndex = 0,
+  bool explorable = true,
 }) {
   return Directionality(
     textDirection: TextDirection.ltr,
@@ -171,7 +172,7 @@ Widget buildPortadaHero({
             allCases: allCases ?? portadaAllCases,
             initialIndex: initialIndex,
             onOpenCase: callbacks.opened.add,
-            onExploreCase: callbacks.explored.add,
+            onExploreCase: explorable ? callbacks.explored.add : null,
           ),
         ),
       ),
@@ -187,6 +188,7 @@ Future<PortadaCallbacks> pumpPortadaHero(
   double textScale = 1,
   bool reduceMotion = false,
   int initialIndex = 0,
+  bool explorable = true,
 }) async {
   tester.view.physicalSize = size;
   tester.view.devicePixelRatio = 1;
@@ -202,6 +204,7 @@ Future<PortadaCallbacks> pumpPortadaHero(
       textScale: textScale,
       reduceMotion: reduceMotion,
       initialIndex: initialIndex,
+      explorable: explorable,
     ),
   );
   return callbacks;
@@ -405,6 +408,7 @@ Future<MapInviteCallbacks> pumpPortadaMapInvite(
   Size size = desktopSize,
   bool reduceMotion = false,
   double textScale = 1,
+  bool openable = true,
 }) async {
   await setSurface(tester, size);
   final callbacks = MapInviteCallbacks();
@@ -417,7 +421,7 @@ Future<MapInviteCallbacks> pumpPortadaMapInvite(
         width: size.width,
         child: PortadaMapInvite(
           cases: cases ?? portadaAllCases,
-          onOpenMap: () => callbacks.openMapTaps++,
+          onOpenMap: openable ? () => callbacks.openMapTaps++ : null,
         ),
       ),
     ),

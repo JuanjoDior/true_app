@@ -17,7 +17,7 @@ class PortadaSlideView extends StatelessWidget {
     required this.position,
     required this.count,
     required this.onOpen,
-    required this.onExplore,
+    this.onExplore,
   });
 
   final TrueCrimeCase crimeCase;
@@ -27,7 +27,9 @@ class PortadaSlideView extends StatelessWidget {
   final int position;
   final int count;
   final VoidCallback onOpen;
-  final VoidCallback onExplore;
+
+  /// Nulo oculta «Explorar el globo».
+  final VoidCallback? onExplore;
 
   @override
   Widget build(BuildContext context) {
@@ -146,7 +148,7 @@ class _SlideBody extends StatelessWidget {
   final int position;
   final int count;
   final VoidCallback onOpen;
-  final VoidCallback onExplore;
+  final VoidCallback? onExplore;
 
   @override
   Widget build(BuildContext context) {
@@ -237,11 +239,12 @@ class _SlideBody extends StatelessWidget {
               runSpacing: DsSpacing.s14,
               children: [
                 DsButton(label: 'Abrir expediente', onPressed: onOpen),
-                DsButton(
-                  label: 'Explorar el globo',
-                  variant: DsButtonVariant.glass,
-                  onPressed: onExplore,
-                ),
+                if (onExplore != null)
+                  DsButton(
+                    label: 'Explorar el globo',
+                    variant: DsButtonVariant.glass,
+                    onPressed: onExplore,
+                  ),
               ],
             ),
           ),

@@ -19,7 +19,7 @@ class PortadaHero extends StatefulWidget {
     required this.featured,
     required this.allCases,
     required this.onOpenCase,
-    required this.onExploreCase,
+    this.onExploreCase,
     this.initialIndex = 0,
   });
 
@@ -30,7 +30,9 @@ class PortadaHero extends StatefulWidget {
   final List<TrueCrimeCase> allCases;
   final int initialIndex;
   final ValueChanged<TrueCrimeCase> onOpenCase;
-  final ValueChanged<TrueCrimeCase> onExploreCase;
+
+  /// Nulo oculta «Explorar el globo».
+  final ValueChanged<TrueCrimeCase>? onExploreCase;
 
   @override
   State<PortadaHero> createState() => _PortadaHeroState();
@@ -231,7 +233,9 @@ class _PortadaHeroState extends State<PortadaHero>
                     position: i + 1,
                     count: featured.length,
                     onOpen: () => widget.onOpenCase(featured[i]),
-                    onExplore: () => widget.onExploreCase(featured[i]),
+                    onExplore: widget.onExploreCase == null
+                        ? null
+                        : () => widget.onExploreCase!(featured[i]),
                   ),
                 ),
             if (active != null) _tabs(featured, compact: compact),

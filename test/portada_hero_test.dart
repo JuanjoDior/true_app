@@ -166,6 +166,18 @@ void main() {
       ]);
     });
 
+    testWidgets('sin onExploreCase solo queda «Abrir expediente»', (
+      tester,
+    ) async {
+      await pumpPortadaHero(tester, explorable: false);
+
+      expect(find.text('Explorar el globo'), findsNothing);
+      expect(
+        tester.widgetList<DsButton>(find.byType(DsButton)).map((b) => b.label),
+        ['Abrir expediente'],
+      );
+    });
+
     testWidgets('tras cambiar de slide los botones entregan el nuevo caso', (
       tester,
     ) async {

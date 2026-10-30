@@ -11,14 +11,16 @@ class PortadaBottomBar extends StatelessWidget {
   const PortadaBottomBar({
     super.key,
     required this.onHome,
-    required this.onOpenMap,
     required this.onOpenForm,
+    this.onOpenMap,
     this.onOpenArchive,
   });
 
   final VoidCallback onHome;
-  final VoidCallback onOpenMap;
   final VoidCallback onOpenForm;
+
+  /// Nulo oculta la pestaña «Mapa».
+  final VoidCallback? onOpenMap;
 
   /// Nulo oculta la pestaña: sin navegación no hay directorio al que ir.
   final VoidCallback? onOpenArchive;
@@ -59,12 +61,13 @@ class PortadaBottomBar extends StatelessWidget {
                 selected: true,
                 onTap: onHome,
               ),
-              _Tab(
-                key: PortadaShellKeys.bottomBarMap,
-                label: 'Mapa',
-                icon: Icons.public_rounded,
-                onTap: onOpenMap,
-              ),
+              if (onOpenMap != null)
+                _Tab(
+                  key: PortadaShellKeys.bottomBarMap,
+                  label: 'Mapa',
+                  icon: Icons.public_rounded,
+                  onTap: onOpenMap!,
+                ),
               if (onOpenArchive != null)
                 _Tab(
                   key: PortadaShellKeys.bottomBarArchive,

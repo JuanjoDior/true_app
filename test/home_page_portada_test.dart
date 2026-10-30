@@ -25,13 +25,12 @@ import 'test_support/sample_cases.dart';
 
 class _RecordingNavigation implements AppNavigation {
   final List<String> openedCases = [];
-  int mapOpens = 0;
 
   @override
   void openCase(String slug) => openedCases.add(slug);
 
   @override
-  void openMap() => mapOpens++;
+  void openMap() {}
 
   @override
   void showSituationRoom() {}
@@ -117,6 +116,36 @@ Future<_Pumped> _pumpHome(
 
 Finder _shell(Key key) => find.byKey(key);
 
+// El explorador del mapa llega en F5: hasta entonces la portada no ofrece
+// ninguna entrada a él, pero la invitación sigue como sección decorativa.
+Future<void> _expectNoMapEntryPoints(
+  WidgetTester tester, {
+  required Key navigationBar,
+}) async {
+  expect(find.text('Mapa'), findsNothing);
+  expect(_shell(PortadaShellKeys.topBarMap), findsNothing);
+  expect(_shell(PortadaShellKeys.bottomBarMap), findsNothing);
+  expect(_shell(PortadaShellKeys.searchField), findsNothing);
+  expect(_shell(PortadaShellKeys.searchToggle), findsNothing);
+  expect(find.text('Explorar el globo'), findsNothing);
+  expect(find.text('Abrir expediente'), findsOneWidget);
+
+  for (final label in ['Inicio', 'Archivo', 'Formulario']) {
+    expect(
+      find.descendant(of: _shell(navigationBar), matching: find.text(label)),
+      findsOneWidget,
+      reason: label,
+    );
+  }
+
+  final invite = find.byType(PortadaMapInvite);
+  expect(invite, findsOneWidget);
+  await tester.ensureVisible(invite);
+  await tester.pump();
+  expect(find.text('El archivo, punto por punto'), findsOneWidget);
+  expect(find.text('Abrir el mapa'), findsNothing);
+}
+
 void main() {
   group('portada', () {
     testWidgets('shows hero, unsolved row, map invite and footer in order', (
@@ -137,14 +166,11 @@ void main() {
       expect(tops.toSet(), hasLength(4));
     });
 
-    testWidgets('the top bar offers the logo, search and the links', (
-      tester,
-    ) async {
+    testWidgets('the top bar offers the logo and the links', (tester) async {
       await _pumpHome(tester);
 
       expect(_shell(PortadaShellKeys.topBar), findsOneWidget);
-      expect(_shell(PortadaShellKeys.searchField), findsOneWidget);
-      for (final label in ['Inicio', 'Mapa', 'Archivo', 'Formulario']) {
+      for (final label in ['Inicio', 'Archivo', 'Formulario']) {
         expect(
           find.descendant(
             of: _shell(PortadaShellKeys.topBar),
@@ -155,6 +181,15 @@ void main() {
         );
       }
       expect(find.text('TRUE'), findsWidgets);
+    });
+
+    testWidgets('offers no entry point to the provisional map', (tester) async {
+      await _pumpHome(tester);
+
+      await _expectNoMapEntryPoints(
+        tester,
+        navigationBar: PortadaShellKeys.topBar,
+      );
     });
 
     testWidgets('keeps «Novedades» hidden', (tester) async {
@@ -253,39 +288,6 @@ void main() {
       expect(pumped.navigation.openedCases, ['zodiac-killer']);
     });
 
-    testWidgets('the map invitation opens the map', (tester) async {
-      final pumped = await _pumpHome(tester);
-
-      final button = find.text('Abrir el mapa');
-      await tester.ensureVisible(button);
-      await tester.pump();
-      await tester.tap(button);
-
-      expect(pumped.navigation.mapOpens, 1);
-    });
-
-    testWidgets('the top bar «Mapa» link opens the map', (tester) async {
-      final pumped = await _pumpHome(tester);
-
-      await tester.tap(_shell(PortadaShellKeys.topBarMap));
-
-      expect(pumped.navigation.mapOpens, 1);
-    });
-
-    testWidgets('submitting a search sets the query and opens the map', (
-      tester,
-    ) async {
-      final pumped = await _pumpHome(tester);
-
-      await tester.enterText(_shell(PortadaShellKeys.searchField), 'isdal');
-      expect(pumped.navigation.mapOpens, 0);
-      await tester.testTextInput.receiveAction(TextInputAction.search);
-      await tester.pump();
-
-      expect(pumped.container.read(searchQueryProvider), 'isdal');
-      expect(pumped.navigation.mapOpens, 1);
-    });
-
     testWidgets('«Archivo» opens the directory', (tester) async {
       await _pumpHome(tester);
 
@@ -310,14 +312,14 @@ void main() {
   });
 
   group('narrow widths', () {
-    testWidgets('show the bottom bar with its four destinations', (
+    testWidgets('show the bottom bar with its three destinations', (
       tester,
     ) async {
       await _pumpHome(tester, size: _phone);
 
       final bar = _shell(PortadaShellKeys.bottomBar);
       expect(bar, findsOneWidget);
-      for (final label in ['Inicio', 'Mapa', 'Archivo', 'Formulario']) {
+      for (final label in ['Inicio', 'Archivo', 'Formulario']) {
         expect(
           find.descendant(of: bar, matching: find.text(label)),
           findsOneWidget,
@@ -335,7 +337,16 @@ void main() {
       await _pumpHome(tester, size: _phone);
 
       expect(_shell(PortadaShellKeys.topBar), findsOneWidget);
-      expect(_shell(PortadaShellKeys.topBarMap), findsNothing);
+      expect(_shell(PortadaShellKeys.topBarHome), findsNothing);
+    });
+
+    testWidgets('offer no entry point to the provisional map', (tester) async {
+      await _pumpHome(tester, size: _phone);
+
+      await _expectNoMapEntryPoints(
+        tester,
+        navigationBar: PortadaShellKeys.bottomBar,
+      );
     });
 
     testWidgets('bottom bar «Inicio» scrolls back to the top', (tester) async {
@@ -356,14 +367,6 @@ void main() {
       expect(position().pixels, 0);
     });
 
-    testWidgets('bottom bar «Mapa» opens the map', (tester) async {
-      final pumped = await _pumpHome(tester, size: _phone);
-
-      await tester.tap(_shell(PortadaShellKeys.bottomBarMap));
-
-      expect(pumped.navigation.mapOpens, 1);
-    });
-
     testWidgets('bottom bar «Formulario» switches to intake', (tester) async {
       final pumped = await _pumpHome(tester, size: _phone);
 
@@ -381,22 +384,6 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(find.text('El archivo'), findsOneWidget);
-    });
-
-    testWidgets('the search icon reveals a field that opens the map', (
-      tester,
-    ) async {
-      final pumped = await _pumpHome(tester, size: _phone);
-      expect(_shell(PortadaShellKeys.searchField), findsNothing);
-
-      await tester.tap(_shell(PortadaShellKeys.searchToggle));
-      await tester.pump();
-      await tester.enterText(_shell(PortadaShellKeys.searchField), '1970');
-      await tester.testTextInput.receiveAction(TextInputAction.search);
-      await tester.pump();
-
-      expect(pumped.container.read(searchQueryProvider), '1970');
-      expect(pumped.navigation.mapOpens, 1);
     });
   });
 }

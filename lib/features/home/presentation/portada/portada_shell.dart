@@ -63,9 +63,10 @@ class _PortadaShellState extends ConsumerState<PortadaShell> {
     // reindexan marcadores al cambiar su identidad, así que no se copia.
     final cases = catalog.hasValue ? catalog.requireValue : null;
 
+    // El explorador del mapa llega en F5: hasta entonces no se pasan sus
+    // callbacks (búsqueda y enlaces al mapa), así que sus controles no se ven.
     void openCase(TrueCrimeCase crimeCase) =>
         navigation?.openCase(crimeCase.slug);
-    void openMap() => navigation?.openMap();
     final openArchive = navigation == null
         ? null
         : () => showCaseDirectory(context, navigation);
@@ -91,7 +92,6 @@ class _PortadaShellState extends ConsumerState<PortadaShell> {
                           featured: featured,
                           allCases: cases ?? const <TrueCrimeCase>[],
                           onOpenCase: openCase,
-                          onExploreCase: (_) => openMap(),
                         ),
                         if (cases == null || cases.isEmpty)
                           Center(
@@ -106,13 +106,7 @@ class _PortadaShellState extends ConsumerState<PortadaShell> {
                           top: 0,
                           child: PortadaTopBar(
                             initialQuery: ref.read(searchQueryProvider),
-                            onSubmitSearch: (query) {
-                              ref.read(searchQueryProvider.notifier).state =
-                                  query;
-                              openMap();
-                            },
                             onHome: _scrollToTop,
-                            onOpenMap: openMap,
                             onOpenArchive: openArchive,
                             onOpenForm: _openForm,
                           ),
@@ -123,7 +117,7 @@ class _PortadaShellState extends ConsumerState<PortadaShell> {
                   if (cases != null && cases.isNotEmpty) ...[
                     const SizedBox(height: DsSpacing.s24),
                     PortadaUnsolvedRow(cases: unsolved, onOpenCase: openCase),
-                    PortadaMapInvite(cases: cases, onOpenMap: openMap),
+                    PortadaMapInvite(cases: cases),
                   ],
                   const PortadaFooter(),
                   if (narrow)
@@ -139,7 +133,6 @@ class _PortadaShellState extends ConsumerState<PortadaShell> {
               bottom: 0,
               child: PortadaBottomBar(
                 onHome: _scrollToTop,
-                onOpenMap: openMap,
                 onOpenArchive: openArchive,
                 onOpenForm: _openForm,
               ),

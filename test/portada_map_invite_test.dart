@@ -44,6 +44,18 @@ void main() {
       expect(callbacks.openMapTaps, 1);
     });
 
+    testWidgets('sin onOpenMap no hay botón, pero sí mapa y textos', (
+      tester,
+    ) async {
+      await pumpPortadaMapInvite(tester, openable: false);
+
+      expect(find.text('Abrir el mapa'), findsNothing);
+      expect(find.byType(DsButton), findsNothing);
+      expect(find.byType(DsMapScene), findsOneWidget);
+      expect(find.text('EL MAPA'), findsOneWidget);
+      expect(find.text('El archivo, punto por punto'), findsOneWidget);
+    });
+
     testWidgets('tocar el mapa decorativo no hace nada', (tester) async {
       final callbacks = await pumpPortadaMapInvite(tester);
 
