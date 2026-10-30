@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/core/config/map_config.dart';
@@ -164,6 +165,184 @@ void main() {
           findsOneWidget,
         );
         expect(find.byKey(const Key('intake-form-column')), findsNothing);
+      },
+    );
+  });
+
+  // Un clic en la papelera no puede llevarse un borrador sin confirmación
+  // [S4]. Se comprueba la lista visible, el almacén y el borrador en edición.
+  group('draft deletion asks for confirmation (1440x900)', () {
+    const seed = [
+      CaseDraft(draftId: 'draft-a', title: 'Caso A'),
+      CaseDraft(draftId: 'draft-b'),
+    ];
+
+    List<String> storedIds(ProviderContainer container) =>
+        (container.read(caseDraftsStoreProvider) as _FakeCaseDraftsStore).saved
+            .map((draft) => draft.draftId)
+            .toList();
+
+    List<String> listedIds(ProviderContainer container) => container
+        .read(caseDraftsProvider)
+        .value!
+        .map((draft) => draft.draftId)
+        .toList();
+
+    void expectNothingDeleted(ProviderContainer container) {
+      expect(find.byKey(const Key('intake-draft-item-draft-a')), findsOneWidget);
+      expect(find.byKey(const Key('intake-draft-item-draft-b')), findsOneWidget);
+      expect(listedIds(container), ['draft-a', 'draft-b']);
+      expect(storedIds(container), ['draft-a', 'draft-b']);
+      expect(container.read(editingDraftIdProvider), 'draft-a');
+    }
+
+    testWidgets('each delete button exposes the «Borrar borrador» tooltip', (
+      tester,
+    ) async {
+      await _pumpDesktopWorkspace(
+        tester,
+        seedDrafts: seed,
+        editingDraftId: 'draft-a',
+      );
+
+      for (final id in ['draft-a', 'draft-b']) {
+        final button = tester.widget<IconButton>(
+          find.byKey(Key('intake-draft-delete-$id')),
+        );
+        expect(button.tooltip, 'Borrar borrador');
+      }
+      expect(find.byTooltip('Borrar borrador'), findsNWidgets(2));
+    });
+
+    testWidgets('tapping delete opens the dialog and deletes nothing yet', (
+      tester,
+    ) async {
+      final container = await _pumpDesktopWorkspace(
+        tester,
+        seedDrafts: seed,
+        editingDraftId: 'draft-a',
+      );
+
+      await tester.tap(find.byKey(const Key('intake-draft-delete-draft-a')));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
+      expect(find.text('¿Borrar este borrador?'), findsOneWidget);
+      expect(
+        find.textContaining('Se borra de este equipo y no se puede deshacer.'),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('intake-draft-delete-cancel')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('intake-draft-delete-confirm')),
+        findsOneWidget,
+      );
+      expect(find.text('Cancelar'), findsOneWidget);
+      expect(find.text('Borrar'), findsOneWidget);
+      // El cuerpo nombra el borrador con la misma etiqueta que la lista.
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('intake-draft-delete-dialog')),
+          matching: find.textContaining('Caso A'),
+        ),
+        findsOneWidget,
+      );
+      expectNothingDeleted(container);
+    });
+
+    testWidgets('an untitled draft is named «Sin título» in the dialog', (
+      tester,
+    ) async {
+      await _pumpDesktopWorkspace(
+        tester,
+        seedDrafts: seed,
+        editingDraftId: 'draft-a',
+      );
+
+      await tester.tap(find.byKey(const Key('intake-draft-delete-draft-b')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(
+          of: find.byKey(const Key('intake-draft-delete-dialog')),
+          matching: find.textContaining('Sin título'),
+        ),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('«Cancelar» closes the dialog and keeps every draft', (
+      tester,
+    ) async {
+      final container = await _pumpDesktopWorkspace(
+        tester,
+        seedDrafts: seed,
+        editingDraftId: 'draft-a',
+      );
+
+      await tester.tap(find.byKey(const Key('intake-draft-delete-draft-a')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('intake-draft-delete-cancel')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('¿Borrar este borrador?'), findsNothing);
+      expectNothingDeleted(container);
+    });
+
+    testWidgets('Escape and tapping outside also keep every draft', (
+      tester,
+    ) async {
+      final container = await _pumpDesktopWorkspace(
+        tester,
+        seedDrafts: seed,
+        editingDraftId: 'draft-a',
+      );
+
+      await tester.tap(find.byKey(const Key('intake-draft-delete-draft-a')));
+      await tester.pumpAndSettle();
+      await tester.sendKeyEvent(LogicalKeyboardKey.escape);
+      await tester.pumpAndSettle();
+      expect(find.text('¿Borrar este borrador?'), findsNothing);
+      expectNothingDeleted(container);
+
+      await tester.tap(find.byKey(const Key('intake-draft-delete-draft-a')));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Borrar este borrador?'), findsOneWidget);
+      // Esquina de la barrera, lejos del panel centrado del diálogo.
+      await tester.tapAt(const Offset(8, 8));
+      await tester.pumpAndSettle();
+      expect(find.text('¿Borrar este borrador?'), findsNothing);
+      expectNothingDeleted(container);
+    });
+
+    testWidgets(
+      '«Borrar» removes exactly that draft from the list and the store',
+      (tester) async {
+        final container = await _pumpDesktopWorkspace(
+          tester,
+          seedDrafts: seed,
+          editingDraftId: 'draft-a',
+        );
+
+        await tester.tap(find.byKey(const Key('intake-draft-delete-draft-a')));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byKey(const Key('intake-draft-delete-confirm')));
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+
+        expect(find.text('¿Borrar este borrador?'), findsNothing);
+        expect(find.byKey(const Key('intake-draft-item-draft-a')), findsNothing);
+        expect(
+          find.byKey(const Key('intake-draft-item-draft-b')),
+          findsOneWidget,
+        );
+        expect(listedIds(container), ['draft-b']);
+        expect(storedIds(container), ['draft-b']);
+        // Era el borrador en edición: se suelta, como antes del diálogo.
+        expect(container.read(editingDraftIdProvider), isNull);
       },
     );
   });

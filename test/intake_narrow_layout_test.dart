@@ -427,10 +427,19 @@ void main() {
         await tester.tap(find.byKey(const Key('intake-drafts-toggle-button')));
         await tester.pump();
         await tester.tap(find.byKey(const Key('intake-draft-delete-draft-a')));
-        await tester.pump();
+        await tester.pumpAndSettle();
+
+        // La papelera sólo pregunta: hasta confirmar no se borra nada [S4].
+        expect(find.text('¿Borrar este borrador?'), findsOneWidget);
+        expect(container.read(caseDraftsProvider).value, hasLength(2));
+
+        await tester.tap(find.byKey(const Key('intake-draft-delete-confirm')));
+        await tester.pumpAndSettle();
 
         expect(tester.takeException(), isNull);
+        expect(find.text('¿Borrar este borrador?'), findsNothing);
         final remaining = container.read(caseDraftsProvider).value!;
+        expect(remaining, hasLength(1));
         expect(remaining.any((draft) => draft.draftId == 'draft-a'), isFalse);
       },
     );

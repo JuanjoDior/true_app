@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../core/design/components/ds_button.dart';
+import '../../../../core/design/components/ds_dialog.dart';
 import '../../../../core/layout/breakpoints.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../home/presentation/widgets/situation/situation_styles.dart';
@@ -215,25 +217,15 @@ class _DraftList extends ConsumerWidget {
                 return ListTile(
                   key: Key('intake-draft-item-${draft.draftId}'),
                   selected: isSelected,
-                  title: Text(
-                    draft.title?.isNotEmpty == true
-                        ? draft.title!
-                        : 'Sin título',
-                  ),
+                  title: Text(_draftLabel(draft)),
                   subtitle: Text(
                     isValid ? 'Listo · sin publicar' : 'Incompleto',
                   ),
                   trailing: IconButton(
                     key: Key('intake-draft-delete-${draft.draftId}'),
+                    tooltip: 'Borrar borrador',
                     icon: const Icon(Icons.delete_outline, size: 18),
-                    onPressed: () async {
-                      await ref
-                          .read(caseDraftsProvider.notifier)
-                          .deleteDraft(draft.draftId);
-                      if (selectedId == draft.draftId) {
-                        ref.read(editingDraftIdProvider.notifier).state = null;
-                      }
-                    },
+                    onPressed: () => _confirmAndDelete(context, ref, draft),
                   ),
                   onTap: () {
                     ref.read(editingDraftIdProvider.notifier).state =
@@ -249,7 +241,55 @@ class _DraftList extends ConsumerWidget {
       ),
     );
   }
+
+  /// Un clic en la papelera no basta para perder un borrador: sólo se borra
+  /// tras confirmar. Cancelar, Escape o tocar fuera no tocan nada [S4].
+  Future<void> _confirmAndDelete(
+    BuildContext context,
+    WidgetRef ref,
+    CaseDraft draft,
+  ) async {
+    // Se leen antes de esperar: la hoja estrecha puede cerrarse mientras
+    // el diálogo está abierto y `ref` dejaría de ser utilizable.
+    final drafts = ref.read(caseDraftsProvider.notifier);
+    final editingDraftId = ref.read(editingDraftIdProvider.notifier);
+    final confirmed = await showDsDialog<bool>(
+      context: context,
+      builder: (dialogContext) => DsDialog(
+        key: const Key('intake-draft-delete-dialog'),
+        title: '¿Borrar este borrador?',
+        content: Text(
+          '«${_draftLabel(draft)}». '
+          'Se borra de este equipo y no se puede deshacer.',
+        ),
+        actions: [
+          DsButton(
+            key: const Key('intake-draft-delete-cancel'),
+            label: 'Cancelar',
+            variant: DsButtonVariant.outline,
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+          ),
+          DsButton(
+            key: const Key('intake-draft-delete-confirm'),
+            label: 'Borrar',
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) {
+      return;
+    }
+    await drafts.deleteDraft(draft.draftId);
+    if (selectedId == draft.draftId) {
+      editingDraftId.state = null;
+    }
+  }
 }
+
+/// Etiqueta con la que se nombra un borrador en la lista y al borrarlo.
+String _draftLabel(CaseDraft draft) =>
+    draft.title?.isNotEmpty == true ? draft.title! : 'Sin título';
 
 /// Con quién se ha entrado, y la salida. Va al pie de la lista y no en la
 /// barra superior, que en pantallas estrechas ya no tiene sitio.
