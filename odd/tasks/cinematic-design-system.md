@@ -84,6 +84,26 @@ Orden: D0 → F0 → F1 → F2 → F4 → F5 → F3 → F6 → F7 → F8 → F9 
 - [ ] F10: Móvil.
 - [ ] F11: Pulido, accesibilidad, retirada de `AppColors`.
 
+## Auditoría de diseño (2026-10-30)
+Auditoría estática de diseño e inventario de funciones (dos exploradores, solo lectura; sin pasada visual porque Supabase no resuelve). El usuario eligió qué retirar; «Copiar JSON» se mantiene hasta CRP-05 para que Iván no se quede sin forma de entregar un caso.
+
+### Specs
+- S1 — Esconder entradas al mapa provisional: «Búsqueda, «Globo/Mapa», «Explorar el globo» y botón de la invitación. La ruta /mapa y su lógica quedan para F5.»
+- S2 — Borrar el modo mapa muerto del expediente: ««Seguir el caso», compartir, estrella y controles de centrar, que nadie usa en producción.»
+- S3 — Corregir «Volver al archivo» y lang="es": «El texto pasa a «Volver a la portada» y se declara el idioma en web/index.html.»
+- S4 — Confirmar antes de borrar borradores: «No es retirar nada: evita que un clic se lleve el trabajo de Iván.»
+
+### Tareas
+- [x] A1 (S1; c34fc68; worker, RED por compilación y por «Mapa» visible, GREEN 192 tests de portada; nuevo `test/portada_bars_test.dart`): callbacks nulos ocultan los controles (mismo patrón que `onOpenArchive`); `PortadaShell` deja de pasarlos hasta F5. `searchQueryProvider`, `MapPath` y `MapPage` se conservan.
+- [x] A2 (S2; cdb2cb3; worker, RED «Seguir el caso» visible en el modo por defecto, GREEN 96 tests; −355 líneas aprox.; `mapRecenterTickProvider` y `selectedCaseIdProvider` siguen vivos en otras partes): retirar `CaseDossierMode.map` y su cromado del expediente; los dos llamadores reales ya usan `preview`.
+- [x] A3 (S3; e61c772; RED→GREEN en detalle y ruta no encontrada, 47 tests; `docs/design/screens.md` sigue describiendo «Volver al archivo» como destino final: F6/F7 decide si el expediente vuelve al archivo): «Volver a la portada» en el detalle y en la ruta no encontrada; `<html lang="es">`.
+- [x] A4 (S4; aab82fd; worker, RED 7 fallos, GREEN 19 + 24 tests de alta; primer `DsDialog` dentro del formulario, que aún usa el estilo viejo: contraste visual pendiente hasta F8): diálogo de confirmación antes de borrar un borrador; cancelar no toca nada.
+
+### Log
+- L1 (2026-10-30, usuario): «revision mejor, quiero auditoria completa de diseño, quitar funciones de la interfaz que no se utilicen aun, propuestas son bienvenidas»
+- L2 (2026-10-30, usuario): eligió S1–S4; «Copiar JSON»: «Mantener hasta CRP-05 (recomendado)».
+- L3 (2026-10-30, cierre): `flutter analyze` sin incidencias; suite completa 1668 tests aprobados tras aab82fd. Sin QA visual: el host de Supabase no resuelve (proyecto pausado). Propuestas pendientes de la auditoría, ya asignadas a su fase: pestañas móviles de 24 px y `FittedBox` del héroe (F10); expediente sin encabezados semánticos ni enlaces alcanzables con teclado, imágenes sin descripción (F6); etiquetas solo-pista en el inicio de sesión y tooltips de quitar filas (F8); pausa visible y flechas en el carrusel (F11).
+
 ## Progreso
 2026-10-02: rama creada, documentos de diseño incorporados, plan escrito contra el código actual. Ninguna línea de Dart modificada todavía.
 
