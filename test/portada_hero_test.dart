@@ -442,6 +442,73 @@ void main() {
     });
   });
 
+  group('héroe móvil legible', () {
+    testWidgets(
+      'a 360 px el texto no se reduce y los controles se pueden pulsar',
+      (tester) async {
+        final callbacks = await pumpPortadaHero(
+          tester,
+          size: const Size(360, 640),
+          reduceMotion: true,
+        );
+        final summary = find.byKey(PortadaHeroKeys.summary('zodiac'));
+        final data = find.text('0 casos conectados');
+        final action = find.text('Abrir expediente');
+        for (final finder in [summary, data, action]) {
+          final box = tester.renderObject<RenderBox>(finder);
+          expect(
+            (box.localToGlobal(const Offset(100, 0)) -
+                        box.localToGlobal(Offset.zero))
+                    .distance /
+                100,
+            closeTo(1, 0.001),
+          );
+          expect(
+            tester.widget<Text>(finder).style!.fontSize,
+            greaterThanOrEqualTo(12),
+          );
+        }
+        final button = find.ancestor(
+          of: action,
+          matching: find.byType(DsButton),
+        );
+        expect(tester.getSize(button).height, greaterThanOrEqualTo(44));
+        for (var i = 0; i < portadaCases.length; i++) {
+          expect(
+            tester.getSize(find.byKey(PortadaHeroKeys.tab(i))).height,
+            greaterThanOrEqualTo(44),
+          );
+        }
+        await tester.tap(action);
+        expect(callbacks.opened.map((c) => c.id), ['zodiac']);
+        expect(tester.takeException(), isNull);
+      },
+    );
+
+    testWidgets('contenido largo no desborda a 360 px', (tester) async {
+      final long = portadaCase(
+        id: 'mobile-long',
+        title: 'Un título largo para un caso documentado',
+        city: 'Una localidad con un nombre extraordinariamente largo',
+        statusLabel: 'Un estado editorial bastante largo',
+        summary: List.filled(80, 'palabra').join(' '),
+      );
+      await pumpPortadaHero(
+        tester,
+        size: const Size(360, 640),
+        featured: [long],
+        reduceMotion: true,
+      );
+      expect(tester.takeException(), isNull);
+      final summary = find.byKey(PortadaHeroKeys.summary('mobile-long'));
+      expect(
+        (tester.getBottomRight(summary).dx - tester.getTopLeft(summary).dx) /
+            tester.getSize(summary).width,
+        closeTo(1, 0.001),
+      );
+    });
+  });
+
   group('sin desbordes', () {
     final longTitle = portadaCase(
       id: 'long',

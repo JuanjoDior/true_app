@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Expediente · Zodiac — Dossier editorial</title>
+<style>
+:root{
+  --bg:#05070B;--glow:#0D1320;--glass:rgba(14,16,22,.82);--card:rgba(255,255,255,.04);
+  --hair:rgba(255,255,255,.12);--strong:#FFFFFF;--primary:#F4F1EB;--body:#D8D3CA;--muted:#B9B4AB;--faint:#A7A29A;
+  --red:#E5484D;--redText:#FF7A7F;--gold:#F0C674;--open:#6CB0E0;--solved:#8FCB8A;--progress:#F0B455;
+  --serif:"Noto Serif",Georgia,"Times New Roman",serif;--sans:"Noto Sans","Segoe UI",system-ui,sans-serif;--mono:"IBM Plex Mono",Consolas,ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);--fly:cubic-bezier(.22,.8,.2,1);
+}
+*{box-sizing:border-box}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+html,body{margin:0;background:var(--bg);color:var(--primary);font-family:var(--sans)}
+a{color:inherit;text-decoration:none}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px;box-shadow:0 0 0 6px rgba(229,72,77,.25);border-radius:10px}
+.mono{font-family:var(--mono)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+/* overflow-x:clip (no hidden) para que el índice pegajoso siga funcionando */
+.page{position:relative;width:1440px;margin:0 auto;overflow-x:clip}
+
+/* Barra superior */
+.top{position:absolute;inset:0 0 auto 0;height:88px;padding:0 80px;display:flex;align-items:center;gap:48px;z-index:5;background:linear-gradient(180deg,rgba(5,7,11,.85),rgba(5,7,11,0))}
+.logo{min-height:44px;display:flex;align-items:center;gap:12px}
+.logo i{width:36px;height:36px;border-radius:10px;background:var(--red);display:grid;place-items:center;font:700 20px var(--serif);font-style:normal;color:#fff}
+.logo b{font:700 20px var(--serif);letter-spacing:.1em}
+.top nav{display:flex;gap:4px}
+.top nav a{height:44px;padding:0 16px;display:flex;align-items:center;font-size:15px;font-weight:500;color:#C9C4BB;border-radius:10px;transition:color .25s}
+.top nav a:hover{color:#fff}
+.top nav a[aria-current]{color:#fff;font-weight:600;box-shadow:inset 0 -2px 0 var(--red)}
+
+/* Cabecera partida: texto a la izquierda, placa a la derecha */
+.hero{position:relative;height:760px;overflow:hidden;background:
+  radial-gradient(760px 560px at 80% 54%,rgba(229,72,77,.28),transparent 66%),
+  radial-gradient(640px 460px at 8% 100%,rgba(229,72,77,.10),transparent 70%),
+  linear-gradient(112deg,#05070B 20%,#2A0B10 100%)}
+.ghost{position:absolute;right:-40px;top:120px;font:700 480px/1 var(--serif);color:rgba(255,255,255,.05);letter-spacing:-.02em;user-select:none;pointer-events:none}
+.fade{position:absolute;inset:auto 0 0 0;height:160px;background:linear-gradient(180deg,rgba(5,7,11,0),var(--bg));pointer-events:none}
+.hero-grid{position:absolute;inset:88px 80px 72px;display:grid;grid-template-columns:minmax(0,1fr) 520px;column-gap:80px;align-items:end}
+.hero-text{display:flex;flex-direction:column;gap:20px;animation:rise .9s var(--ease) both}
+.back{align-self:flex-start;height:44px;display:flex;align-items:center;gap:10px;color:#C9C4BB;font:500 12px var(--mono);letter-spacing:.14em;transition:color .25s,transform .25s var(--ease)}
+.back:hover{color:#fff;transform:translateX(-4px)}
+.meta{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.badge{height:28px;padding:0 12px;display:inline-flex;align-items:center;border:1px solid var(--red);border-radius:6px;font-size:13px;font-weight:600;color:var(--redText)}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:500;color:var(--open)}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.place{font:500 13px var(--mono);letter-spacing:.12em;color:var(--body)}
+h1{margin:0;font:700 104px/.94 var(--serif);letter-spacing:-.015em;color:#fff}
+.lead{margin:2px 0 0;max-width:640px;font:400 26px/1.45 var(--serif);color:var(--primary)}
+.dek{font:500 12px var(--mono);letter-spacing:.14em;color:var(--muted)}
+.dek b{font-weight:500;color:var(--gold)}
+.actions{display:flex;gap:12px;margin-top:6px}
+.btn{height:52px;padding:0 22px;border-radius:12px;display:inline-flex;align-items:center;gap:10px;font-size:15px;font-weight:600;transition:transform .3s var(--ease),background .3s}
+.btn:hover{transform:scale(1.04)}
+.btn.primary{background:var(--primary);color:#0B0C10}
+.btn.glass{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);color:#fff}
+.btn.glass:hover{background:rgba(255,255,255,.2)}
+
+/* Placa de ubicación */
+.plate{position:relative;margin:0;background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--hair);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden;animation:rise 1s var(--ease) .25s both}
+.plate-head{height:48px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--hair)}
+.plate-map{position:relative;height:300px;background:radial-gradient(ellipse at 46% 50%,#0E1420 0%,#06080D 80%)}
+.plate-map svg{display:block}
+.plate figcaption{height:56px;padding:0 20px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--hair)}
+.coord{font:500 15px var(--mono);color:var(--gold);letter-spacing:.04em}
+.plate figcaption span.p{font-size:14px;color:var(--body)}
+.grat{stroke:rgba(255,255,255,.08);stroke-dasharray:2 6}
+.tick{font:400 11px var(--mono);fill:var(--faint)}
+.crop{fill:none;stroke:rgba(240,198,116,.5);stroke-width:1.2}
+.arc{fill:none;stroke:var(--gold);stroke-width:1.6;stroke-dasharray:6 6;animation:arcin .9s var(--ease) 1s both,dash 1.2s linear infinite}
+.leader{stroke:rgba(240,198,116,.6);stroke-width:1}
+.lab{font:700 14px var(--serif);fill:#fff;paint-order:stroke;stroke:#06080D;stroke-width:5px;stroke-linejoin:round}
+.lab-m{font:500 11px var(--mono);letter-spacing:.12em;fill:var(--muted);paint-order:stroke;stroke:#06080D;stroke-width:5px;stroke-linejoin:round}
+.lab-m.g{fill:var(--gold)}
+.late{animation:arcin .7s var(--ease) 1.5s both}
+.ring{fill:none;stroke:var(--red);stroke-width:2;transform-box:fill-box;transform-origin:center;animation:pulse 1.8s ease-out infinite}
+.home{filter:drop-shadow(0 0 8px rgba(229,72,77,.9))}
+
+/* Dossier: índice pegajoso + columna de lectura */
+.dossier{display:grid;grid-template-columns:240px 720px minmax(0,1fr);column-gap:64px;row-gap:112px;padding:104px 80px 0}
+.index{grid-column:1;grid-row:1 / span 5}
+.index-in{position:sticky;top:32px;display:flex;flex-direction:column;gap:20px}
+.index-case{display:flex;flex-direction:column;gap:6px;padding-bottom:18px;border-bottom:1px solid var(--hair)}
+.index-case b{font:700 26px/1.1 var(--serif);color:#fff}
+.index ol{position:relative;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.index ol::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:1px;background:var(--hair)}
+.index a{position:relative;min-height:44px;padding:0 12px 0 20px;display:flex;align-items:center;gap:14px;color:var(--muted);font-size:15px;font-weight:500;border-radius:0 10px 10px 0;transition:color .25s,background .25s}
+.index a .n{font:500 11px var(--mono);letter-spacing:.14em;color:var(--faint)}
+.index a:hover{color:#fff;background:rgba(255,255,255,.04)}
+.index a[aria-current="true"]{color:#fff;font-weight:600;background:rgba(255,255,255,.05)}
+.index a[aria-current="true"]::before{content:"";position:absolute;left:0;top:8px;bottom:8px;width:2px;background:var(--red);box-shadow:0 0 10px rgba(229,72,77,.6)}
+.index a[aria-current="true"] .n{color:var(--redText)}
+
+.sec{grid-column:2;scroll-margin-top:32px;display:flex;flex-direction:column;gap:28px;min-width:0}
+.sec.wide{grid-column:2 / -1}
+.sec-head{display:flex;align-items:baseline;gap:16px;padding-bottom:16px;border-bottom:1px solid var(--hair)}
+.sec-head .k{font:500 12px var(--mono);letter-spacing:.14em;color:var(--redText)}
+.sec-head h2{margin:0;font:700 30px/1.1 var(--serif);color:#fff}
+.sec-head .aux{margin-left:auto}
+
+/* Resumen: ficha en forma de libro de registro */
+.ledger{margin:0;display:grid;grid-template-columns:180px minmax(0,1fr)}
+.ledger dt,.ledger dd{margin:0;min-height:60px;padding:12px 0;display:flex;align-items:center;border-bottom:1px solid rgba(255,255,255,.07)}
+.ledger dd{font-size:17px;color:var(--primary)}
+.ledger .yr{font:700 26px var(--serif);color:var(--gold)}
+.ledger .co{font:500 15px var(--mono);color:var(--gold);letter-spacing:.04em}
+.ledger .tg{font:500 13px var(--mono);letter-spacing:.06em;color:var(--body)}
+.inline{min-height:44px;display:inline-flex;align-items:center;gap:8px;color:var(--primary);text-decoration:underline;text-decoration-color:rgba(240,198,116,.6);text-underline-offset:5px;transition:text-decoration-color .25s}
+.inline:hover{text-decoration-color:var(--gold)}
+.honest{display:flex;gap:14px;padding:18px 20px;border:1px dashed rgba(255,255,255,.18);border-radius:12px;color:var(--muted);font-size:14px;line-height:1.55}
+.honest b{color:var(--primary);font-weight:600}
+
+/* Víctimas */
+.victim{padding:6px 0 6px 28px;border-left:3px solid var(--red)}
+.victim p{margin:0;font:700 34px/1.25 var(--serif);color:var(--primary)}
+.victim small{display:block;margin-top:10px;font-size:14px;color:var(--faint)}
+
+/* Cronología: banda horizontal que sangra hasta el borde derecho */
+.band{position:relative;margin-right:-80px;padding:40px 80px 32px 48px;border:1px solid var(--hair);border-right:0;border-radius:18px 0 0 18px;overflow:hidden;background:
+  radial-gradient(420px 260px at 12% 34%,rgba(229,72,77,.16),transparent 70%),
+  radial-gradient(420px 260px at 46% 34%,rgba(240,198,116,.10),transparent 70%),
+  radial-gradient(420px 260px at 80% 34%,rgba(108,176,224,.13),transparent 70%),
+  linear-gradient(180deg,#0A0D14,#06080D)}
+.stations{position:relative;list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.stations::before{content:"";position:absolute;left:7px;top:115px;width:calc(66.666% - 7px);height:2px;background:linear-gradient(90deg,var(--red),var(--gold) 50%,var(--open))}
+.stations::after{content:"";position:absolute;left:66.666%;right:-80px;top:115px;height:2px;background:repeating-linear-gradient(90deg,var(--open) 0 8px,transparent 8px 16px);opacity:.8}
+.station{display:flex;flex-direction:column;padding-right:32px;animation:rise .8s var(--ease) both}
+.station:nth-child(2){animation-delay:.08s}
+.station:nth-child(3){animation-delay:.16s}
+.station .step{height:20px;font:500 11px var(--mono);letter-spacing:.18em;color:var(--faint)}
+.station .date{height:76px;display:flex;align-items:flex-end;font:700 64px/1 var(--serif);letter-spacing:-.01em;color:var(--k)}
+.station .pt{position:relative;height:40px}
+.station .pt::after{content:"";position:absolute;left:0;top:13px;width:14px;height:14px;border-radius:50%;background:var(--k);box-shadow:0 0 0 6px #080B11,0 0 22px var(--k)}
+.station.open .pt::before{content:"";position:absolute;left:0;top:13px;width:14px;height:14px;border-radius:50%;border:2px solid var(--k);box-sizing:border-box;animation:pulse 1.8s ease-out infinite}
+.station .kind{margin-top:6px;font:500 11px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--kt)}
+.station b{margin-top:10px;font-size:20px;font-weight:500;line-height:1.35;color:var(--primary)}
+.band-note{margin:32px 0 0;font:400 12px var(--mono);letter-spacing:.04em;color:var(--faint)}
+
+/* Fuentes: bibliografía numerada */
+.bib{list-style:none;margin:0;padding:0}
+.bib a{display:grid;grid-template-columns:56px minmax(0,1fr) 24px;align-items:center;gap:16px;min-height:96px;padding:18px 12px 18px 8px;border-bottom:1px solid rgba(255,255,255,.07);border-radius:10px;transition:background .3s}
+.bib a:hover{background:rgba(255,255,255,.04)}
+.bib .n{font:500 15px var(--mono);color:var(--gold)}
+.bib b{display:block;font:700 21px/1.3 var(--serif);color:#fff;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:5px;transition:text-decoration-color .25s}
+.bib a:hover b{text-decoration-color:var(--gold)}
+.bib .m{display:flex;gap:10px;align-items:center;margin-top:8px;font:400 12px var(--mono);color:var(--muted)}
+.bib em{font-style:normal;font:500 11px var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.bib svg{transition:transform .3s var(--ease)}
+.bib a:hover svg{transform:translate(3px,-3px)}
+
+/* Casos relacionados: fila de pósters apaisados */
+.row{list-style:none;display:flex;gap:24px;margin:-24px -80px 0 -8px;padding:24px 80px 32px 8px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-left:8px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent}
+.row li{flex:0 0 400px;scroll-snap-align:start}
+.poster{position:relative;width:400px;height:225px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:6px;padding:20px 22px;border:1px solid var(--hair);border-radius:16px;background:
+  radial-gradient(320px 200px at 88% 0%,var(--glow-c),transparent 70%),
+  linear-gradient(160deg,var(--base) 0%,#07080B 100%);
+  transition:transform .4s var(--ease),border-color .3s,box-shadow .4s var(--ease),opacity .3s}
+.poster:hover{transform:translateY(-12px) scale(1.04);border-color:rgba(255,255,255,.3);box-shadow:0 34px 70px rgba(0,0,0,.65)}
+.row:has(.poster:hover) .poster:not(:hover){opacity:.45}
+.poster .y{position:absolute;right:14px;top:-18px;font:700 150px/1 var(--serif);color:rgba(255,255,255,.07);letter-spacing:-.02em}
+.poster .k{position:absolute;left:22px;top:20px;font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--t)}
+.poster .yr{position:absolute;right:22px;top:20px;font:500 12px var(--mono);color:var(--gold)}
+.poster b{position:relative;font:700 26px/1.15 var(--serif);color:#fff}
+.poster small{position:relative;font-size:14px;color:var(--body)}
+
+footer{margin-top:120px;padding:40px 80px 56px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;color:var(--faint);font-size:14px}
+footer b{font:700 18px var(--serif);letter-spacing:.1em;color:var(--primary)}
+
+@keyframes rise{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+@keyframes arcin{from{opacity:0}to{opacity:1}}
+@keyframes pulse{0%{transform:scale(.5);opacity:.9}100%{transform:scale(2.8);opacity:0}}
+@keyframes dash{to{stroke-dashoffset:-12}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="top">
+  <a class="logo" href="#" aria-label="TRUE, ir a la portada"><i>T</i><b>TRUE</b></a>
+  <nav aria-label="Secciones">
+    <a href="#">Inicio</a>
+    <a href="#">Archivo</a>
+    <a href="#">Formulario</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero" aria-labelledby="case-title">
+  <div class="ghost" aria-hidden="true">1968</div>
+  <div class="fade"></div>
+  <div class="hero-grid">
+    <div class="hero-text">
+      <a class="back" href="#"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg>VOLVER A LA PORTADA</a>
+      <div class="meta">
+        <span class="badge">Asesinos en serie</span>
+        <span class="status">Sin resolver</span>
+        <span class="place">· SAN FRANCISCO · EE. UU. · 1968</span>
+      </div>
+      <h1 id="case-title">Zodiac</h1>
+      <p class="lead">Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.</p>
+      <span class="dek">EXPEDIENTE · <b>2</b> FUENTES CITADAS · <b>3</b> CASOS RELACIONADOS</span>
+      <div class="actions">
+        <a class="btn primary" href="#resumen">Leer el expediente <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"/></svg></a>
+        <a class="btn glass" href="#relacionados">Ver casos relacionados</a>
+      </div>
+    </div>
+
+    <figure class="plate" aria-labelledby="plate-cap">
+      <div class="plate-head">
+        <span class="label" style="color:var(--redText);letter-spacing:.22em">Ubicación</span>
+        <span class="label" style="letter-spacing:.14em">3 conexiones</span>
+      </div>
+      <div class="plate-map">
+        <svg width="520" height="300" viewBox="0 0 520 300" aria-hidden="true" focusable="false">
+          <g id="p-grat"></g>
+          <g id="p-land"></g>
+          <g id="p-arcs"></g>
+          <g id="p-marks"></g>
+          <g id="p-labels" class="late"></g>
+          <path class="crop" d="M12 26V12H26M494 12H508V26M508 274V288H494M26 288H12V274"/>
+        </svg>
+      </div>
+      <figcaption id="plate-cap">
+        <span class="coord">37.77° N · 122.42° O</span>
+        <span class="p">San Francisco · EE. UU.</span>
+        <span class="sr">Mapa de puntos centrado en San Francisco. Casos conectados: Golden State Killer, en el norte de California; Black Dahlia, en California; y Jack el Destripador, en Londres, fuera del encuadre.</span>
+      </figcaption>
+    </figure>
+  </div>
+</section>
+
+<div class="dossier">
+  <nav class="index" aria-label="Índice del expediente">
+    <div class="index-in">
+      <div class="index-case">
+        <span class="label">Expediente</span>
+        <b>Zodiac</b>
+      </div>
+      <ol>
+        <li><a href="#resumen" aria-current="true"><span class="n">01</span>Resumen</a></li>
+        <li><a href="#victimas"><span class="n">02</span>Víctimas</a></li>
+        <li><a href="#cronologia"><span class="n">03</span>Cronología</a></li>
+        <li><a href="#fuentes"><span class="n">04</span>Fuentes</a></li>
+        <li><a href="#relacionados"><span class="n">05</span>Relacionados</a></li>
+      </ol>
+    </div>
+  </nav>
+
+  <section class="sec" id="resumen" aria-labelledby="h-res">
+    <div class="sec-head"><span class="k">01</span><h2 id="h-res">Resumen</h2></div>
+    <dl class="ledger">
+      <dt class="label">Categoría</dt><dd><span class="badge">Asesinos en serie</span></dd>
+      <dt class="label">Estado</dt><dd><span class="status">Sin resolver</span></dd>
+      <dt class="label">Lugar</dt><dd>San Francisco, EE. UU.</dd>
+      <dt class="label">Año</dt><dd><span class="yr">1968</span></dd>
+      <dt class="label">Coordenadas</dt><dd><span class="co">37.77° N · 122.42° O</span></dd>
+      <dt class="label">Etiquetas</dt><dd><span class="tg">1960s · ee. uu.</span></dd>
+      <dt class="label">Conexiones</dt><dd><a class="inline" href="#relacionados">3 casos relacionados</a></dd>
+    </dl>
+    <div class="honest" role="note">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>
+      <span><b>Expediente en curso.</b> Este caso aún no tiene capítulos ni fotografías documentadas. Se añadirán cuando estén verificados.</span>
+    </div>
+  </section>
+
+  <section class="sec" id="victimas" aria-labelledby="h-vic">
+    <div class="sec-head"><span class="k">02</span><h2 id="h-vic">Víctimas</h2></div>
+    <div class="victim">
+      <p>Al menos 5 víctimas confirmadas</p>
+      <small>Las víctimas se nombran con respeto.</small>
+    </div>
+  </section>
+
+  <section class="sec wide" id="cronologia" aria-labelledby="h-cro">
+    <div class="sec-head"><span class="k">03</span><h2 id="h-cro">Cronología</h2><span class="label aux">Verificada · 3 hitos</span></div>
+    <div class="band">
+      <ol class="stations">
+        <li class="station" style="--k:#E5484D;--kt:#FF7A7F"><span class="step">01</span><span class="date">1968–69</span><span class="pt" aria-hidden="true"></span><span class="kind">Hecho inicial</span><b>Primeros ataques confirmados</b></li>
+        <li class="station" style="--k:#F0C674;--kt:#F0C674"><span class="step">02</span><span class="date">1969</span><span class="pt" aria-hidden="true"></span><span class="kind">Investigación</span><b>Cartas cifradas a la prensa</b></li>
+        <li class="station open" style="--k:#6CB0E0;--kt:#6CB0E0"><span class="step">03</span><span class="date">Hoy</span><span class="pt" aria-hidden="true"></span><span class="kind">Sigue abierto</span><b>Investigación aún abierta</b></li>
+      </ol>
+      <p class="band-note">El trazo discontinuo tras «Hoy» indica que la investigación sigue abierta.</p>
+    </div>
+  </section>
+
+  <section class="sec" id="fuentes" aria-labelledby="h-fue">
+    <div class="sec-head"><span class="k">04</span><h2 id="h-fue">Fuentes</h2><span class="label aux">2 citadas</span></div>
+    <ol class="bib">
+      <li><a href="#"><span class="n">[1]</span><span><b>Wikipedia — Zodiac Killer</b><span class="m"><em>Investigación</em>·<span>wikipedia.org</span></span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9C4BB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a></li>
+      <li><a href="#"><span class="n">[2]</span><span><b>Archivo de prensa</b><span class="m"><em>Investigación</em>·<span>sfchronicle.com</span></span></span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#C9C4BB" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7M9 7h8v8"/></svg></a></li>
+    </ol>
+  </section>
+
+  <section class="sec wide" id="relacionados" aria-labelledby="h-rel">
+    <div class="sec-head"><span class="k">05</span><h2 id="h-rel">Casos relacionados</h2><span class="label aux">3 conexiones</span></div>
+    <ul class="row">
+      <li><a class="poster" href="#" style="--base:#2A0B10;--glow-c:rgba(229,72,77,.32);--t:#FF7A7F"><span class="k">Asesinos en serie</span><span class="yr">1976</span><span class="y" aria-hidden="true">1976</span><b>Golden State Killer</b><small>Norte de California</small></a></li>
+      <li><a class="poster" href="#" style="--base:#0B1F2E;--glow-c:rgba(90,160,208,.30);--t:#5AA0D0"><span class="k">Caso sin resolver</span><span class="yr">1947</span><span class="y" aria-hidden="true">1947</span><b>Black Dahlia</b><small>California · sin resolver</small></a></li>
+      <li><a class="poster" href="#" style="--base:#2A0B10;--glow-c:rgba(229,72,77,.32);--t:#FF7A7F"><span class="k">Asesinos en serie</span><span class="yr">1888</span><span class="y" aria-hidden="true">1888</span><b>Jack el Destripador</b><small>Sin identificar · desafió a la prensa</small></a></li>
+    </ul>
+  </section>
+</div>
+</main>
+
+<footer>
+  <b>TRUE</b>
+  <span>Crímenes reales · documentados con respeto. Las víctimas se nombran con respeto.</span>
+</footer>
+</div>
+
+<script>
+(function(){
+  var CAT={serialKiller:{l:'Asesinos en serie',c:'#E5484D'},isolatedMurder:{l:'Asesinato aislado',c:'#D9788A'},kidnapping:{l:'Secuestro',c:'#E0A63A'},unsolved:{l:'Caso sin resolver',c:'#5AA0D0'}};
+  var C={
+    zodiac:{t:'Zodiac',loc:'San Francisco · EE. UU.',y:1968,lat:37.77,lon:-122.42,cat:'serialKiller'},
+    goldenstate:{t:'Golden State Killer',loc:'California · EE. UU.',y:1976,lat:38.58,lon:-121.49,cat:'serialKiller'},
+    blackdahlia:{t:'Black Dahlia',loc:'Los Ángeles · EE. UU.',y:1947,lat:34.05,lon:-118.24,cat:'unsolved'},
+    ripper:{t:'Jack el Destripador',loc:'Londres · Reino Unido',y:1888,lat:51.51,lon:-0.07,cat:'serialKiller'}
+  };
+  var PAIRS=[['zodiac','goldenstate','Norte de California'],['zodiac','ripper','Sin identificar · desafió a la prensa'],['zodiac','blackdahlia','California · sin resolver'],['isdal','somerton','Cuerpo sin identificar durante décadas'],['isdal','dyatlov','Europa · era de la Guerra Fría'],['kercher','mccann','2007 · gran cobertura mediática'],['hinterkaifeck','lizzie','Crimen doméstico histórico']];
+  var LAND={0:[[21,32],[39,40],[55,56]],1:[[9,19],[21,33],[49,50],[54,71]],2:[[2,22],[23,31],[37,71]],3:[[2,16],[20,24],[26,28],[31,32],[37,71]],4:[[3,16],[21,24],[35,35],[38,71]],5:[[4,16],[20,25],[34,35],[36,71]],6:[[5,25],[35,71]],7:[[10,25],[34,40],[45,64]],8:[[11,24],[34,37],[38,38],[41,64]],9:[[12,23],[34,63]],10:[[13,20],[33,63]],11:[[12,18],[20,21],[33,49],[50,62]],12:[[16,19],[21,23],[33,47],[45,48],[50,53],[55,58],[60,60]],13:[[17,19],[20,24],[33,46],[47,47],[51,52],[55,57],[60,60]],14:[[18,19],[20,26],[33,47],[52,52],[55,56],[57,59]],15:[[20,29],[36,46],[55,56],[57,59],[60,61],[63,65]],16:[[20,29],[36,45],[55,56],[57,59],[62,66]],17:[[20,30],[37,44],[56,58],[63,66]],18:[[21,30],[37,44],[57,60],[62,64]],19:[[22,30],[38,45],[59,66]],20:[[22,28],[38,45],[58,66]],21:[[22,28],[38,43],[58,66]],22:[[22,27],[39,43],[59,66]],23:[[22,26],[60,66],[69,70]],24:[[22,26],[65,65],[69,70]],25:[[22,25],[69,70]],26:[[22,25]]};
+
+  /* Placa: misma proyección que el mapa plano, cámara fija «Caso» (k 3,2) */
+  var HOME='zodiac',K=3.2,W=520,H=300,S={x:240,y:150};
+  var pos=function(c){return {x:(c.lon+180)*4,y:40+(80-c.lat)*4};};
+  var z=pos(C[HOME]);
+  var scr=function(p){return {x:(p.x-z.x)*K+S.x,y:(p.y-z.y)*K+S.y};};
+  var f=function(n){return n.toFixed(1);};
+
+  // Tierra: cada celda de 5° se dibuja como 4×4 puntos para que el zoom no quede vacío
+  var dots=[];
+  Object.keys(LAND).forEach(function(r){LAND[r].forEach(function(g){for(var col=g[0];col<=g[1];col++){for(var i=0;i<4;i++){for(var j=0;j<4;j++){var q=scr({x:col*20+(i+.5)*5,y:40+(+r)*20+(j+.5)*5});if(q.x<-4||q.x>W+4||q.y<-4||q.y>H+4)continue;var sc=col*4+i,sr=(+r)*4+j;dots.push('<circle cx="'+f(q.x)+'" cy="'+f(q.y)+'" r="2.1" fill="#33405A" opacity="'+(.45+((sc*7+sr*13)%6)/10).toFixed(2)+'"/>');}}}});});
+  document.getElementById('p-land').innerHTML=dots.join('');
+
+  // Retícula cada 10° con sus valores reales
+  var lonX=function(lon){return S.x+(lon-C[HOME].lon)*4*K;},latY=function(lat){return S.y-(lat-C[HOME].lat)*4*K;};
+  var grat=[];
+  [-130,-120,-110].forEach(function(lon){var x=lonX(lon);grat.push('<line class="grat" x1="'+f(x)+'" y1="0" x2="'+f(x)+'" y2="'+H+'"/><text class="tick" x="'+f(x+5)+'" y="'+(H-12)+'">'+Math.abs(lon)+'° O</text>');});
+  [40,30].forEach(function(lat){var y=latY(lat);grat.push('<line class="grat" x1="0" y1="'+f(y)+'" x2="'+W+'" y2="'+f(y)+'"/><text class="tick" x="24" y="'+f(y-6)+'">'+lat+'° N</text>');});
+  document.getElementById('p-grat').innerHTML=grat.join('');
+
+  // Conexiones del caso: arcos cortos; las que caen fuera del encuadre salen por el borde
+  var LBL={
+    goldenstate:{x:222,y:104,a:'end',lead:[[247,135],[226,114]]},
+    blackdahlia:{x:314,y:216,a:'start',lead:[[298,202],[310,210]]},
+    ripper:{x:506,y:80,a:'end',edge:{c:[300,-30],e:[600,70]},more:'LONDRES · 1888 →'}
+  };
+  var rel=PAIRS.filter(function(p){return p[0]===HOME||p[1]===HOME;}).map(function(p){return p[0]===HOME?p[1]:p[0];});
+  var arcs=[],marks=[],labels=[];
+  rel.forEach(function(id){
+    var c=C[id],q=scr(pos(c)),L=LBL[id];
+    if(L.edge){arcs.push('<path class="arc" d="M'+S.x+','+S.y+' Q'+L.edge.c[0]+','+L.edge.c[1]+' '+L.edge.e[0]+','+L.edge.e[1]+'"/>');}
+    else{
+      var mx=(S.x+q.x)/2,my=(S.y+q.y)/2,dx=q.x-S.x,dy=q.y-S.y,len=Math.hypot(dx,dy),nx=dy/len,ny=-dx/len;
+      if(ny>0){nx=-nx;ny=-ny;}
+      arcs.push('<path class="arc" d="M'+S.x+','+S.y+' Q'+f(mx+nx*len*.3)+','+f(my+ny*len*.3)+' '+f(q.x)+','+f(q.y)+'"/>');
+      marks.push('<circle cx="'+f(q.x)+'" cy="'+f(q.y)+'" r="4.5" fill="'+CAT[c.cat].c+'" stroke="#F0C674" stroke-width="2"/>');
+      labels.push('<line class="leader" x1="'+L.lead[0][0]+'" y1="'+L.lead[0][1]+'" x2="'+L.lead[1][0]+'" y2="'+L.lead[1][1]+'"/>');
+    }
+    labels.push('<text class="lab" x="'+L.x+'" y="'+L.y+'" text-anchor="'+L.a+'">'+c.t+'</text>');
+    labels.push('<text class="lab-m g" x="'+L.x+'" y="'+(L.y+17)+'" text-anchor="'+L.a+'">'+(L.more||c.y)+'</text>');
+  });
+  marks.push('<circle class="ring" cx="'+S.x+'" cy="'+S.y+'" r="7"/><circle class="home" cx="'+S.x+'" cy="'+S.y+'" r="7" fill="#E5484D" stroke="#05070B" stroke-width="2"/>');
+  labels.push('<text class="lab-m" x="'+(S.x-18)+'" y="'+(S.y+22)+'" text-anchor="end">SAN FRANCISCO</text>');
+  document.getElementById('p-arcs').innerHTML=arcs.join('');
+  document.getElementById('p-marks').innerHTML=marks.join('');
+  document.getElementById('p-labels').innerHTML=labels.join('');
+
+  /* Índice: marca la sección visible */
+  var links=[].slice.call(document.querySelectorAll('.index a'));
+  var secs=links.map(function(a){return document.getElementById(a.getAttribute('href').slice(1));});
+  function setActive(id){links.forEach(function(a){if(a.getAttribute('href')==='#'+id){a.setAttribute('aria-current','true');}else{a.removeAttribute('aria-current');}});}
+  if('IntersectionObserver' in window){
+    var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){setActive(e.target.id);}});},{rootMargin:'-30% 0px -50% 0px'});
+    secs.forEach(function(s){io.observe(s);});
+  }
+  window.addEventListener('scroll',function(){if(window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-4){setActive(secs[secs.length-1].id);}},{passive:true});
+  links.forEach(function(a){a.addEventListener('click',function(){setActive(a.getAttribute('href').slice(1));});});
+})();
+</script>
+</body>
+</html>

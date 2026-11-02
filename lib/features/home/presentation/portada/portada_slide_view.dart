@@ -18,10 +18,12 @@ class PortadaSlideView extends StatelessWidget {
     required this.count,
     required this.onOpen,
     this.onExplore,
+    this.connectionCount = 0,
   });
 
   final TrueCrimeCase crimeCase;
   final PortadaSlideMotion motion;
+  final int connectionCount;
 
   /// Posición del slide empezando en 1.
   final int position;
@@ -33,11 +35,14 @@ class PortadaSlideView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < DsBreakpoints.desktop;
     final ghost = _GhostYear(crimeCase: crimeCase);
     final body = _SlideBody(
       crimeCase: crimeCase,
+      compact: compact,
       position: position,
       count: count,
+      connectionCount: connectionCount,
       onOpen: onOpen,
       onExplore: onExplore,
     );
@@ -69,35 +74,43 @@ class PortadaSlideView extends StatelessWidget {
               ),
             ),
             Positioned(
-              left: PortadaLayout.margin,
-              top: PortadaLayout.contentTop,
-              right: 0,
-              bottom: PortadaLayout.contentBottom,
+              left: compact ? 20 : PortadaLayout.margin,
+              top: compact ? 126 : PortadaLayout.contentTop,
+              right: compact ? 20 : 0,
+              bottom: compact ? 36 : PortadaLayout.contentBottom,
               child: Transform.translate(
                 offset: Offset(0, motion.contentShift.value),
                 child: IgnorePointer(
                   ignoring: leaving,
                   child: ExcludeSemantics(
                     excluding: leaving,
-                    child: Align(
-                      alignment: Alignment.bottomLeft,
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        alignment: Alignment.bottomLeft,
-                        child: FadeTransition(
-                          key: PortadaHeroKeys.content(crimeCase.id),
-                          opacity: motion.contentOpacity,
-                          child: body,
-                        ),
-                      ),
-                    ),
+                    child: compact
+                        ? SingleChildScrollView(
+                            child: FadeTransition(
+                              key: PortadaHeroKeys.content(crimeCase.id),
+                              opacity: motion.contentOpacity,
+                              child: body,
+                            ),
+                          )
+                        : Align(
+                            alignment: Alignment.bottomLeft,
+                            child: FittedBox(
+                              fit: BoxFit.scaleDown,
+                              alignment: Alignment.bottomLeft,
+                              child: FadeTransition(
+                                key: PortadaHeroKeys.content(crimeCase.id),
+                                opacity: motion.contentOpacity,
+                                child: body,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
               ),
             ),
             Positioned(
-              right: PortadaLayout.margin,
-              bottom: PortadaLayout.coordsBottom,
+              right: compact ? 20 : PortadaLayout.margin,
+              bottom: compact ? 10 : PortadaLayout.coordsBottom,
               child: ExcludeSemantics(
                 excluding: leaving,
                 child: FadeTransition(
@@ -138,15 +151,19 @@ class _GhostYear extends StatelessWidget {
 class _SlideBody extends StatelessWidget {
   const _SlideBody({
     required this.crimeCase,
+    required this.compact,
     required this.position,
     required this.count,
+    required this.connectionCount,
     required this.onOpen,
     required this.onExplore,
   });
 
   final TrueCrimeCase crimeCase;
+  final bool compact;
   final int position;
   final int count;
+  final int connectionCount;
   final VoidCallback onOpen;
   final VoidCallback? onExplore;
 
@@ -157,11 +174,11 @@ class _SlideBody extends StatelessWidget {
     final id = crimeCase.id;
 
     return SizedBox(
-      width: PortadaLayout.contentWidth,
+      width: compact ? double.infinity : PortadaLayout.contentWidth,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
-        spacing: DsSpacing.s20,
+        spacing: compact ? DsSpacing.s8 : DsSpacing.s20,
         children: [
           Row(
             mainAxisSize: MainAxisSize.min,
@@ -190,9 +207,9 @@ class _SlideBody extends StatelessWidget {
             maxLines: PortadaLayout.titleMaxLines,
             overflow: TextOverflow.ellipsis,
             style: styles.displayHero.copyWith(
-              fontSize: PortadaLayout.titleFontSize,
+              fontSize: compact ? 36 : PortadaLayout.titleFontSize,
               height: PortadaLayout.titleLineHeight,
-              letterSpacing: -PortadaLayout.titleFontSize * 0.01,
+              letterSpacing: -(compact ? 36 : PortadaLayout.titleFontSize) * 0.01,
             ),
           ),
           Wrap(
@@ -215,6 +232,10 @@ class _SlideBody extends StatelessWidget {
                 label: crimeCase.statusLabel ?? crimeCase.status.label,
                 color: crimeCase.status.designColor,
               ),
+              Text(
+                '$connectionCount ${connectionCount == 1 ? 'caso conectado' : 'casos conectados'}',
+                style: styles.monoData.copyWith(color: DsColors.accentGold),
+              ),
             ],
           ),
           ConstrainedBox(
@@ -227,8 +248,8 @@ class _SlideBody extends StatelessWidget {
               maxLines: PortadaLayout.summaryMaxLines,
               overflow: TextOverflow.ellipsis,
               style: styles.bodyLarge.copyWith(
-                fontSize: PortadaLayout.summaryFontSize,
-                height: PortadaLayout.summaryLineHeight,
+                fontSize: compact ? 16 : PortadaLayout.summaryFontSize,
+                height: compact ? 1.4 : PortadaLayout.summaryLineHeight,
               ),
             ),
           ),

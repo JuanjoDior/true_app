@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 
 import '../../../../core/design/design.dart';
 import '../../../cases/domain/true_crime_case.dart';
@@ -24,6 +24,25 @@ class PortadaUnsolvedRow extends StatefulWidget {
 
 class _PortadaUnsolvedRowState extends State<PortadaUnsolvedRow> {
   String? _hoveredId;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scroll(int direction, PortadaPosterMetrics metrics) {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final target = (position.pixels + direction * (metrics.width + metrics.gap) * 2)
+        .clamp(position.minScrollExtent, position.maxScrollExtent);
+    if (MediaQuery.disableAnimationsOf(context)) {
+      _scrollController.jumpTo(target);
+    } else {
+      _scrollController.animateTo(target, duration: DsMotion.hover, curve: DsMotion.easeUi);
+    }
+  }
 
   void _setHovered(String id, bool hovered) {
     if (hovered) {
@@ -45,12 +64,17 @@ class _PortadaUnsolvedRowState extends State<PortadaUnsolvedRow> {
         children: [
           Padding(
             padding: EdgeInsets.symmetric(horizontal: metrics.margin),
-            child: _Header(metrics: metrics),
+            child: _Header(
+              metrics: metrics,
+              onPrevious: () => _scroll(-1, metrics),
+              onNext: () => _scroll(1, metrics),
+            ),
           ),
           SizedBox(height: metrics.headerBottom),
           // Sin recorte: el póster elevado sobresale de la fila al pasar el ratón.
           SingleChildScrollView(
             key: PortadaUnsolvedKeys.row,
+            controller: _scrollController,
             scrollDirection: Axis.horizontal,
             clipBehavior: Clip.none,
             padding: EdgeInsets.symmetric(horizontal: metrics.margin),
@@ -77,9 +101,11 @@ class _PortadaUnsolvedRowState extends State<PortadaUnsolvedRow> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.metrics});
+  const _Header({required this.metrics, required this.onPrevious, required this.onNext});
 
   final PortadaPosterMetrics metrics;
+  final VoidCallback onPrevious;
+  final VoidCallback onNext;
 
   @override
   Widget build(BuildContext context) {
@@ -95,21 +121,51 @@ class _Header extends StatelessWidget {
       letterSpacingEm: 0.14,
     );
 
-    if (metrics.stackedHeader) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: PortadaPosterMetrics.headerStackedGap,
-        children: [title, subtitle],
-      );
-    }
+    final heading = metrics.stackedHeader
+        ? Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: PortadaPosterMetrics.headerStackedGap,
+            children: [title, subtitle],
+          )
+        : Row(
+            crossAxisAlignment: CrossAxisAlignment.baseline,
+            textBaseline: TextBaseline.alphabetic,
+            spacing: PortadaPosterMetrics.headerTitleGap,
+            children: [title, const Flexible(child: subtitle)],
+          );
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.baseline,
-      textBaseline: TextBaseline.alphabetic,
-      spacing: PortadaPosterMetrics.headerTitleGap,
       children: [
-        title,
-        const Flexible(child: subtitle),
+        Expanded(child: heading),
+        _ScrollButton(label: 'Casos anteriores', icon: Icons.arrow_back, onPressed: onPrevious),
+        const SizedBox(width: DsSpacing.s8),
+        _ScrollButton(label: 'Más casos', icon: Icons.arrow_forward, onPressed: onNext),
       ],
     );
   }
+}
+
+class _ScrollButton extends StatelessWidget {
+  const _ScrollButton({required this.label, required this.icon, required this.onPressed});
+
+  final String label;
+  final IconData icon;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) => DsPressable(
+    semanticLabel: label,
+    onTap: onPressed,
+    minTapTarget: const Size.square(52),
+    focusRadius: 26,
+    builder: (context, state) => Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: state.hovered ? DsColors.lineHairline : DsColors.surfaceCard,
+        border: Border.all(color: DsColors.lineHairline),
+      ),
+      child: Icon(icon, size: 18, color: DsColors.textPrimary),
+    ),
+  );
 }

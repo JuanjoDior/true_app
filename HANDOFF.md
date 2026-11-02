@@ -1,7 +1,37 @@
-# Traspaso — 15 de agosto de 2026
+# Traspaso entre equipos — rama cinematográfica
 
-Estado en vuelo. Si retomás el proyecto, **leé esto y luego
-`PROJECT_CONTEXT.md`**: aquí está lo que quedó a medias, allí lo que no cambia.
+## Estado actual
+
+La rama de trabajo es `feat/cinematic-design-system`. El rediseño está **en curso**; no se ha fusionado en `main` ni desplegado. La fuente de verdad para tareas, decisiones y evidencia es `odd/tasks/cinematic-design-system.md`, especialmente «Expediente F6» y «Portada y formulario: diseños elegidos». Leer también `DESIGN.md`, `docs/design/` y `PROJECT_CONTEXT.md`.
+
+- Portada P1 implementada y aprobada visualmente por el usuario.
+- Expediente E4 sigue abierto: falta la verificación independiente en entorno aislado.
+- Formulario P2 sigue abierto: falta QA visual final en Chrome tras P2f y P2g, incluida la vista previa completa, pestañas y arrastre; consultar el plan para los detalles.
+- Verificación del traspaso: `flutter analyze --no-pub` limpio, `flutter test --no-pub` con 1843 pruebas aprobadas y `flutter build web --no-pub` correcto (job-1). La QA visual final y la verificación independiente pendientes no quedan sustituidas por esta ejecución.
+- No retomar `case-auto-publish` ni cambiar validación o persistencia como parte del rediseño sin una decisión nueva.
+
+## Continuar en otro equipo
+
+Con Git y Flutter instalados (en este equipo: Flutter 3.44.0, Dart 3.12.0; el proyecto exige Dart `^3.11.0`):
+
+```bash
+git clone --branch feat/cinematic-design-system https://github.com/JuanjoDior/true_app.git
+cd true_app
+flutter pub get
+flutter analyze
+flutter test
+flutter run -d chrome
+```
+
+Si ya existe una copia, revisar primero `git status` y proteger los cambios locales antes de hacer `git fetch` y cambiar de rama; no sobrescribirlos. Para continuar, pedir al asistente que lea este archivo y `odd/tasks/cinematic-design-system.md`, compruebe el estado del repositorio y retome la tarea abierta acordada.
+
+Los borradores locales **no viajan con Git**: exportarlos desde «Copia de seguridad» e importarlos en el otro equipo si hacen falta. `.engram/`, configuración personal, compilaciones e índices locales tampoco viajan; usar la documentación versionada para reconstruir el contexto y transferir cualquier información privada necesaria por un canal seguro. La carpeta local `true_app_traspaso/` es un traspaso antiguo, no la referencia actual.
+
+---
+
+## Contexto histórico — ciclo del 15 de agosto de 2026
+
+Lo que sigue describe un ciclo anterior y no el estado de la rama actual. Si hay contradicciones, prevalecen el estado actual y el plan cinematográfico.
 
 ---
 
@@ -19,9 +49,9 @@ línea de `lib/`, `web/` ni `assets/` — sólo tests y documentación.
 
 ---
 
-## Continuar en otro equipo
+## Continuación histórica (obsoleta)
 
-Todo lo necesario está **en el repo**. No hace falta traer nada más.
+Las siguientes instrucciones corresponden al ciclo anterior; usar las instrucciones actuales del comienzo de este archivo.
 
 ```
 git clone https://github.com/JuanjoDior/true_app
@@ -76,9 +106,9 @@ Cada entidad nueva necesita campo en el borrador, editor, persistencia,
 exportación, decodificación y renderizado — el propio diseño lo estima en
 «roughly the size of this whole cycle».
 
-La infraestructura ya está puesta: ese ciclo **dependía de que
-`CaseDossierContent` existiera primero**, y ahora existe. La página ampliada lo
-compone con `DossierPresentation.expanded`. Las pestañas se decidieron
+La infraestructura de aquel ciclo incluía `CaseDossierContent`, que se conserva
+para la vista previa compacta del formulario. La página pública compone ahora
+las secciones cinematográficas del expediente. Las pestañas se decidieron
 explícitamente para después, porque necesitan aserciones de alcance por pestaña
 que las specs actuales no tienen.
 

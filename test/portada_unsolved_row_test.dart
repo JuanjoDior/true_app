@@ -19,7 +19,7 @@ void main() {
     testWidgets('título y subtítulo del prototipo', (tester) async {
       await pumpPortadaUnsolved(tester);
 
-      expect(find.text('Sin resolver'), findsOneWidget);
+      expect(find.text('Sin resolver').first, findsOneWidget);
       expect(
         find.text('CASOS ABIERTOS QUE SIGUEN ESPERANDO RESPUESTA'),
         findsOneWidget,
@@ -31,7 +31,7 @@ void main() {
       await pumpPortadaUnsolved(tester);
 
       expect(
-        tester.getSemantics(find.text('Sin resolver')),
+        tester.getSemantics(find.text('Sin resolver').first),
         matchesSemantics(label: 'Sin resolver', isHeader: true),
       );
       handle.dispose();
@@ -96,6 +96,36 @@ void main() {
         expect(tester.takeException(), isNull);
       });
     }
+  });
+
+  group('controles de desplazamiento', () {
+    testWidgets('flechas accesibles recorren la fila en ambos sentidos', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpPortadaUnsolved(tester, size: phoneSize);
+      final previous = find.bySemanticsLabel('Casos anteriores');
+      final next = find.bySemanticsLabel('Más casos');
+      expect(previous, findsOneWidget);
+      expect(next, findsOneWidget);
+      expect(tester.getSize(next).shortestSide, greaterThanOrEqualTo(52));
+      final initial = tester.getTopLeft(_poster('zodiac')).dx;
+      await tester.tap(next);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(_poster('zodiac')).dx, lessThan(initial));
+      await tester.tap(previous);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(_poster('zodiac')).dx, closeTo(initial, 0.1));
+      handle.dispose();
+    });
+
+    testWidgets('movimiento reducido desplaza inmediatamente', (tester) async {
+      await pumpPortadaUnsolved(tester, size: phoneSize, reduceMotion: true);
+      final initial = tester.getTopLeft(_poster('zodiac')).dx;
+      await tester.tap(find.bySemanticsLabel('Más casos'));
+      await tester.pump();
+      expect(tester.getTopLeft(_poster('zodiac')).dx, lessThan(initial));
+    });
   });
 
   group('interacción', () {

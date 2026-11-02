@@ -1,0 +1,484 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Formulario de casos — Redacción guiada</title>
+<style>
+:root{
+  --bg:#05070B;--glow:#0D1320;--glass:rgba(14,16,22,.82);--card:rgba(255,255,255,.04);
+  --hair:rgba(255,255,255,.12);--strong:#FFFFFF;--primary:#F4F1EB;--body:#D8D3CA;--muted:#B9B4AB;--faint:#A7A29A;--ph:#8B8880;
+  --red:#E5484D;--redText:#FF7A7F;--gold:#F0C674;--open:#6CB0E0;--solved:#8FCB8A;--progress:#F0B455;
+  --input:#0D1118;--line:#2A303B;
+  --serif:"Noto Serif",Georgia,"Times New Roman",serif;--sans:"Noto Sans","Segoe UI",system-ui,sans-serif;--mono:"IBM Plex Mono",Consolas,ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--primary);font-family:var(--sans)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px;box-shadow:0 0 0 6px rgba(229,72,77,.25);border-radius:10px}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.page{width:1440px;height:900px;margin:0 auto;overflow:hidden;display:grid;grid-template-rows:72px minmax(0,1fr) 56px;background:radial-gradient(1100px 700px at 50% 0%,var(--glow),var(--bg) 70%)}
+
+/* Cabecera */
+.top{display:flex;align-items:center;gap:16px;padding:0 24px;border-bottom:1px solid rgba(255,255,255,.08);background:rgba(10,13,19,.88);position:relative;z-index:6}
+.logo{display:flex;align-items:center;gap:12px}
+.logo i{width:36px;height:36px;border-radius:10px;background:var(--red);display:grid;place-items:center;font:700 20px var(--serif);font-style:normal;color:#fff}
+.logo b{font:700 20px var(--serif);letter-spacing:.1em}
+.ib{width:44px;height:44px;display:grid;place-items:center;border:0;border-radius:12px;background:transparent;color:#C9C4BB;transition:background .25s}
+.ib:hover{background:rgba(255,255,255,.1);color:#fff}
+.crumb{display:flex;flex-direction:column;gap:2px;padding-left:16px;margin-left:4px;border-left:1px solid var(--hair)}
+.wrap{position:relative}
+.btn{height:44px;padding:0 16px;display:inline-flex;align-items:center;gap:10px;border-radius:12px;font-size:14px;font-weight:600;border:1px solid rgba(255,255,255,.24);background:rgba(255,255,255,.08);transition:background .25s,transform .25s var(--ease)}
+.btn:hover{background:rgba(255,255,255,.14)}
+.btn.primary{background:var(--primary);color:#0B0C10;border-color:transparent}
+.btn.primary:hover{transform:scale(1.04)}
+.btn.red{background:var(--red);color:#fff;border-color:transparent}
+.btn[aria-disabled="true"]{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.12);color:var(--faint);cursor:not-allowed;transform:none}
+.switch{height:48px;padding:0 14px 0 16px;display:flex;align-items:center;gap:12px;border:1px solid var(--hair);border-radius:12px;background:var(--card);text-align:left}
+.switch:hover{background:rgba(255,255,255,.08)}
+.switch b{font:700 17px var(--serif);color:#fff;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--c);flex-shrink:0}
+.st{display:inline-flex;align-items:center;gap:8px;font-size:13px;color:var(--body)}
+.saved{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:13px;color:var(--muted)}
+.menu{position:absolute;top:calc(100% + 8px);min-width:300px;padding:8px;background:rgba(14,16,22,.96);backdrop-filter:blur(18px);border:1px solid var(--hair);border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,.6);display:flex;flex-direction:column;gap:2px;z-index:8}
+.menu[hidden]{display:none}
+.menu.right{right:0}
+.mi{min-height:44px;padding:8px 12px;display:flex;align-items:center;gap:12px;border:0;border-radius:10px;background:transparent;text-align:left;font-size:14px;color:var(--primary)}
+.mi:hover{background:rgba(255,255,255,.08)}
+.mi[aria-current="true"]{background:rgba(229,72,77,.12);box-shadow:inset 3px 0 0 var(--red)}
+.mi span.t{display:flex;flex-direction:column;gap:3px}
+.mi span.t b{font:700 16px var(--serif)}
+.mi.danger{color:var(--redText)}
+.sep{height:1px;margin:6px 4px;background:var(--hair)}
+.tip{position:absolute;right:0;top:calc(100% + 8px);width:260px;padding:10px 12px;background:rgba(14,16,22,.96);border:1px solid var(--hair);border-radius:10px;font-size:13px;line-height:1.45;color:var(--body);opacity:0;pointer-events:none;transition:opacity .2s;z-index:8}
+.wrap:hover .tip.on,.wrap:focus-within .tip.on{opacity:1}
+
+/* Cuerpo: raíl · sección · vista previa */
+.desk{display:grid;grid-template-columns:240px minmax(0,1fr) 608px;min-height:0}
+.rail{padding:28px 16px;border-right:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:18px;overflow:auto}
+.rail ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.step{width:100%;min-height:56px;padding:8px 12px;display:grid;grid-template-columns:28px 1fr 18px;align-items:center;gap:10px;border:0;border-radius:12px;background:transparent;text-align:left;transition:background .25s}
+.step:hover{background:rgba(255,255,255,.06)}
+.step[aria-current="step"]{background:rgba(229,72,77,.12);box-shadow:inset 3px 0 0 var(--red)}
+.step .n{font:500 12px var(--mono);color:var(--muted)}
+.step[aria-current="step"] .n{color:var(--redText)}
+.step span.t{display:flex;flex-direction:column;gap:2px}
+.step span.t b{font-size:14px;font-weight:600}
+.step span.t small{font-size:12px;color:var(--faint)}
+.mark{width:18px;height:18px;display:grid;place-items:center;font-size:13px;color:var(--solved)}
+.mark.miss::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--progress);box-shadow:0 0 8px var(--progress)}
+.bar{height:4px;border-radius:2px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar i{display:block;height:100%;background:var(--red);transition:width .4s var(--ease)}
+.writer{overflow:auto;padding:40px 40px 48px}
+.sec{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:22px;animation:rise .45s var(--ease) both}
+.sec[hidden]{display:none}
+.sec h2{margin:0;font:700 34px/1.1 var(--serif);color:#fff}
+.sec .intro{margin:-10px 0 0;font-size:15px;line-height:1.6;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.fld{display:flex;flex-direction:column;gap:8px;min-width:0}
+.fld>label,.fld>.lb{font-size:13px;font-weight:500;color:var(--primary)}
+.in{width:100%;height:48px;padding:0 14px;background:var(--input);border:1px solid var(--line);border-radius:12px;color:var(--primary);font:15px var(--sans);transition:border-color .2s,box-shadow .2s}
+.in::placeholder{color:var(--ph)}
+.in:focus,.in:focus-visible{outline:none;border-color:var(--red);box-shadow:0 0 0 3px rgba(229,72,77,.32);border-radius:12px}
+.in[aria-invalid="true"]{border-color:var(--redText)}
+textarea.in{height:auto;min-height:132px;padding:12px 14px;line-height:1.6;resize:vertical}
+.sel{position:relative}
+.sel select{appearance:none;padding-right:40px}
+.sel::after{content:"";position:absolute;right:16px;top:20px;border:5px solid transparent;border-top-color:var(--muted);pointer-events:none}
+.hint{font-size:13px;line-height:1.45;color:var(--faint)}
+.err{font-size:13px;color:var(--redText)}
+.err:empty{display:none}
+.mapbox{position:relative;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#0E1420,#05070B 80%);cursor:crosshair}
+.mapbox svg{display:block;width:100%;height:auto}
+.mapbox .chip{position:absolute;left:12px;top:12px;padding:6px 12px;border-radius:999px;background:rgba(12,14,19,.88);border:1px solid var(--hair);font-size:13px;color:var(--body);pointer-events:none}
+.coordline{display:flex;justify-content:space-between;align-items:center;font:500 14px var(--mono);color:var(--gold)}
+.coordline.none{color:var(--muted)}
+details.manual{border:1px solid var(--hair);border-radius:12px;background:var(--card)}
+details.manual summary{min-height:48px;padding:0 16px;display:flex;align-items:center;gap:10px;cursor:pointer;font-size:14px;font-weight:600;list-style:none}
+details.manual summary::before{content:"▸";color:var(--muted);transition:transform .2s}
+details.manual[open] summary::before{transform:rotate(90deg)}
+details.manual .grid3{display:grid;grid-template-columns:110px 1fr 1fr;gap:14px;padding:4px 16px 16px}
+.row{padding:16px;display:flex;flex-direction:column;gap:14px;background:var(--card);border:1px solid var(--hair);border-radius:14px}
+.row .rh{display:flex;justify-content:space-between;align-items:center;margin:-6px -6px -4px 0}
+.row .r2{display:grid;grid-template-columns:150px 1fr;gap:14px}
+.add{height:48px;border:1px dashed rgba(255,255,255,.24);border-radius:12px;background:transparent;font-size:14px;font-weight:600;color:var(--body)}
+.add:hover{background:rgba(255,255,255,.05);color:#fff}
+.empty{padding:18px;border:1px dashed rgba(255,255,255,.16);border-radius:12px;font-size:14px;color:var(--muted)}
+.pager{display:flex;flex-direction:row;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)}
+
+/* Vista previa */
+.preview{overflow:auto;padding:28px 24px 32px;border-left:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.015);display:flex;flex-direction:column;gap:16px}
+.preview>*{flex-shrink:0}
+.dossier{width:560px;border:1px solid var(--hair);border-radius:18px;overflow:hidden;background:var(--bg);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.dh{position:relative;height:290px;overflow:hidden;background:radial-gradient(520px 360px at 80% 30%,color-mix(in srgb,var(--cc) 34%,transparent),transparent 65%),linear-gradient(120deg,var(--base) 0%,#05070B 80%);transition:background .4s}
+.dh .ghost{position:absolute;right:-6px;top:6px;font:700 210px/1 var(--serif);color:rgba(255,255,255,.05);letter-spacing:-.02em}
+.dh .veil{position:absolute;inset:0;background:linear-gradient(90deg,rgba(5,7,11,.9),rgba(5,7,11,.3) 75%),linear-gradient(180deg,rgba(5,7,11,0) 55%,var(--bg))}
+.dh .body{position:absolute;left:28px;right:28px;bottom:22px;display:flex;flex-direction:column;gap:12px}
+.meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.badge{height:26px;padding:0 10px;display:inline-flex;align-items:center;border:1px solid currentColor;border-radius:6px;font-size:12px;font-weight:600}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.place{font:500 11px var(--mono);letter-spacing:.14em;color:var(--body);text-transform:uppercase}
+.dh h3{margin:0;font:700 50px/.98 var(--serif);letter-spacing:-.01em;color:#fff;overflow-wrap:anywhere}
+.lead{margin:0;padding:6px 28px 0;font:700 18px/1.5 var(--serif);color:var(--primary)}
+.facts{margin:20px 28px 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--hair);border-radius:14px;background:var(--glass)}
+.fact{padding:14px;display:flex;flex-direction:column;gap:6px;border-left:1px solid var(--hair);min-width:0}
+.fact:first-child{border-left:0}
+.fact dd{margin:0;font-size:13px;line-height:1.4;color:var(--primary)}
+.fact strong{font:700 22px var(--serif);color:var(--gold)}
+.tl{list-style:none;margin:20px 28px 26px;padding:0 0 0 136px;position:relative;display:flex;flex-direction:column;gap:18px}
+.tl::before{content:"";position:absolute;left:118px;top:8px;bottom:8px;width:2px;background:linear-gradient(180deg,var(--red),var(--gold),var(--open))}
+.tl li{position:relative;display:flex;flex-direction:column;gap:4px}
+.tl .d{position:absolute;left:-136px;top:0;width:104px;text-align:right;font:700 16px/1.2 var(--serif);color:var(--k)}
+.tl .p{position:absolute;left:-23px;top:6px;width:10px;height:10px;border-radius:50%;background:var(--k);box-shadow:0 0 0 4px var(--bg),0 0 14px var(--k)}
+.tl .kind{font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--k)}
+.tl b{font-size:15px;font-weight:500}
+.check{width:560px;padding:18px 20px;display:flex;flex-direction:column;gap:12px;background:var(--card);border:1px solid var(--hair);border-radius:14px}
+.check ul{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:10px 18px}
+.check li{display:flex;align-items:center;gap:10px;font-size:14px;color:var(--body)}
+.check li i{width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:12px;border:1.5px solid var(--progress);color:var(--progress)}
+.check li.ok i{border-color:var(--solved);background:rgba(143,203,138,.15);color:var(--solved)}
+.reserved{width:560px;padding:14px 16px;display:flex;gap:12px;border:1px dashed rgba(255,255,255,.18);border-radius:12px;font-size:13px;line-height:1.5;color:var(--muted)}
+.reserved b{color:var(--primary);font-weight:600}
+
+/* Pie de cuenta */
+.acct{display:flex;align-items:center;gap:16px;padding:0 24px;border-top:1px solid rgba(255,255,255,.08);background:rgba(10,13,19,.88);font-size:13px;color:var(--muted)}
+.acct .who{display:flex;align-items:center;gap:10px}
+.acct .motto{margin-left:auto;color:var(--faint)}
+dialog{width:440px;padding:28px;background:rgba(14,16,22,.96);color:var(--primary);border:1px solid var(--hair);border-radius:20px;box-shadow:0 50px 120px rgba(0,0,0,.7)}
+dialog::backdrop{background:rgba(5,7,11,.72);backdrop-filter:blur(4px)}
+dialog h2{margin:0 0 10px;font:700 22px/1.25 var(--serif);color:#fff}
+dialog p{margin:0 0 18px;font-size:14px;line-height:1.6;color:var(--body)}
+dialog .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.toast{position:fixed;right:28px;bottom:76px;padding:14px 18px;display:flex;gap:10px;align-items:center;background:rgba(14,16,22,.96);border:1px solid rgba(143,203,138,.5);border-radius:12px;font-size:14px;transform:translateX(calc(100% + 48px));visibility:hidden;transition:transform .35s var(--ease),visibility 0s .35s;z-index:20}
+.toast.on{transform:none;visibility:visible;transition:transform .35s var(--ease)}
+@keyframes rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes pulse{0%{transform:scale(.5);opacity:.9}100%{transform:scale(2.8);opacity:0}}
+.ring{transform-box:fill-box;transform-origin:center;animation:pulse 1.8s ease-out infinite}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="top">
+  <a class="ib" href="#" aria-label="Volver a la sala"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></a>
+  <a class="logo" href="#" aria-label="TRUE, ir a la portada"><i>T</i><b>TRUE</b></a>
+  <div class="crumb"><span class="label">Formulario de casos</span><span id="h-status" class="st"></span></div>
+  <div class="wrap" style="margin-left:12px">
+    <button id="sw" class="switch" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="m-drafts"><span class="label" style="letter-spacing:.12em">Borrador:</span><b id="sw-title"></b><span aria-hidden="true" style="color:var(--muted)">▾</span></button>
+    <div id="m-drafts" class="menu" hidden style="min-width:380px">
+      <span class="label" id="d-count" style="padding:8px 12px 4px"></span>
+      <div id="d-list" style="display:flex;flex-direction:column;gap:2px"></div>
+      <div class="sep"></div>
+      <button class="mi" type="button" id="d-new"><span aria-hidden="true">＋</span>Nuevo borrador</button>
+      <button class="mi danger" type="button" id="d-del"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/></svg>Eliminar este borrador…</button>
+    </div>
+  </div>
+  <span class="saved" role="status"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--solved)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg><span id="saved">Guardado en este equipo</span></span>
+  <div class="wrap">
+    <button class="btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="m-backup">Copia de seguridad <span aria-hidden="true">▾</span></button>
+    <div id="m-backup" class="menu right" hidden>
+      <button class="mi" type="button" data-toast="Trabajo guardado. Ya puedes enviar ese fichero.">Guardar mi trabajo en un fichero</button>
+      <button class="mi" type="button" data-toast="Cargados 2 casos. Los que ya tenías siguen aquí.">Cargar trabajo desde un fichero</button>
+      <div class="sep"></div>
+      <button class="mi" type="button" data-toast="Borradores copiados como texto.">Copiar como texto</button>
+      <button class="mi" type="button" data-dialog="dlg-restore">Pegar un texto copiado</button>
+    </div>
+  </div>
+  <div class="wrap">
+    <button id="json" class="btn" type="button" aria-disabled="true" aria-describedby="json-why">Copiar JSON</button>
+    <span id="json-why" class="tip on" role="tooltip">Completa los campos obligatorios para poder exportar.</span>
+  </div>
+</header>
+
+<div class="desk">
+<nav class="rail" aria-label="Secciones del borrador">
+  <div style="display:flex;flex-direction:column;gap:10px;padding:0 12px">
+    <span class="label">Secciones</span>
+    <span id="r-count" style="font-size:13px;color:var(--body)"></span>
+    <div class="bar" aria-hidden="true"><i id="r-bar"></i></div>
+  </div>
+  <ol id="steps"></ol>
+</nav>
+
+<main class="writer" id="writer">
+  <section class="sec" data-step="0" aria-labelledby="s0">
+    <span class="label" data-kicker></span><h2 id="s0">Datos básicos</h2>
+    <p class="intro">Cómo se llama el caso y cuándo ocurrió. Usa el nombre por el que se le conoce, sin adjetivos.</p>
+    <div class="fld"><label for="f-t">Título</label><input class="in" id="f-t" data-k="t" autocomplete="off" aria-describedby="e-t"><span class="err" id="e-t" aria-live="polite"></span></div>
+    <div class="grid2">
+      <div class="fld"><label for="f-cat">Categoría</label><div class="sel"><select class="in" id="f-cat" data-k="cat"><option value="serialKiller">Asesinos en serie</option><option value="isolatedMurder">Asesinatos aislados</option><option value="kidnapping">Secuestros</option><option value="unsolved">Casos sin resolver</option></select></div></div>
+      <div class="fld"><label for="f-st">Estado</label><div class="sel"><select class="in" id="f-st" data-k="st"><option value="open">Sin resolver</option><option value="solved">Resuelto</option><option value="inProgress">En investigación</option></select></div></div>
+    </div>
+    <div class="fld" style="max-width:200px"><label for="f-y">Año</label><input class="in" id="f-y" data-k="y" inputmode="numeric" maxlength="4" aria-describedby="h-y e-y"><span class="hint" id="h-y">3 o 4 cifras.</span><span class="err" id="e-y" aria-live="polite"></span></div>
+  </section>
+
+  <section class="sec" data-step="1" aria-labelledby="s1" hidden>
+    <span class="label" data-kicker></span><h2 id="s1">Ubicación</h2>
+    <p class="intro">Pulsa en el mapa donde ocurrió. Si prefieres escribir las coordenadas, abre el ajuste manual.</p>
+    <div class="mapbox" id="map" tabindex="0" role="button" aria-describedby="m-help" aria-label="Mapa para situar el caso">
+      <svg id="map-svg" viewBox="0 30 1440 560" aria-hidden="true"><g id="land"></g><g id="pin"></g></svg>
+      <span class="chip" id="map-chip">Toca el mapa para situar el caso</span>
+    </div>
+    <span class="hint" id="m-help">Con el teclado, pulsa Intro para buscar la región que hayas escrito.</span>
+    <div id="coordline" class="coordline none" aria-live="polite">Sin punto marcado</div>
+    <div class="grid2">
+      <div class="fld"><label for="f-co">País</label><input class="in" id="f-co" data-k="co"></div>
+      <div class="fld"><label for="f-re">Región o ciudad</label><input class="in" id="f-re" data-k="re"></div>
+    </div>
+    <details class="manual"><summary>Ajuste manual</summary>
+      <div class="grid3">
+        <div class="fld"><label for="f-iso">Código ISO</label><input class="in" id="f-iso" data-k="iso" placeholder="ES" maxlength="2"></div>
+        <div class="fld"><label for="f-lat">Latitud</label><input class="in" id="f-lat" data-k="lat" inputmode="decimal" aria-describedby="e-lat"><span class="err" id="e-lat" aria-live="polite"></span></div>
+        <div class="fld"><label for="f-lon">Longitud</label><input class="in" id="f-lon" data-k="lon" inputmode="decimal" aria-describedby="e-lon"><span class="err" id="e-lon" aria-live="polite"></span></div>
+      </div>
+    </details>
+  </section>
+
+  <section class="sec" data-step="2" aria-labelledby="s2" hidden>
+    <span class="label" data-kicker></span><h2 id="s2">Resumen y ficha</h2>
+    <p class="intro">Dos o tres frases que expliquen qué pasó. Es lo primero que se lee en el expediente.</p>
+    <div class="fld"><label for="f-sum">Resumen del caso</label><textarea class="in" id="f-sum" data-k="sum" rows="5"></textarea></div>
+    <div class="fld"><label for="f-vic">Víctimas</label><input class="in" id="f-vic" data-k="vic" placeholder="Al menos 5 víctimas confirmadas" aria-describedby="h-vic"><span class="hint" id="h-vic">Descríbelas con respeto, como en el resto del archivo.</span></div>
+    <div class="fld"><label for="f-tags">Tags</label><input class="in" id="f-tags" placeholder="1960s, ee. uu., cifrado" aria-describedby="h-tags"><span class="hint" id="h-tags">Separados por comas.</span></div>
+    <div class="grid2">
+      <div class="fld"><label for="f-fr">Rango destacado</label><input class="in" id="f-fr" inputmode="numeric" placeholder="1 = destacado esta semana"></div>
+      <div class="fld"><label for="f-rr">Rango de relevancia</label><input class="in" id="f-rr" inputmode="numeric"></div>
+    </div>
+  </section>
+
+  <section class="sec" data-step="3" aria-labelledby="s3" hidden>
+    <span class="label" data-kicker></span><h2 id="s3">Cronología</h2>
+    <p class="intro">Los hitos verificados, del más antiguo al más reciente. La fecha puede ser un día o solo un año.</p>
+    <div id="tl-rows" style="display:flex;flex-direction:column;gap:12px"></div>
+    <button class="add" type="button" id="tl-add">＋ Añadir hito</button>
+  </section>
+
+  <section class="sec" data-step="4" aria-labelledby="s4" hidden>
+    <span class="label" data-kicker></span><h2 id="s4">Enlaces</h2>
+    <p class="intro">Fuentes que sostienen el expediente: prensa, documentos, pódcast o vídeos. Son opcionales.</p>
+    <div id="ln-rows" style="display:flex;flex-direction:column;gap:12px"></div>
+    <button class="add" type="button" id="ln-add">＋ Añadir enlace</button>
+  </section>
+
+  <section class="sec" data-step="5" aria-labelledby="s5" hidden>
+    <span class="label" data-kicker></span><h2 id="s5">Fotografías</h2>
+    <p class="intro">Solo imágenes con derechos claros. Nada que exponga a las víctimas.</p>
+    <div id="ph-rows" style="display:flex;flex-direction:column;gap:12px"></div>
+    <button class="add" type="button" id="ph-add">＋ Añadir fotografía</button>
+  </section>
+
+  <section class="sec" data-step="6" aria-labelledby="s6" hidden>
+    <span class="label" data-kicker></span><h2 id="s6">Capítulos</h2>
+    <p class="intro">El relato largo del expediente. Escribe con calma; todo se guarda en este equipo mientras escribes.</p>
+    <div class="fld"><label for="c1">Antecedentes</label><textarea class="in" id="c1" rows="4"></textarea></div>
+    <div class="fld"><label for="c2">Los hechos</label><textarea class="in" id="c2" rows="4"></textarea></div>
+    <div class="fld"><label for="c3">La investigación</label><textarea class="in" id="c3" rows="4"></textarea></div>
+    <div class="fld"><label for="c4">Estado actual</label><textarea class="in" id="c4" rows="4"></textarea></div>
+  </section>
+
+  <div class="sec pager" style="animation:none;margin-top:28px">
+    <button class="btn" type="button" id="prev">← Anterior</button>
+    <button class="btn primary" type="button" id="next"></button>
+  </div>
+</main>
+
+<aside class="preview" aria-labelledby="pv-h">
+  <div style="display:flex;justify-content:space-between;align-items:baseline;width:560px">
+    <h2 id="pv-h" class="label" style="margin:0">Vista previa · así se verá el expediente</h2>
+    <span class="label" style="color:var(--faint);letter-spacing:.12em">En vivo</span>
+  </div>
+  <article class="dossier" aria-live="polite" aria-atomic="false">
+    <div class="dh" id="pv-head">
+      <div class="ghost" id="pv-ghost" aria-hidden="true"></div><div class="veil"></div>
+      <div class="body">
+        <span class="place" id="pv-place"></span>
+        <div class="meta"><span class="badge" id="pv-badge"></span><span class="status" id="pv-status"></span></div>
+        <h3 id="pv-title"></h3>
+      </div>
+    </div>
+    <p class="lead" id="pv-lead"></p>
+    <dl class="facts" aria-label="Ficha técnica">
+      <div class="fact"><dt class="label" style="letter-spacing:.12em">Año</dt><dd><strong id="pv-year"></strong></dd></div>
+      <div class="fact"><dt class="label" style="letter-spacing:.12em">Lugar</dt><dd id="pv-loc"></dd></div>
+      <div class="fact"><dt class="label" style="letter-spacing:.12em">Víctimas</dt><dd id="pv-vic"></dd></div>
+      <div class="fact"><dt class="label" style="letter-spacing:.12em">Coordenadas</dt><dd id="pv-coord" style="font:500 12px var(--mono)"></dd></div>
+    </dl>
+    <h4 class="label" style="margin:22px 28px 0">Cronología verificada</h4>
+    <ol class="tl" id="pv-tl"></ol>
+  </article>
+  <section class="check" aria-labelledby="ck-h">
+    <div style="display:flex;justify-content:space-between"><h2 id="ck-h" class="label" style="margin:0">Campos obligatorios</h2><span id="ck-n" class="label" style="letter-spacing:.1em"></span></div>
+    <ul id="ck"></ul>
+  </section>
+  <div class="reserved" role="note">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" aria-hidden="true" style="flex-shrink:0;margin-top:2px"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.5"/></svg>
+    <span><b>Enviar a revisión · sitio reservado.</b> Aún no está disponible. Hasta entonces, exporta el caso con «Copiar JSON».</span>
+  </div>
+</aside>
+</div>
+
+<footer class="acct">
+  <span class="who"><span class="dot" style="--c:var(--faint)"></span><span id="acct-txt">Sin sesión · tus borradores se guardan solo en este equipo.</span></span>
+  <button class="btn" type="button" id="signin" aria-haspopup="dialog" style="height:44px">Iniciar sesión</button>
+  <span class="motto">Crímenes reales · documentados con respeto.</span>
+</footer>
+</div>
+
+<dialog id="dlg-del" aria-labelledby="del-h">
+  <h2 id="del-h">¿Eliminar «<span id="del-name"></span>»?</h2>
+  <p>Se borrará de este equipo y no se puede deshacer. Si quieres conservarlo, guarda antes una copia de seguridad.</p>
+  <div class="acts"><button class="btn" type="button" data-close>Cancelar</button><button class="btn red" type="button" id="del-ok">Eliminar borrador</button></div>
+</dialog>
+
+<dialog id="dlg-restore" aria-labelledby="rs-h">
+  <h2 id="rs-h">Restaurar borradores</h2>
+  <div class="fld"><label for="rs-t">Texto copiado</label><textarea class="in" id="rs-t" rows="5" placeholder='{"schemaVersion": 1, "drafts": [...]}'></textarea></div>
+  <div class="acts"><button class="btn" type="button" data-close>Cancelar</button><button class="btn primary" type="button" data-close data-toast="Cargados 2 casos. Los que ya tenías siguen aquí.">Restaurar</button></div>
+</dialog>
+
+<dialog id="dlg-in" aria-labelledby="in-h">
+  <span class="label" style="color:var(--redText);letter-spacing:.22em">Zona reservada</span>
+  <h2 id="in-h" style="font-size:30px;margin-top:8px">Acceso al formulario de casos</h2>
+  <p>Entra con tu email y tu contraseña.</p>
+  <div style="display:flex;flex-direction:column;gap:14px">
+    <div class="fld"><label for="in-e">Email</label><input class="in" id="in-e" type="email" autocomplete="email" style="height:56px"></div>
+    <div class="fld"><label for="in-p">Contraseña</label><input class="in" id="in-p" type="password" autocomplete="current-password" style="height:56px"></div>
+    <span class="err" id="in-err" role="alert"></span>
+    <button class="btn primary" type="button" id="in-go" style="height:56px;justify-content:center">Entrar</button>
+    <span class="hint">¿Sin cuenta o sin contraseña? Pídesela a quien revisa los casos.</span>
+    <button class="btn" type="button" data-close style="justify-content:center">Volver a la sala</button>
+  </div>
+</dialog>
+
+<div class="toast" id="toast" role="status" aria-live="polite"><span style="color:var(--solved)" aria-hidden="true">✓</span><span id="toast-t"></span></div>
+
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id);};
+  var CAT={serialKiller:{b:'Asesinos en serie',c:'#FF7A7F',base:'#2A0B10'},isolatedMurder:{b:'Asesinato aislado',c:'#D9788A',base:'#2A1219'},kidnapping:{b:'Secuestro',c:'#E0A63A',base:'#2B1E0A'},unsolved:{b:'Caso sin resolver',c:'#5AA0D0',base:'#0B1F2E'}};
+  var ST={open:{l:'Sin resolver',c:'#6CB0E0'},solved:{l:'Resuelto',c:'#8FCB8A'},inProgress:{l:'En investigación',c:'#F0B455'}};
+  var KIND={start:{l:'Hecho inicial',c:'#FF7A7F'},inv:{l:'Investigación',c:'#F0C674'},open:{l:'Sigue abierto',c:'#6CB0E0'},end:{l:'Resolución',c:'#8FCB8A'}};
+  var GEO={'puerto hurraco, badajoz':[38.63,-5.55],'el puerto de santa maría, cádiz':[36.59,-6.23]};
+  var STEPS=['Datos básicos','Ubicación','Resumen y ficha','Cronología','Enlaces','Fotografías','Capítulos'];
+  var drafts=[
+    {t:'Crímenes de Puerto Hurraco',cat:'isolatedMurder',y:'1990',st:'solved',co:'España',re:'Puerto Hurraco, Badajoz',iso:'ES',lat:'',lon:'',sum:'Tiroteo en una pedanía de Badajoz que dejó nueve muertos. Los autores, dos hermanos enfrentados a otra familia del pueblo, fueron detenidos y condenados.',vic:'9 personas fallecidas',tl:[['26/08/1990','Tiroteo en Puerto Hurraco','start'],['1994','Condena de los autores','end']]},
+    {t:'El Arropiero',cat:'serialKiller',y:'1971',st:'solved',co:'España',re:'El Puerto de Santa María, Cádiz',iso:'ES',lat:'36.59',lon:'-6.23',sum:'Manuel Delgado Villegas confesó crímenes cometidos en España y Francia entre 1964 y 1971. Fue declarado inimputable e internado en un centro psiquiátrico.',vic:'Al menos 7 víctimas confirmadas',tl:[['1971','Detención en El Puerto de Santa María','inv']]},
+    {t:'',cat:'unsolved',y:'',st:'open',co:'',re:'',iso:'',lat:'',lon:'',sum:'',vic:'',tl:[]}
+  ];
+  var links=[],photos=[],cur=0,step=0,d=drafts[0];
+  var num=function(v){return v!==''&&v!=null&&!isNaN(+v);};
+  var hasPoint=function(x){return num(x.lat)&&num(x.lon)&&Math.abs(+x.lat)<=90&&Math.abs(+x.lon)<=180;};
+  var checks=function(x){return [['Título',x.t.trim()!==''],['Año (3 o 4 cifras)',/^\d{3,4}$/.test(x.y)],['Punto en el mapa',hasPoint(x)],['Resumen del caso',x.sum.trim()!=='']];};
+  var okCount=function(x){return checks(x).filter(function(c){return c[1];}).length;};
+  var statusOf=function(x){return okCount(x)===4?{l:'Listo · sin publicar',c:'#6CB0E0'}:{l:'Incompleto',c:'#F0B455'};};
+  var esc=function(s){return String(s).replace(/[&<>"]/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m];});};
+  var fmt=function(v,p,n){return Math.abs(+v).toFixed(2)+'° '+(+v>=0?p:n);};
+
+  /* Mapa de puntos (misma tabla LAND que el expediente) */
+  var LAND={0:[[21,32],[39,40],[55,56]],1:[[9,19],[21,33],[49,50],[54,71]],2:[[2,22],[23,31],[37,71]],3:[[2,16],[20,24],[26,28],[31,32],[37,71]],4:[[3,16],[21,24],[35,35],[38,71]],5:[[4,16],[20,25],[34,35],[36,71]],6:[[5,25],[35,71]],7:[[10,25],[34,40],[45,64]],8:[[11,24],[34,37],[38,38],[41,64]],9:[[12,23],[34,63]],10:[[13,20],[33,63]],11:[[12,18],[20,21],[33,49],[50,62]],12:[[16,19],[21,23],[33,47],[45,48],[50,53],[55,58],[60,60]],13:[[17,19],[20,24],[33,46],[47,47],[51,52],[55,57],[60,60]],14:[[18,19],[20,26],[33,47],[52,52],[55,56],[57,59]],15:[[20,29],[36,46],[55,56],[57,59],[60,61],[63,65]],16:[[20,29],[36,45],[55,56],[57,59],[62,66]],17:[[20,30],[37,44],[56,58],[63,66]],18:[[21,30],[37,44],[57,60],[62,64]],19:[[22,30],[38,45],[59,66]],20:[[22,28],[38,45],[58,66]],21:[[22,28],[38,43],[58,66]],22:[[22,27],[39,43],[59,66]],23:[[22,26],[60,66],[69,70]],24:[[22,26],[65,65],[69,70]],25:[[22,25],[69,70]],26:[[22,25]]};
+  var dots='';Object.keys(LAND).forEach(function(r){LAND[r].forEach(function(g){for(var c=g[0];c<=g[1];c++){dots+='<circle cx="'+(c+.5)*20+'" cy="'+(40+(+r+.5)*20)+'" r="4.2" fill="#33405A" opacity="'+(.45+((c*7+(+r)*13)%6)/10)+'"/>';}});});
+  $('land').innerHTML=dots;
+
+  /* Raíl */
+  $('steps').innerHTML=STEPS.map(function(s,i){return '<li><button class="step" type="button" data-go="'+i+'" aria-controls="writer"><span class="n">0'+(i+1)+'</span><span class="t"><b>'+s+'</b><small data-sub="'+i+'"></small></span><span class="mark" data-mark="'+i+'"></span></button></li>';}).join('');
+  document.querySelectorAll('[data-kicker]').forEach(function(k,i){k.textContent='Paso 0'+(i+1)+' de 07';});
+
+  function go(i){
+    step=Math.max(0,Math.min(6,i));
+    document.querySelectorAll('.sec[data-step]').forEach(function(s){s.hidden=+s.dataset.step!==step;});
+    document.querySelectorAll('.step').forEach(function(b){if(+b.dataset.go===step)b.setAttribute('aria-current','step');else b.removeAttribute('aria-current');});
+    $('prev').disabled=step===0;$('prev').style.visibility=step===0?'hidden':'visible';
+    $('next').textContent=step===6?'Volver al principio':'Siguiente sección: '+STEPS[step+1]+' →';
+    $('writer').scrollTop=0;
+  }
+
+  /* Filas repetibles */
+  function rowsUI(){
+    $('tl-rows').innerHTML=d.tl.length?d.tl.map(function(r,i){return '<div class="row"><div class="rh"><span class="label">Hito '+(i+1)+'</span><button class="ib" type="button" data-rm="tl" data-i="'+i+'" aria-label="Quitar hito '+(i+1)+'">✕</button></div><div class="r2"><div class="fld"><label for="tl'+i+'d">Fecha</label><input class="in" id="tl'+i+'d" data-row="tl" data-i="'+i+'" data-j="0" value="'+esc(r[0])+'"></div><div class="fld"><label for="tl'+i+'k">Tipo</label><div class="sel"><select class="in" id="tl'+i+'k" data-row="tl" data-i="'+i+'" data-j="2">'+Object.keys(KIND).map(function(k){return '<option value="'+k+'"'+(k===r[2]?' selected':'')+'>'+KIND[k].l+'</option>';}).join('')+'</select></div></div></div><div class="fld"><label for="tl'+i+'w">Qué ocurrió</label><input class="in" id="tl'+i+'w" data-row="tl" data-i="'+i+'" data-j="1" value="'+esc(r[1])+'"></div></div>';}).join(''):'<p class="empty">Todavía no hay hitos. Añade el primero.</p>';
+    $('ln-rows').innerHTML=links.length?links.map(function(r,i){return '<div class="row"><div class="rh"><span class="label">Enlace '+(i+1)+'</span><button class="ib" type="button" data-rm="ln" data-i="'+i+'" aria-label="Quitar enlace '+(i+1)+'">✕</button></div><div class="fld"><label for="ln'+i+'t">Título del enlace</label><input class="in" id="ln'+i+'t" data-row="ln" data-i="'+i+'" data-j="0" value="'+esc(r[0])+'"></div><div class="r2" style="grid-template-columns:1fr 170px"><div class="fld"><label for="ln'+i+'u">URL</label><input class="in" id="ln'+i+'u" data-row="ln" data-i="'+i+'" data-j="1" placeholder="https://…" value="'+esc(r[1])+'"></div><div class="fld"><label for="ln'+i+'k">Tipo</label><div class="sel"><select class="in" id="ln'+i+'k"><option>Podcast</option><option>Vídeo</option><option>Documento</option><option>Publicación</option><option>Otro</option></select></div></div></div></div>';}).join(''):'<p class="empty">Sin enlaces todavía. No es obligatorio, pero ayuda a quien revisa.</p>';
+    $('ph-rows').innerHTML=photos.length?photos.map(function(r,i){return '<div class="row"><div class="rh"><span class="label">Fotografía '+(i+1)+'</span><button class="ib" type="button" data-rm="ph" data-i="'+i+'" aria-label="Quitar fotografía '+(i+1)+'">✕</button></div><div class="fld"><label for="ph'+i+'u">URL de la imagen</label><input class="in" id="ph'+i+'u" data-row="ph" data-i="'+i+'" data-j="0" placeholder="https://…" value="'+esc(r[0])+'"></div><div class="fld"><label for="ph'+i+'c">Pie de foto (opcional)</label><input class="in" id="ph'+i+'c" data-row="ph" data-i="'+i+'" data-j="1" value="'+esc(r[1])+'"></div></div>';}).join(''):'<p class="empty">Sin fotografías. El expediente se publica igual con un marcador de posición.</p>';
+  }
+  var LIST={tl:function(){return d.tl;},ln:function(){return links;},ph:function(){return photos;}};
+
+  /* Pintado: estado, raíl, vista previa, lista */
+  function paint(){
+    var c=CAT[d.cat],s=ST[d.st],n=okCount(d),ck=checks(d),pt=hasPoint(d),stt=statusOf(d);
+    $('sw-title').textContent=d.t.trim()||'Sin título';
+    $('h-status').innerHTML='<span class="dot" style="--c:'+stt.c+'"></span>'+stt.l+(n<4?' · '+n+' de 4 obligatorios':'');
+    $('r-count').textContent=n+' de 4 obligatorios';$('r-bar').style.width=(n*25)+'%';
+    var miss=[!(ck[0][1]&&ck[1][1]),!pt,!ck[3][1]];
+    var subs=[miss[0]?'Falta un obligatorio':'Completo',pt?'Punto marcado':'Falta el punto',miss[2]?'Falta el resumen':'Completo',d.tl.length+(d.tl.length===1?' hito':' hitos'),links.length?links.length+' enlaces':'Opcional',photos.length?photos.length+' fotos':'Opcional','Opcional'];
+    subs.forEach(function(t,i){document.querySelector('[data-sub="'+i+'"]').textContent=t;var m=document.querySelector('[data-mark="'+i+'"]');m.className='mark'+(i<3&&miss[i]?' miss':'');m.textContent=i<3&&!miss[i]?'✓':'';});
+    var h=$('pv-head');h.style.setProperty('--base',c.base);h.style.setProperty('--cc',c.c);
+    $('pv-ghost').textContent=d.y;$('pv-title').textContent=d.t.trim()||'Sin título';
+    $('pv-badge').textContent=c.b;$('pv-badge').style.color=c.c;$('pv-status').textContent=s.l;$('pv-status').style.color=s.c;
+    $('pv-place').textContent=[d.re,d.co,d.y].filter(Boolean).join(' · ')||'Lugar y año';
+    $('pv-lead').textContent=d.sum.trim()||'El resumen del caso aparecerá aquí.';$('pv-lead').style.color=d.sum.trim()?'':'var(--faint)';
+    $('pv-year').textContent=d.y||'—';$('pv-loc').textContent=[d.re,d.co].filter(Boolean).join(', ')||'—';$('pv-vic').textContent=d.vic||'—';
+    $('pv-coord').innerHTML=pt?'<span style="color:var(--gold)">'+fmt(d.lat,'N','S')+'<br>'+fmt(d.lon,'E','O')+'</span>':'<span style="color:var(--muted)">Sin punto</span>';
+    $('pv-tl').innerHTML=d.tl.length?d.tl.map(function(r){var k=KIND[r[2]];return '<li style="--k:'+k.c+'"><span class="d">'+esc(r[0]||'—')+'</span><span class="p"></span><span class="kind">'+k.l+'</span><b>'+esc(r[1]||'Sin descripción')+'</b></li>';}).join(''):'<li style="--k:var(--faint)"><span class="kind" style="color:var(--faint)">Sin hitos todavía</span></li>';
+    $('ck').innerHTML=ck.map(function(x){return '<li class="'+(x[1]?'ok':'')+'"><i aria-hidden="true">'+(x[1]?'✓':'')+'</i>'+x[0]+'<span class="sr">'+(x[1]?', hecho':', falta')+'</span></li>';}).join('');
+    $('ck-n').textContent=n+' / 4';
+    var ok=n===4,j=$('json');j.setAttribute('aria-disabled',String(!ok));j.className='btn'+(ok?' red':'');
+    if(ok)j.removeAttribute('aria-describedby');else j.setAttribute('aria-describedby','json-why');$('json-why').classList.toggle('on',!ok);
+    $('d-count').textContent='Borradores en este equipo · '+drafts.length;
+    $('d-list').innerHTML=drafts.map(function(x,i){var q=statusOf(x);return '<button class="mi" type="button" data-pick="'+i+'"'+(i===cur?' aria-current="true"':'')+'><span class="t"><b>'+esc(x.t.trim()||'Sin título')+'</b><span class="st"><span class="dot" style="--c:'+q.c+'"></span>'+q.l+'</span></span></button>';}).join('');
+    var mapEl=$('pin');
+    if(pt){var x=(+d.lon+180)*4,y=40+(80-d.lat)*4;mapEl.innerHTML='<circle class="ring" cx="'+x+'" cy="'+y+'" r="22" fill="none" stroke="'+c.c+'" stroke-width="5"/><circle cx="'+x+'" cy="'+y+'" r="17" fill="'+c.c+'" stroke="#05070B" stroke-width="6"/>';$('coordline').className='coordline';$('coordline').textContent=fmt(d.lat,'N','S')+' · '+fmt(d.lon,'E','O');$('map-chip').textContent='Pulsa otra vez para mover el punto';}
+    else{mapEl.innerHTML='';$('coordline').className='coordline none';$('coordline').textContent='Sin punto marcado';$('map-chip').textContent='Toca el mapa para situar el caso';}
+    $('e-y').textContent=d.y&&!/^\d{3,4}$/.test(d.y)?'El año debe tener 3 o 4 cifras.':'';$('f-y').setAttribute('aria-invalid',String(!!$('e-y').textContent));
+    $('e-lat').textContent=num(d.lat)&&Math.abs(+d.lat)>90?'La latitud va de -90 a 90':'';$('e-lon').textContent=num(d.lon)&&Math.abs(+d.lon)>180?'La longitud va de -180 a 180':'';
+  }
+  function load(i){cur=i;d=drafts[i];document.querySelectorAll('[data-k]').forEach(function(el){el.value=d[el.dataset.k];});rowsUI();paint();}
+  var saveT;function saved(){$('saved').textContent='Guardando…';clearTimeout(saveT);saveT=setTimeout(function(){$('saved').textContent='Guardado en este equipo';},600);}
+  var toastT;function toast(t){$('toast-t').textContent=t;$('toast').classList.add('on');clearTimeout(toastT);toastT=setTimeout(function(){$('toast').classList.remove('on');},3000);}
+  function setPoint(lat,lon){d.lat=lat.toFixed(2);d.lon=lon.toFixed(2);$('f-lat').value=d.lat;$('f-lon').value=d.lon;saved();paint();}
+
+  /* Eventos */
+  document.addEventListener('input',function(e){var el=e.target;
+    if(el.dataset.k){d[el.dataset.k]=el.value;saved();paint();}
+    else if(el.dataset.row){LIST[el.dataset.row]()[+el.dataset.i][+el.dataset.j]=el.value;saved();paint();}});
+  document.addEventListener('change',function(e){var el=e.target;if(el.dataset.row){LIST[el.dataset.row]()[+el.dataset.i][+el.dataset.j]=el.value;saved();paint();}});
+  $('tl-add').onclick=function(){d.tl.push(['','','inv']);rowsUI();paint();$('tl'+(d.tl.length-1)+'d').focus();};
+  $('ln-add').onclick=function(){links.push(['','']);rowsUI();paint();$('ln'+(links.length-1)+'t').focus();};
+  $('ph-add').onclick=function(){photos.push(['','']);rowsUI();paint();$('ph'+(photos.length-1)+'u').focus();};
+  $('prev').onclick=function(){go(step-1);};
+  $('next').onclick=function(){go(step===6?0:step+1);};
+  $('map').addEventListener('click',function(e){var r=$('map-svg').getBoundingClientRect(),x=(e.clientX-r.left)/r.width*1440,y=30+(e.clientY-r.top)/r.height*560;setPoint(Math.max(-90,Math.min(90,80-(y-40)/4)),Math.max(-180,Math.min(180,x/4-180)));});
+  $('map').addEventListener('keydown',function(e){if(e.key!=='Enter'&&e.key!==' ')return;e.preventDefault();var g=GEO[d.re.trim().toLowerCase()];$('coordline').className='coordline none';$('coordline').textContent='Buscando el lugar…';setTimeout(function(){if(g)setPoint(g[0],g[1]);else{paint();$('coordline').textContent='No encontramos esa región. Usa el ajuste manual.';}},700);});
+  $('json').onclick=function(){if(this.getAttribute('aria-disabled')==='true')return;toast('JSON del caso copiado al portapapeles.');};
+
+  var openMenu=null;
+  function closeMenus(){document.querySelectorAll('[aria-haspopup="true"]').forEach(function(b){b.setAttribute('aria-expanded','false');$(b.getAttribute('aria-controls')).hidden=true;});openMenu=null;}
+  document.querySelectorAll('[aria-haspopup="true"]').forEach(function(b){b.addEventListener('click',function(e){e.stopPropagation();var was=b.getAttribute('aria-expanded')==='true';closeMenus();if(!was){b.setAttribute('aria-expanded','true');var m=$(b.getAttribute('aria-controls'));m.hidden=false;openMenu=b;var f=m.querySelector('button');if(f)f.focus();}});});
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('button');
+    if(openMenu&&!e.target.closest('.menu'))closeMenus();
+    if(!t)return;
+    if(t.dataset.go!=null)go(+t.dataset.go);
+    if(t.dataset.pick!=null){closeMenus();load(+t.dataset.pick);go(0);$('sw').focus();}
+    if(t.dataset.rm){LIST[t.dataset.rm]().splice(+t.dataset.i,1);rowsUI();paint();}
+    if(t.dataset.toast){closeMenus();toast(t.dataset.toast);}
+    if(t.dataset.dialog){closeMenus();$(t.dataset.dialog).showModal();}
+    if(t.hasAttribute('data-close'))t.closest('dialog').close();
+  });
+  document.addEventListener('keydown',function(e){if(e.key==='Escape'&&openMenu){var b=openMenu;closeMenus();b.focus();}});
+  $('d-new').onclick=function(){drafts.push({t:'',cat:'unsolved',y:'',st:'open',co:'',re:'',iso:'',lat:'',lon:'',sum:'',vic:'',tl:[]});closeMenus();load(drafts.length-1);go(0);$('f-t').focus();toast('Borrador nuevo creado en este equipo.');};
+  $('d-del').onclick=function(){closeMenus();$('del-name').textContent=d.t.trim()||'Sin título';$('dlg-del').showModal();};
+  $('del-ok').onclick=function(){drafts.splice(cur,1);if(!drafts.length)drafts.push({t:'',cat:'unsolved',y:'',st:'open',co:'',re:'',iso:'',lat:'',lon:'',sum:'',vic:'',tl:[]});$('dlg-del').close();load(0);go(0);toast('Borrador eliminado.');$('sw').focus();};
+  $('signin').onclick=function(){signIn();};
+  $('in-go').onclick=function(){var b=this;if(!$('in-e').value.trim()||!$('in-p').value){$('in-err').textContent='Escribe tu email y tu contraseña.';return;}
+    b.disabled=true;b.textContent='Entrando…';setTimeout(function(){b.disabled=false;b.textContent='Entrar';$('dlg-in').close();$('acct-txt').textContent='Sesión iniciada como '+$('in-e').value.trim()+' · tus borradores se guardan en tu cuenta.';$('signin').textContent='Cerrar sesión';$('signin').onclick=signOut;},900);};
+  function signOut(){$('acct-txt').textContent='Sin sesión · tus borradores se guardan solo en este equipo.';$('signin').textContent='Iniciar sesión';$('signin').onclick=signIn;}
+  function signIn(){$('in-err').textContent='';$('dlg-in').showModal();}
+
+  load(0);go(0);
+})();
+</script>
+</body>
+</html>

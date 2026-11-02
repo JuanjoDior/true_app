@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 
 import '../../../../core/design/design.dart';
 import '../../../cases/domain/true_crime_case.dart';
+import '../../../cases/presentation/design/case_design_mapping.dart';
 import 'portada_poster_backdrop.dart';
 import 'portada_unsolved_keys.dart';
 import 'portada_unsolved_layout.dart';
@@ -106,6 +107,16 @@ class _PosterFace extends StatelessWidget {
           fit: StackFit.expand,
           children: [
             PortadaPosterBackdrop(crimeCase: crimeCase, metrics: metrics),
+            Positioned(
+              top: DsSpacing.s16,
+              left: DsSpacing.s20,
+              right: DsSpacing.s20,
+              child: DsMonoLabel(
+                crimeCase.category.label,
+                color: crimeCase.category.designColor.dot,
+                letterSpacingEm: 0.14,
+              ),
+            ),
             _BaseLayer(
               crimeCase: crimeCase,
               metrics: metrics,
@@ -187,6 +198,10 @@ class _BaseLayer extends StatelessWidget {
                   style: location,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                ),
+                DsStatusLabel(
+                  label: crimeCase.statusLabel ?? crimeCase.status.label,
+                  color: crimeCase.status.designColor,
                 ),
               ],
             ),

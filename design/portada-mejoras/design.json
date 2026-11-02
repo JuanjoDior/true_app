@@ -1,0 +1,8 @@
+{
+  "title": "Mejoras de la portada",
+  "brief": "Propuestas para la portada actual (globo, «En el foco», «Sin resolver») usando solo datos reales; cada bloque nuevo lleva una nota numerada con lo que necesita",
+  "feature": "odd/tasks/cinematic-design-system.md",
+  "artboards": [
+    { "file": "01-portada-ampliada.html", "title": "Portada ampliada", "tradeoff": "Más razones para explorar (cifras, categorías, décadas, conexiones) sin inventar datos; categorías y décadas necesitan filtros nuevos en El archivo", "width": 1440, "height": 2800 }
+  ]
+}

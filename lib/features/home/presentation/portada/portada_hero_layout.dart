@@ -39,7 +39,7 @@ abstract final class PortadaLayout {
   static const double compactTabsTop = 72;
   static const double compactTabsMargin = 16;
   static const double compactTabGap = 6;
-  static const double compactTabHeight = 24;
+  static const double compactTabHeight = 44;
 
   static const double veilWidth = 980;
 

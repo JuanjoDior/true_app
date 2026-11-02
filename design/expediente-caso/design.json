@@ -1,0 +1,9 @@
+{
+  "title": "Expediente del caso",
+  "brief": "Rediseño del expediente público (/casos/<slug>) en la dirección D cinematográfica, con los datos reales de Zodiac y pensado para casos con poco contenido",
+  "feature": "odd/tasks/cinematic-design-system.md",
+  "artboards": [
+    { "file": "01-mapa-protagonista.html", "title": "Mapa protagonista", "tradeoff": "Fiel a DESIGN.md (el mapa es el héroe) con ficha técnica y resumen en la cabecera; la página es larga y el mapa ancho pesa más que el texto", "width": 1440, "height": 2200 },
+    { "file": "02-dossier-editorial.html", "title": "Dossier editorial", "tradeoff": "La lectura manda: índice fijo, cronología horizontal y relacionados como pósters; pierde el mapa interactivo con vistas de cámara", "width": 1440, "height": 2400 }
+  ]
+}

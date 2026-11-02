@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portada · TRUE — Portada ampliada (propuesta anotada)</title>
+<style>
+:root{
+  --bg:#05070B;--glow:#0D1320;--glass:rgba(14,16,22,.82);--card:rgba(255,255,255,.04);
+  --hair:rgba(255,255,255,.12);--strong:#FFFFFF;--primary:#F4F1EB;--body:#D8D3CA;--muted:#B9B4AB;--faint:#A7A29A;
+  --red:#E5484D;--redText:#FF7A7F;--gold:#F0C674;--open:#6CB0E0;--solved:#8FCB8A;--progress:#F0B455;
+  --serif:"Noto Serif",Georgia,"Times New Roman",serif;--sans:"Noto Sans","Segoe UI",system-ui,sans-serif;--mono:"IBM Plex Mono",Consolas,ui-monospace,monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);--fly:cubic-bezier(.22,.8,.2,1);
+  --note:#CDB8FF;--noteInk:#140E24;--noteBg:rgba(22,16,38,.94);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--primary);font-family:var(--sans)}
+a{color:inherit;text-decoration:none}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--red);outline-offset:3px;box-shadow:0 0 0 6px rgba(229,72,77,.25);border-radius:10px}
+.mono{font-family:var(--mono)}
+.label{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+.sr{position:absolute;width:1px;height:1px;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.page{position:relative;width:1440px;margin:0 auto;overflow:hidden}
+
+/* Barra superior (como el expediente) */
+.top{position:absolute;inset:0 0 auto 0;height:88px;padding:0 80px;display:flex;align-items:center;gap:48px;z-index:5;background:linear-gradient(180deg,rgba(5,7,11,.85),rgba(5,7,11,0))}
+.logo{display:flex;align-items:center;gap:12px}
+.logo i{width:36px;height:36px;border-radius:10px;background:var(--red);display:grid;place-items:center;font:700 20px var(--serif);font-style:normal;color:#fff}
+.logo b{font:700 20px var(--serif);letter-spacing:.1em}
+.top nav{display:flex;gap:4px}
+.top nav a{height:44px;padding:0 16px;display:flex;align-items:center;font-size:15px;font-weight:500;color:#C9C4BB;border-radius:10px;transition:color .25s}
+.top nav a:hover{color:#fff}
+.top nav a[aria-current]{color:#fff;font-weight:600;box-shadow:inset 0 -2px 0 var(--red)}
+
+/* Héroe «En el foco» */
+.hero{position:relative;height:740px;overflow:hidden;background:radial-gradient(1100px 760px at 70% 70%,#0B1220 0%,#05070B 72%)}
+.hero .tint{position:absolute;inset:0;background:linear-gradient(120deg,var(--base,#0B1F2E) 0%,rgba(5,7,11,0) 62%);opacity:.85;transition:opacity .9s var(--ease)}
+.hero svg.layer{position:absolute;inset:0}
+.star{animation:twinkle var(--d,4s) ease-in-out infinite;animation-delay:var(--dl,0s)}
+.ring{transform-box:fill-box;transform-origin:center;animation:pulse 1.8s ease-out infinite}
+.veil{position:absolute;inset:0 auto 0 0;width:980px;background:linear-gradient(90deg,rgba(5,7,11,.95) 0%,rgba(5,7,11,.62) 58%,rgba(5,7,11,0));pointer-events:none}
+.hero .fade{position:absolute;inset:auto 0 0 0;height:160px;background:linear-gradient(180deg,rgba(5,7,11,0),var(--bg));pointer-events:none}
+.ghost{position:absolute;left:40px;top:90px;font:700 460px/1 var(--serif);color:rgba(255,255,255,.05);letter-spacing:-.02em;user-select:none;pointer-events:none;transition:opacity .9s var(--ease),transform .9s var(--ease)}
+.slide{position:absolute;left:80px;bottom:150px;width:700px;display:flex;flex-direction:column;gap:16px;transition:opacity .9s var(--ease) .1s,transform .9s var(--ease) .1s}
+.hero.out .slide{opacity:0;transform:translateY(16px);transition-duration:.35s;transition-delay:0s}
+.hero.out .ghost{opacity:0;transform:translateX(-60px);transition-duration:.35s}
+.hero.out .tint{opacity:0;transition-duration:.35s}
+.kick{display:flex;align-items:center;gap:14px}
+.kick b{font:500 12px var(--mono);letter-spacing:.24em;text-transform:uppercase}
+.kick i{width:32px;height:1px;background:rgba(255,255,255,.35)}
+.kick span{font:500 12px var(--mono);letter-spacing:.14em;color:var(--muted)}
+.badge{align-self:flex-start;height:28px;padding:0 12px;display:inline-flex;align-items:center;border:1px solid currentColor;border-radius:6px;font-size:13px;font-weight:600}
+.slide h2{margin:0;font:700 88px/.96 var(--serif);letter-spacing:-.01em;color:#fff}
+.factline{display:flex;align-items:center;gap:14px;flex-wrap:wrap;font:500 13px var(--mono);letter-spacing:.12em;color:var(--body)}
+.factline .p{text-transform:uppercase}
+.factline .sep{color:rgba(255,255,255,.3)}
+.factline .cx{color:var(--gold)}
+.status{display:inline-flex;align-items:center;gap:8px;font-size:15px;font-weight:500;font-family:var(--sans);letter-spacing:0}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.summary{margin:0;max-width:540px;font-size:18px;line-height:1.6;color:var(--body)}
+.actions{display:flex;gap:12px;margin-top:6px}
+.btn{height:52px;padding:0 24px;display:inline-flex;align-items:center;gap:10px;border-radius:12px;font-size:15px;font-weight:600;transition:transform .3s var(--ease)}
+.btn:hover{transform:scale(1.04)}
+.btn.primary{background:var(--primary);color:#0B0C10}
+.coords{position:absolute;right:80px;bottom:44px;font:500 12px var(--mono);letter-spacing:.12em;color:var(--muted)}
+.tabs{position:absolute;left:80px;bottom:40px;width:680px;display:flex;gap:14px}
+.tab{flex:1;min-width:0;height:52px;padding:0;background:none;border:0;border-radius:8px;display:flex;flex-direction:column;justify-content:center;gap:9px;text-align:left}
+.tab span{font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:color .25s}
+.tab:hover span,.tab[aria-current="true"] span{color:#fff}
+.tab .bar{position:relative;height:3px;border-radius:2px;background:rgba(255,255,255,.18);overflow:hidden}
+.tab .bar i{position:absolute;inset:0 auto 0 0;width:0;background:var(--primary)}
+
+/* Cifras */
+.figures{position:relative;z-index:3;margin:-56px 80px 0;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));background:var(--glass);backdrop-filter:blur(18px);border:1px solid var(--hair);border-radius:18px;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+.figures>div{padding:22px 28px;display:flex;flex-direction:column;gap:8px;border-left:1px solid var(--hair)}
+.figures>div:first-child{border-left:0}
+.figures dt{order:2}
+.figures dd{margin:0;font:700 34px/1.1 var(--serif);color:var(--gold)}
+.figcap{position:absolute;left:28px;top:-26px}
+
+/* Secciones */
+.sec{position:relative;padding:0 80px;margin-top:88px}
+.sec-head{display:flex;align-items:baseline;gap:16px;margin-bottom:20px}
+.sec-head h2{margin:0;font:700 28px/1.15 var(--serif);color:#fff}
+.sec-head .label{letter-spacing:.14em}
+.sec-head .tools{margin-left:auto;display:flex;gap:8px;align-self:center}
+.round{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.18);transition:background .25s,transform .25s var(--ease)}
+.round:hover{background:rgba(255,255,255,.12);transform:scale(1.04)}
+
+/* Fila Sin resolver */
+.row{display:flex;gap:16px;overflow-x:auto;margin:0 -80px;padding:24px 80px 44px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+.poster{position:relative;flex:0 0 400px;height:225px;overflow:hidden;border-radius:14px;border:1px solid var(--hair);background:linear-gradient(160deg,var(--base) 0%,#07080B 100%);transition:transform .45s var(--ease),opacity .35s,box-shadow .45s var(--ease),border-color .3s}
+.poster .glow{position:absolute;inset:0;background:radial-gradient(420px 260px at 80% 0%,color-mix(in srgb,var(--c) 25%,transparent),transparent 65%)}
+.poster .py{position:absolute;right:-6px;top:10px;font:700 95px/1 var(--serif);color:rgba(255,255,255,.08);letter-spacing:-.02em}
+.poster .pk{position:absolute;left:20px;top:18px;font:500 11px var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--t)}
+.poster .pb,.poster .pm{position:absolute;inset:auto 0 0 0;padding:50px 20px 18px;display:flex;flex-direction:column;gap:6px;background:linear-gradient(180deg,rgba(5,7,11,0),rgba(5,7,11,.9));transition:opacity .35s var(--ease),transform .35s var(--ease)}
+.poster b{font:700 26px/1.05 var(--serif);color:#fff}
+.poster small{font-size:13px;color:var(--body)}
+.poster .pb .row2{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.poster .status{font-size:13px}
+.poster .pm{inset:0;justify-content:flex-end;padding:20px;gap:8px;background:linear-gradient(180deg,rgba(5,7,11,.45),rgba(5,7,11,.95) 60%);opacity:0;transform:translateY(14px)}
+.poster .pm span{font-size:13px;line-height:1.5;color:var(--body)}
+.poster:hover,.poster:focus-visible{transform:translateY(-12px) scale(1.06);box-shadow:0 34px 70px rgba(0,0,0,.65);border-color:rgba(255,255,255,.3);z-index:2}
+.poster:hover .pb,.poster:focus-visible .pb{opacity:0}
+.poster:hover .pm,.poster:focus-visible .pm{opacity:1;transform:none}
+.row:has(.poster:hover) .poster:not(:hover){opacity:.45}
+
+/* Por categoría */
+.cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.cat{position:relative;min-height:168px;padding:22px 24px;display:flex;flex-direction:column;justify-content:space-between;background:linear-gradient(160deg,color-mix(in srgb,var(--base) 70%,transparent) 0%,rgba(255,255,255,.02) 100%);border:1px solid var(--hair);border-radius:16px;overflow:hidden;transition:transform .35s var(--ease),border-color .3s}
+.cat::before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--c)}
+.cat:hover{transform:translateY(-5px);border-color:rgba(255,255,255,.3)}
+.cat .nm{display:flex;align-items:center;gap:10px;font:700 22px/1.2 var(--serif);color:#fff}
+.cat .nm i{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 10px var(--c);flex-shrink:0}
+.cat .ct{display:flex;align-items:flex-end;justify-content:space-between}
+.cat .ct strong{font:700 56px/1 var(--serif);color:#fff}
+.cat .ct span{display:block;margin-top:4px;font-size:14px;color:var(--muted)}
+.cat svg{color:#C9C4BB;transition:transform .3s var(--ease)}
+.cat:hover svg{transform:translateX(4px)}
+
+/* Recorre el tiempo */
+.decades{position:relative;display:flex;align-items:flex-end;gap:8px;padding:0 0 0;border-bottom:1px solid var(--hair)}
+.dec{flex:1;min-width:44px;min-height:236px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:10px;padding:0 0 16px;border-radius:12px;transition:background .25s}
+.dec:hover{background:rgba(255,255,255,.04)}
+.dec .n{font:500 14px var(--mono);color:var(--gold)}
+.dec .b{width:56px;height:calc(var(--n) * 44px);border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,rgba(240,198,116,.85),rgba(240,198,116,.18));transition:filter .25s}
+.dec:hover .b{filter:brightness(1.2)}
+.dec-labels{display:flex;gap:8px;margin-top:12px}
+.dec-labels span{flex:1;min-width:44px;text-align:center;font:500 12px var(--mono);letter-spacing:.08em;color:var(--muted)}
+
+/* Conexiones */
+.links{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.lk{padding:22px 24px 24px;display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--hair);border-radius:16px}
+.lk svg{display:block;width:100%;height:96px}
+.ends{display:flex;justify-content:space-between;gap:12px}
+.end{min-height:52px;padding:6px 8px;margin:0 -8px;display:flex;flex-direction:column;justify-content:center;gap:3px;border-radius:10px;transition:background .25s}
+.end:hover{background:rgba(255,255,255,.06)}
+.end.r{text-align:right;align-items:flex-end}
+.end b{display:flex;align-items:center;gap:8px;font:700 19px/1.2 var(--serif);color:#fff}
+.end b i{width:8px;height:8px;border-radius:50%;background:var(--c);flex-shrink:0}
+.end small{font:400 12px var(--mono);letter-spacing:.06em;color:var(--muted)}
+.rel{margin:10px 0 0;padding-top:14px;border-top:1px solid var(--hair);font:700 17px/1.4 var(--serif);color:var(--primary);text-align:center}
+
+footer{position:relative;margin-top:96px;padding:40px 80px 56px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;align-items:center;color:var(--faint);font-size:14px}
+footer b{font:700 18px var(--serif);letter-spacing:.1em;color:var(--primary)}
+
+/* Anotaciones de diseño (no son producto) */
+.notes-toggle{position:fixed;top:16px;right:16px;z-index:60;min-height:44px;padding:0 18px;display:inline-flex;align-items:center;gap:10px;background:var(--noteBg);border:1px solid var(--note);border-radius:999px;color:var(--note);font:500 13px var(--sans);box-shadow:0 10px 30px rgba(0,0,0,.5)}
+.notes-toggle i{width:20px;height:20px;border-radius:50%;background:var(--note);color:var(--noteInk);display:grid;place-items:center;font:700 11px var(--mono);font-style:normal}
+.ann{position:absolute;z-index:20;display:flex;gap:10px;align-items:flex-start;width:var(--w,330px)}
+.ann .pin{flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--note);color:var(--noteInk);display:grid;place-items:center;font:700 13px var(--mono);box-shadow:0 0 0 4px rgba(205,184,255,.22)}
+.ann .cap{padding:12px 14px;background:var(--noteBg);border:1px solid rgba(205,184,255,.45);border-radius:12px;font-size:13px;line-height:1.5;color:#E9E2FF;box-shadow:0 18px 40px rgba(0,0,0,.55)}
+.ann .cap b{display:block;margin-bottom:4px;font-weight:600;color:#fff}
+.ann .cap p{margin:0}
+.ann .cap .needs{margin-top:6px;padding-top:6px;border-top:1px dashed rgba(205,184,255,.35);color:var(--note)}
+.slot{position:relative;max-width:820px;margin:56px 80px 0;padding:22px 24px 22px 60px;border:1px dashed rgba(205,184,255,.5);border-radius:16px;background:rgba(205,184,255,.04);color:#E9E2FF;font-size:14px;line-height:1.55}
+.slot .pin{position:absolute;left:18px;top:20px;width:28px;height:28px;border-radius:50%;background:var(--note);color:var(--noteInk);display:grid;place-items:center;font:700 13px var(--mono)}
+.slot b{color:#fff;font-weight:600}
+.slot .needs{color:var(--note)}
+.notes-off .ann,.notes-off .slot{display:none}
+
+@keyframes pulse{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.8);opacity:0}}
+@keyframes twinkle{0%,100%{opacity:.25}50%{opacity:.85}}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+  .ring{display:none}
+}
+</style>
+</head>
+<body>
+<button type="button" class="notes-toggle" id="notes-toggle" aria-controls="page"><i aria-hidden="true">9</i><span>Ocultar notas</span></button>
+
+<div class="page" id="page">
+
+<header class="top">
+  <a class="logo" href="#" aria-label="TRUE, ir a la portada"><i>T</i><b>TRUE</b></a>
+  <nav aria-label="Secciones">
+    <a href="#" aria-current="page">Inicio</a>
+    <a href="#">Archivo</a>
+    <a href="#">Formulario</a>
+  </nav>
+</header>
+
+<aside class="ann" role="note" aria-label="Nota de diseño 2" style="left:620px;top:22px;--w:340px">
+  <span class="pin" aria-hidden="true">2</span>
+  <div class="cap"><b>Mapa y búsqueda, ocultos hasta F5</b><p>«Mapa», la búsqueda, «Explorar el globo» y la invitación al mapa siguen ocultos hasta la fase del mapa (F5), como hoy. No se dibujan controles que aún no funcionan.</p></div>
+</aside>
+
+<main>
+<h1 class="sr">TRUE · Portada</h1>
+
+<section class="hero" id="hero" aria-roledescription="carrusel" aria-label="En el foco">
+  <div class="tint" id="tint"></div>
+  <svg class="layer" id="stars" width="1440" height="740" viewBox="0 0 1440 740" aria-hidden="true"></svg>
+  <svg class="layer" id="globe" width="1440" height="740" viewBox="0 0 1440 740" aria-hidden="true">
+    <defs>
+      <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop id="halo-c" offset="0" stop-color="#5AA0D0" stop-opacity=".30"/><stop offset="1" stop-color="#5AA0D0" stop-opacity="0"/></radialGradient>
+      <radialGradient id="sphere" cx="38%" cy="32%" r="75%"><stop offset="0" stop-color="#121B2C"/><stop offset=".7" stop-color="#080C14"/><stop offset="1" stop-color="#05070B"/></radialGradient>
+    </defs>
+    <circle id="halo-disc" cx="1010" cy="520" r="620" fill="url(#halo)"/>
+    <circle cx="1010" cy="520" r="400" fill="url(#sphere)" stroke="rgba(92,115,153,.35)" stroke-width="1"/>
+    <g id="grid"></g><g id="land"></g><g id="marks"></g>
+  </svg>
+  <div class="veil"></div>
+  <div class="fade"></div>
+  <div class="ghost" id="ghost" aria-hidden="true">1970</div>
+
+  <div class="slide" id="slide" aria-roledescription="diapositiva">
+    <div class="kick"><b id="s-kick" style="color:#5AA0D0">En el foco</b><i></i><span id="s-pos">1 / 5</span></div>
+    <span class="badge" id="s-badge" style="color:#5AA0D0">Caso sin resolver</span>
+    <h2 id="s-title">La mujer de Isdal</h2>
+    <p class="factline" id="s-facts"><span class="p">1970</span><span class="sep" aria-hidden="true">·</span><span class="p">Bergen · Noruega</span><span class="sep" aria-hidden="true">·</span><span class="status" style="color:var(--open)">Sin resolver</span><span class="sep" aria-hidden="true">·</span><span class="cx">2 casos conectados</span></p>
+    <p class="summary" id="s-sum">El cuerpo de una mujer hallado en el Valle de Isdalen, con su identidad aún sin confirmar décadas después.</p>
+    <div class="actions">
+      <a class="btn primary" href="#" id="s-open">Abrir expediente <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    </div>
+  </div>
+  <span class="coords" id="s-coords">60.39° N · 5.32° E</span>
+
+  <div class="tabs" role="group" aria-label="Casos en el foco" id="tabs"></div>
+
+  <aside class="ann" role="note" aria-label="Nota de diseño 1" style="right:80px;top:150px;--w:380px">
+    <span class="pin" aria-hidden="true">1</span>
+    <div class="cap"><b>En el foco: se mantiene, con línea de datos</b><p>Globo, carrusel y pestañas como hoy. Bajo el título, una línea de datos discreta (año · lugar · estado · conexiones) con la gramática de la cabecera del expediente: insignia, estado con punto, lugar en mono, año fantasma y tinte de categoría.</p><p class="needs">Datos reales: featuredRank, statusLabel y resumen del catálogo. Hoy se ven 5 casos (kFeaturedCasesLimit = 5): El hombre de Somerton (rango 6) queda fuera.</p></div>
+  </aside>
+</section>
+
+<div style="position:relative">
+  <dl class="figures" aria-label="El archivo en cifras">
+    <div><dt class="label">Expedientes</dt><dd>16</dd></div>
+    <div><dt class="label">Sin resolver</dt><dd>9</dd></div>
+    <div><dt class="label">Países</dt><dd>10</dd></div>
+    <div><dt class="label">Periodo documentado</dt><dd>1888–2013</dd></div>
+  </dl>
+  <aside class="ann" role="note" aria-label="Nota de diseño 3" style="right:80px;top:80px;--w:360px">
+    <span class="pin" aria-hidden="true">3</span>
+    <div class="cap"><b>El archivo en cifras</b><p>Franja de cristal que da escala al archivo, con el mismo formato que la ficha técnica del expediente. Expedientes, casos abiertos, países distintos y primer–último año.</p><p class="needs">No necesita datos nuevos: se calcula del catálogo publicado.</p></div>
+  </aside>
+</div>
+
+<div class="slot" role="note" aria-label="Nota de diseño 4">
+  <span class="pin" aria-hidden="true">4</span>
+  <b>Aquí iría «Novedades» — no se dibuja.</b> La fila «Últimas actualizaciones del archivo» no se pinta con actualizaciones inventadas (DESIGN.md §9 retiró el ticker por eso).
+  <span class="needs">Necesita updatedAt y updateKind en TrueCrimeCase (DESIGN.md §11, decisión D4 abierta).</span>
+</div>
+
+<section class="sec" aria-labelledby="h-open" style="margin-top:56px">
+  <div class="sec-head">
+    <h2 id="h-open">Sin resolver</h2>
+    <span class="label">Casos abiertos que siguen esperando respuesta</span>
+    <div class="tools">
+      <button type="button" class="round" data-scroll="-1" aria-label="Casos anteriores"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5M11 6l-6 6 6 6"/></svg></button>
+      <button type="button" class="round" data-scroll="1" aria-label="Más casos"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+    </div>
+  </div>
+  <div class="row" id="open-row">
+    <a class="poster" href="#" style="--base:#2A0B10;--c:#E5484D;--t:#FF7A7F" aria-label="Zodiac. San Francisco, 1968. Sin resolver"><span class="glow"></span><span class="py" aria-hidden="true">1968</span><span class="pk" aria-hidden="true">Asesinos en serie</span><span class="pb" aria-hidden="true"><b>Zodiac</b><span class="row2"><small>San Francisco · 1968</small><span class="status" style="color:var(--open)">Sin resolver</span></span></span><span class="pm" aria-hidden="true"><b>Zodiac</b><span>Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.</span></span></a>
+    <a class="poster" href="#" style="--base:#0B1F2E;--c:#5AA0D0;--t:#5AA0D0" aria-label="Black Dahlia. Los Ángeles, 1947. Sin resolver"><span class="glow"></span><span class="py" aria-hidden="true">1947</span><span class="pk" aria-hidden="true">Caso sin resolver</span><span class="pb" aria-hidden="true"><b>Black Dahlia</b><span class="row2"><small>Los Ángeles · 1947</small><span class="status" style="color:var(--open)">Sin resolver</span></span></span><span class="pm" aria-hidden="true"><b>Black Dahlia</b><span>Uno de los homicidios sin resolver más conocidos de Estados Unidos. El caso marcó la historia criminal de Los Ángeles.</span></span></a>
+    <a class="poster" href="#" style="--base:#2A0B10;--c:#E5484D;--t:#FF7A7F" aria-label="Jack el Destripador. Londres, 1888. Sin resolver"><span class="glow"></span><span class="py" aria-hidden="true">1888</span><span class="pk" aria-hidden="true">Asesinos en serie</span><span class="pb" aria-hidden="true"><b>Jack el Destripador</b><span class="row2"><small>Londres · 1888</small><span class="status" style="color:var(--open)">Sin resolver</span></span></span><span class="pm" aria-hidden="true"><b>Jack el Destripador</b><span>Una serie de homicidios en el este de Londres atribuidos a un agresor sin identificar que se comunicaba con la prensa.</span></span></a>
+    <a class="poster" href="#" style="--base:#0B1F2E;--c:#5AA0D0;--t:#5AA0D0" aria-label="Paso Diátlov. Montes Urales, 1959. Reabierto (2019)"><span class="glow"></span><span class="py" aria-hidden="true">1959</span><span class="pk" aria-hidden="true">Caso sin resolver</span><span class="pb" aria-hidden="true"><b>Paso Diátlov</b><span class="row2"><small>Montes Urales · 1959</small><span class="status" style="color:var(--open)">Reabierto (2019)</span></span></span><span class="pm" aria-hidden="true"><b>Paso Diátlov</b><span>La muerte de nueve montañeros en circunstancias poco claras en los Urales soviéticos, reexaminada oficialmente en 2019.</span></span></a>
+    <a class="poster" href="#" style="--base:#0B1F2E;--c:#5AA0D0;--t:#5AA0D0" aria-label="La mujer de Isdal. Bergen, 1970. Sin resolver"><span class="glow"></span><span class="py" aria-hidden="true">1970</span><span class="pk" aria-hidden="true">Caso sin resolver</span><span class="pb" aria-hidden="true"><b>La mujer de Isdal</b><span class="row2"><small>Bergen · 1970</small><span class="status" style="color:var(--open)">Sin resolver</span></span></span><span class="pm" aria-hidden="true"><b>La mujer de Isdal</b><span>El cuerpo de una mujer hallado en el Valle de Isdalen, con su identidad aún sin confirmar décadas después.</span></span></a>
+    <a class="poster" href="#" style="--base:#0B1F2E;--c:#5AA0D0;--t:#5AA0D0" aria-label="JonBenét Ramsey. Boulder, 1996. Sin resolver"><span class="glow"></span><span class="py" aria-hidden="true">1996</span><span class="pk" aria-hidden="true">Caso sin resolver</span><span class="pb" aria-hidden="true"><b>JonBenét Ramsey</b><span class="row2"><small>Boulder · 1996</small><span class="status" style="color:var(--open)">Sin resolver</span></span></span><span class="pm" aria-hidden="true"><b>JonBenét Ramsey</b><span>La muerte de una niña en Colorado que derivó en una de las investigaciones más mediáticas y aún sin resolver del país.</span></span></a>
+    <a class="poster" href="#" style="--base:#2A0B10;--c:#E5484D;--t:#FF7A7F" aria-label="Envenenamientos de Tylenol. Chicago, 1982. Sin resolver"><span class="glow"></span><span class="py" aria-hidden="true">1982</span><span class="pk" aria-hidden="true">Asesinos en serie</span><span class="pb" aria-hidden="true"><b>Envenenamientos de Tylenol</b><span class="row2"><small>Chicago · 1982</small><span class="status" style="color:var(--open)">Sin resolver</span></span></span><span class="pm" aria-hidden="true"><b>Envenenamientos de Tylenol</b><span>Cápsulas adulteradas que cambiaron las normas de seguridad de los medicamentos. Nunca se identificó al responsable.</span></span></a>
+    <a class="poster" href="#" style="--base:#2A1219;--c:#D9788A;--t:#D9788A" aria-label="Hinterkaifeck. Baviera, 1922. Sin resolver"><span class="glow"></span><span class="py" aria-hidden="true">1922</span><span class="pk" aria-hidden="true">Asesinato aislado</span><span class="pb" aria-hidden="true"><b>Hinterkaifeck</b><span class="row2"><small>Baviera · 1922</small><span class="status" style="color:var(--open)">Sin resolver</span></span></span><span class="pm" aria-hidden="true"><b>Hinterkaifeck</b><span>El homicidio de una familia entera en una granja bávara, uno de los casos sin resolver más antiguos de Alemania.</span></span></a>
+    <a class="poster" href="#" style="--base:#2A1219;--c:#D9788A;--t:#D9788A" aria-label="Caso Borden. Fall River, 1892. Sin condena"><span class="glow"></span><span class="py" aria-hidden="true">1892</span><span class="pk" aria-hidden="true">Asesinato aislado</span><span class="pb" aria-hidden="true"><b>Caso Borden</b><span class="row2"><small>Fall River · 1892</small><span class="status" style="color:var(--open)">Sin condena</span></span></span><span class="pm" aria-hidden="true"><b>Caso Borden</b><span>Un doble homicidio en Massachusetts cuyo juicio terminó en absolución. El caso sigue debatiéndose más de un siglo después.</span></span></a>
+  </div>
+  <aside class="ann" role="note" aria-label="Nota de diseño 5" style="left:760px;top:-6px;--w:440px">
+    <span class="pin" aria-hidden="true">5</span>
+    <div class="cap"><b>«Sin resolver», refinada</b><p>Fila existente y mismo orden (relevanceRank). El póster 400×225 suma la categoría arriba y la etiqueta de estado sin necesidad de hover (statusLabel libre: «Reabierto (2019)», «Sin condena»). Hover: sube 12 px, escala 1,06, el resto baja a 0,45 y entra el resumen. Flechas de 52 px para recorrer la fila.</p><p class="needs">Datos ya presentes en el catálogo.</p></div>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-cat" style="margin-top:48px">
+  <div class="sec-head">
+    <h2 id="h-cat">Por categoría</h2>
+    <span class="label">El archivo, por tipo de caso</span>
+  </div>
+  <div class="cats">
+    <a class="cat" href="#" style="--c:#E5484D;--base:#2A0B10" aria-label="Asesinos en serie: 5 expedientes. Abre El archivo filtrado"><span class="nm"><i></i>Asesinos en serie</span><span class="ct"><span><strong>5</strong><span>expedientes</span></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+    <a class="cat" href="#" style="--c:#5AA0D0;--base:#0B1F2E" aria-label="Casos sin resolver: 5 expedientes. Abre El archivo filtrado"><span class="nm"><i></i>Casos sin resolver</span><span class="ct"><span><strong>5</strong><span>expedientes</span></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+    <a class="cat" href="#" style="--c:#D9788A;--base:#2A1219" aria-label="Asesinatos aislados: 4 expedientes. Abre El archivo filtrado"><span class="nm"><i></i>Asesinatos aislados</span><span class="ct"><span><strong>4</strong><span>expedientes</span></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+    <a class="cat" href="#" style="--c:#E0A63A;--base:#2B1E0A" aria-label="Secuestros: 2 expedientes. Abre El archivo filtrado"><span class="nm"><i></i>Secuestros</span><span class="ct"><span><strong>2</strong><span>expedientes</span></span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span></a>
+  </div>
+  <aside class="ann" role="note" aria-label="Nota de diseño 6" style="left:620px;top:-6px;--w:420px">
+    <span class="pin" aria-hidden="true">6</span>
+    <div class="cap"><b>Por categoría</b><p>Cuatro accesos con el recuento real de cada categoría y su color de siempre. Cada uno abre El archivo filtrado por esa categoría.</p><p class="needs">Necesita un filtro por categoría en El archivo (hoy solo filtra por texto).</p></div>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-time">
+  <div class="sec-head">
+    <h2 id="h-time">Recorre el tiempo</h2>
+    <span class="label">Expedientes por década</span>
+  </div>
+  <div class="decades">
+    <a class="dec" href="#" style="--n:1" aria-label="Década de 1880: 1 expediente"><span class="n">1</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:1" aria-label="Década de 1890: 1 expediente"><span class="n">1</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:1" aria-label="Década de 1920: 1 expediente"><span class="n">1</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:2" aria-label="Década de 1940: 2 expedientes"><span class="n">2</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:1" aria-label="Década de 1950: 1 expediente"><span class="n">1</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:1" aria-label="Década de 1960: 1 expediente"><span class="n">1</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:3" aria-label="Década de 1970: 3 expedientes"><span class="n">3</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:2" aria-label="Década de 1980: 2 expedientes"><span class="n">2</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:1" aria-label="Década de 1990: 1 expediente"><span class="n">1</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:2" aria-label="Década de 2000: 2 expedientes"><span class="n">2</span><span class="b"></span></a>
+    <a class="dec" href="#" style="--n:1" aria-label="Década de 2010: 1 expediente"><span class="n">1</span><span class="b"></span></a>
+  </div>
+  <div class="dec-labels" aria-hidden="true"><span>1880s</span><span>1890s</span><span>1920s</span><span>1940s</span><span>1950s</span><span>1960s</span><span>1970s</span><span>1980s</span><span>1990s</span><span>2000s</span><span>2010s</span></div>
+  <aside class="ann" role="note" aria-label="Nota de diseño 7" style="left:96px;top:70px;--w:380px">
+    <span class="pin" aria-hidden="true">7</span>
+    <div class="cap"><b>Recorre el tiempo</b><p>Una barra por década con expedientes; la altura es el número de casos. Cada barra abre El archivo filtrado por década. Quieto: sin animación.</p><p class="needs">Necesita un filtro por década en El archivo.</p></div>
+  </aside>
+</section>
+
+<section class="sec" aria-labelledby="h-links">
+  <div class="sec-head">
+    <h2 id="h-links">Conexiones del archivo</h2>
+    <span class="label">Casos que comparten un hilo</span>
+  </div>
+  <div class="links">
+    <article class="lk" aria-label="La mujer de Isdal y El hombre de Somerton">
+      <span class="label">Conexión curada</span>
+      <svg viewBox="0 0 368 96" preserveAspectRatio="none" aria-hidden="true"><path d="M14 84 Q184 -14 354 84" fill="none" stroke="#F0C674" stroke-width="1.8" stroke-dasharray="7 7" vector-effect="non-scaling-stroke"/><circle cx="14" cy="84" r="6" fill="#5AA0D0" stroke="#F0C674" stroke-width="2"/><circle cx="354" cy="84" r="6" fill="#5AA0D0" stroke="#F0C674" stroke-width="2"/></svg>
+      <div class="ends">
+        <a class="end" href="#" style="--c:#5AA0D0"><b><i></i>La mujer de Isdal</b><small>Bergen · 1970</small></a>
+        <a class="end r" href="#" style="--c:#5AA0D0"><b>El hombre de Somerton<i></i></b><small>Adelaida · 1948</small></a>
+      </div>
+      <p class="rel">Cuerpo sin identificar durante décadas</p>
+    </article>
+    <article class="lk" aria-label="Zodiac y Golden State Killer">
+      <span class="label">Conexión curada</span>
+      <svg viewBox="0 0 368 96" preserveAspectRatio="none" aria-hidden="true"><path d="M14 84 Q184 -14 354 84" fill="none" stroke="#F0C674" stroke-width="1.8" stroke-dasharray="7 7" vector-effect="non-scaling-stroke"/><circle cx="14" cy="84" r="6" fill="#E5484D" stroke="#F0C674" stroke-width="2"/><circle cx="354" cy="84" r="6" fill="#E5484D" stroke="#F0C674" stroke-width="2"/></svg>
+      <div class="ends">
+        <a class="end" href="#" style="--c:#E5484D"><b><i></i>Zodiac</b><small>San Francisco · 1968</small></a>
+        <a class="end r" href="#" style="--c:#E5484D"><b>Golden State Killer<i></i></b><small>California · 1976</small></a>
+      </div>
+      <p class="rel">Norte de California</p>
+    </article>
+    <article class="lk" aria-label="Caso Meredith Kercher y Madeleine McCann">
+      <span class="label">Conexión curada</span>
+      <svg viewBox="0 0 368 96" preserveAspectRatio="none" aria-hidden="true"><path d="M14 84 Q184 -14 354 84" fill="none" stroke="#F0C674" stroke-width="1.8" stroke-dasharray="7 7" vector-effect="non-scaling-stroke"/><circle cx="14" cy="84" r="6" fill="#D9788A" stroke="#F0C674" stroke-width="2"/><circle cx="354" cy="84" r="6" fill="#E0A63A" stroke="#F0C674" stroke-width="2"/></svg>
+      <div class="ends">
+        <a class="end" href="#" style="--c:#D9788A"><b><i></i>Caso Meredith Kercher</b><small>Perugia · 2007</small></a>
+        <a class="end r" href="#" style="--c:#E0A63A"><b>Madeleine McCann<i></i></b><small>Praia da Luz · 2007</small></a>
+      </div>
+      <p class="rel">2007 · gran cobertura mediática</p>
+    </article>
+  </div>
+  <aside class="ann" role="note" aria-label="Nota de diseño 8" style="left:760px;top:-6px;--w:440px">
+    <span class="pin" aria-hidden="true">8</span>
+    <div class="cap"><b>Conexiones del archivo</b><p>Tres pares curados de kCaseConnections con el arco dorado del mapa, pero quieto: en esta zona nada se mueve. Cada nombre abre su expediente.</p><p class="needs">Datos ya presentes. Abrir el expediente directamente en la vista «Conexiones» necesitaría un parámetro en la ruta (opcional).</p></div>
+  </aside>
+</section>
+</main>
+
+<footer>
+  <b>TRUE</b>
+  <span>Crímenes reales · documentados con respeto. Las víctimas se nombran con respeto.</span>
+  <aside class="ann" role="note" aria-label="Nota de diseño 9" style="left:420px;top:-58px;--w:300px">
+    <span class="pin" aria-hidden="true">9</span>
+    <div class="cap"><b>Pie sin cambios</b><p>El mismo que el expediente y el resto de pantallas.</p></div>
+  </aside>
+</footer>
+</div>
+
+<script>
+(function(){
+  var CAT={serialKiller:{l:'Asesinos en serie',c:'#E5484D',t:'#FF7A7F',b:'#2A0B10'},isolatedMurder:{l:'Asesinato aislado',c:'#D9788A',t:'#D9788A',b:'#2A1219'},kidnapping:{l:'Secuestro',c:'#E0A63A',t:'#E0A63A',b:'#2B1E0A'},unsolved:{l:'Caso sin resolver',c:'#5AA0D0',t:'#5AA0D0',b:'#0B1F2E'}};
+  var ST={open:'var(--open)',solved:'var(--solved)',inProgress:'var(--progress)'};
+  var C={
+    zodiac:{t:'Zodiac',loc:'San Francisco · EE. UU.',y:1968,lat:37.77,lon:-122.42,cat:'serialKiller',st:'open',sl:'Sin resolver',sum:'Un agresor sin identificar que actuó en el norte de California y envió cartas cifradas a la prensa. Su identidad nunca se ha esclarecido.'},
+    goldenstate:{t:'Golden State Killer',loc:'California · EE. UU.',y:1976,lat:38.58,lon:-121.49,cat:'serialKiller',st:'solved',sl:'Resuelto (2018)',sum:'Una larga serie de crímenes en California resuelta gracias a la genealogía genética, una técnica que abrió una nueva era forense.'},
+    blackdahlia:{t:'Black Dahlia',y:1947,lat:34.05,lon:-118.24,cat:'unsolved'},
+    ripper:{t:'Jack el Destripador',y:1888,lat:51.51,lon:-0.07,cat:'serialKiller'},
+    jonbenet:{t:'JonBenét Ramsey',y:1996,lat:40.02,lon:-105.27,cat:'unsolved'},
+    tylenol:{t:'Envenenamientos de Tylenol',y:1982,lat:41.88,lon:-87.63,cat:'serialKiller'},
+    btk:{t:'BTK',y:1974,lat:37.69,lon:-97.34,cat:'serialKiller'},
+    lizzie:{t:'Caso Borden',y:1892,lat:41.7,lon:-71.15,cat:'isolatedMurder'},
+    mccann:{t:'Madeleine McCann',loc:'Praia da Luz · Portugal',y:2007,lat:37.09,lon:-8.72,cat:'kidnapping',st:'inProgress',sl:'En investigación',sum:'La desaparición de una niña británica durante unas vacaciones familiares en Portugal, aún en investigación activa.'},
+    isdal:{t:'La mujer de Isdal',loc:'Bergen · Noruega',y:1970,lat:60.39,lon:5.32,cat:'unsolved',st:'open',sl:'Sin resolver',sum:'El cuerpo de una mujer hallado en el Valle de Isdalen, con su identidad aún sin confirmar décadas después.'},
+    hinterkaifeck:{t:'Hinterkaifeck',y:1922,lat:48.46,lon:11.27,cat:'isolatedMurder'},
+    kercher:{t:'Caso Meredith Kercher',y:2007,lat:43.11,lon:12.39,cat:'isolatedMurder'},
+    dyatlov:{t:'Paso Diátlov',loc:'Montes Urales · Rusia',y:1959,lat:61.75,lon:59.45,cat:'unsolved',st:'open',sl:'Reabierto (2019)',sum:'La muerte de nueve montañeros en circunstancias poco claras en los Urales soviéticos, reexaminada oficialmente en 2019.'},
+    somerton:{t:'El hombre de Somerton',y:1948,lat:-34.93,lon:138.6,cat:'unsolved'},
+    asunta:{t:'Caso Asunta',y:2013,lat:42.88,lon:-8.54,cat:'isolatedMurder'},
+    camarena:{t:'Caso Camarena',y:1985,lat:20.67,lon:-103.35,cat:'kidnapping'}
+  };
+  // featuredRank ascendente, limitado a 5 como kFeaturedCasesLimit.
+  var FEATURED=['isdal','zodiac','goldenstate','mccann','dyatlov'];
+  var PAIRS=[['zodiac','goldenstate'],['zodiac','ripper'],['zodiac','blackdahlia'],['isdal','somerton'],['isdal','dyatlov'],['kercher','mccann'],['hinterkaifeck','lizzie']];
+  var LAND={0:[[21,32],[39,40],[55,56]],1:[[9,19],[21,33],[49,50],[54,71]],2:[[2,22],[23,31],[37,71]],3:[[2,16],[20,24],[26,28],[31,32],[37,71]],4:[[3,16],[21,24],[35,35],[38,71]],5:[[4,16],[20,25],[34,35],[36,71]],6:[[5,25],[35,71]],7:[[10,25],[34,40],[45,64]],8:[[11,24],[34,37],[38,38],[41,64]],9:[[12,23],[34,63]],10:[[13,20],[33,63]],11:[[12,18],[20,21],[33,49],[50,62]],12:[[16,19],[21,23],[33,47],[45,48],[50,53],[55,58],[60,60]],13:[[17,19],[20,24],[33,46],[47,47],[51,52],[55,57],[60,60]],14:[[18,19],[20,26],[33,47],[52,52],[55,56],[57,59]],15:[[20,29],[36,46],[55,56],[57,59],[60,61],[63,65]],16:[[20,29],[36,45],[55,56],[57,59],[62,66]],17:[[20,30],[37,44],[56,58],[63,66]],18:[[21,30],[37,44],[57,60],[62,64]],19:[[22,30],[38,45],[59,66]],20:[[22,28],[38,45],[58,66]],21:[[22,28],[38,43],[58,66]],22:[[22,27],[39,43],[59,66]],23:[[22,26],[60,66],[69,70]],24:[[22,26],[65,65],[69,70]],25:[[22,25],[69,70]],26:[[22,25]]};
+
+  var mq=window.matchMedia('(prefers-reduced-motion: reduce)');
+  var reduce=mq.matches;
+  var $=function(id){return document.getElementById(id);};
+  var globe=$('globe'),NS=globe.namespaceURI;
+  function el(tag,attrs,parent){var e=document.createElementNS(NS,tag);for(var k in attrs){e.setAttribute(k,attrs[k]);}parent.appendChild(e);return e;}
+
+  // Estrellas: posiciones deterministas.
+  var seed=7;function rnd(){seed=(seed*16807)%2147483647;return seed/2147483647;}
+  var stars=$('stars');
+  for(var s=0;s<70;s++){var st=el('circle',{cx:(rnd()*1440).toFixed(1),cy:(rnd()*740).toFixed(1),r:(rnd()<.8?.8:1.3),fill:'#DCE4F2',opacity:.5,'class':'star'},stars);st.style.setProperty('--d',(3+rnd()*4).toFixed(1)+'s');st.style.setProperty('--dl',(-rnd()*6).toFixed(1)+'s');}
+
+  // Globo de puntos: proyección ortográfica, centro (1010, 520), R = 400.
+  var CX=1010,CY=520,R=400,D=Math.PI/180;
+  var dots=[];
+  Object.keys(LAND).forEach(function(r){LAND[r].forEach(function(g){for(var col=g[0];col<=g[1];col++){dots.push({lat:80-(+r+.5)*5,lon:(col+.5)*5-180,o:.45+((col*7+(+r)*13)%6)/10,e:el('circle',{fill:'#5C7399'},$('land'))});}});});
+  var grid=[];
+  for(var la=-80;la<=80;la+=10){for(var lo=-180;lo<180;lo+=10){grid.push({lat:la,lon:lo,e:el('circle',{fill:'#2A3650',r:1.1},$('grid'))});}}
+  var marks={};
+  Object.keys(C).forEach(function(id){var g=el('g',{},$('marks'));marks[id]={g:g,ring:el('circle',{r:9,fill:'none',stroke:CAT[C[id].cat].c,'stroke-width':2,'class':'ring'},g),dot:el('circle',{r:4,fill:CAT[C[id].cat].c,stroke:'#05070B','stroke-width':1.5},g)};});
+  var tag=el('text',{'font-family':'Georgia, serif','font-size':15,'font-weight':700,fill:'#FFFFFF',stroke:'#05070B','stroke-width':4,'paint-order':'stroke'},$('marks'));
+
+  var view={lon:0,lat:0},selected=null;
+  function project(lat,lon){var p=lat*D,l=(lon-view.lon)*D,p0=view.lat*D;var z=Math.sin(p0)*Math.sin(p)+Math.cos(p0)*Math.cos(p)*Math.cos(l);return {x:CX+R*Math.cos(p)*Math.sin(l),y:CY-R*(Math.cos(p0)*Math.sin(p)-Math.sin(p0)*Math.cos(p)*Math.cos(l)),z:z};}
+  function drawGlobe(){
+    dots.forEach(function(d){var q=project(d.lat,d.lon);if(q.z<=0){d.e.setAttribute('r',0);return;}d.e.setAttribute('cx',q.x.toFixed(1));d.e.setAttribute('cy',q.y.toFixed(1));d.e.setAttribute('r',(1.3+1.7*q.z).toFixed(2));d.e.setAttribute('opacity',(d.o*(.3+.7*q.z)).toFixed(2));});
+    grid.forEach(function(d){var q=project(d.lat,d.lon);if(q.z<=0){d.e.setAttribute('r',0);return;}d.e.setAttribute('cx',q.x.toFixed(1));d.e.setAttribute('cy',q.y.toFixed(1));d.e.setAttribute('r',1.1);d.e.setAttribute('opacity',(.55*q.z).toFixed(2));});
+    Object.keys(marks).forEach(function(id){var m=marks[id],q=project(C[id].lat,C[id].lon),on=id===selected;m.g.style.display=q.z>0.05?'':'none';m.g.setAttribute('transform','translate('+q.x.toFixed(1)+' '+q.y.toFixed(1)+')');m.dot.setAttribute('r',on?7:4);m.ring.style.display=on?'':'none';if(on){tag.setAttribute('x',(q.x+16).toFixed(1));tag.setAttribute('y',(q.y+5).toFixed(1));tag.style.display=q.z>0.05?'':'none';}});
+    tag.textContent=selected?C[selected].t:'';
+  }
+  // cubic-bezier(.45,.05,.2,1) = ease.globe
+  function bezier(x1,y1,x2,y2){function s(u,a,b){return 3*a*(1-u)*(1-u)*u+3*b*(1-u)*u*u+u*u*u;}function ds(u,a,b){return 3*a*(1-u)*(1-u)+6*(b-a)*(1-u)*u+3*(1-b)*u*u;}return function(t){var u=t;for(var i=0;i<8;i++){var x=s(u,x1,x2)-t,d=ds(u,x1,x2);if(Math.abs(x)<1e-5||Math.abs(d)<1e-6){break;}u-=x/d;}u=Math.min(1,Math.max(0,u));return s(u,y1,y2);};}
+  var easeGlobe=bezier(.45,.05,.2,1),flight=0;
+  function turnTo(id){
+    selected=id;var c=C[id],to={lon:c.lon,lat:c.lat-18};
+    if(reduce){view.lon=to.lon;view.lat=to.lat;drawGlobe();return;}
+    var from={lon:view.lon,lat:view.lat},dl=((to.lon-from.lon+540)%360)-180,t0=performance.now(),run=++flight;
+    (function step(now){if(run!==flight){return;}var k=Math.min(1,(now-t0)/1900),e=easeGlobe(k);view.lon=from.lon+dl*e;view.lat=from.lat+(to.lat-from.lat)*e;drawGlobe();if(k<1){requestAnimationFrame(step);}})(t0);
+  }
+
+  // Carrusel «En el foco».
+  var hero=$('hero'),tabs=$('tabs'),idx=0,elapsed=0,hovered=false,focused=false,DUR=7000,swapTimer=0;
+  var links=function(id){return PAIRS.filter(function(p){return p[0]===id||p[1]===id;}).length;};
+  var fmt=function(v,p,n){return Math.abs(v).toFixed(2)+'° '+(v>=0?p:n);};
+  FEATURED.forEach(function(id,i){var b=document.createElement('button');b.type='button';b.className='tab';b.innerHTML='<span>'+C[id].t+'</span><span class="bar"><i></i></span>';b.setAttribute('aria-label',C[id].t+', caso '+(i+1)+' de '+FEATURED.length);b.onclick=function(){go(i);};tabs.appendChild(b);});
+  function paint(){
+    var id=FEATURED[idx],c=C[id],k=CAT[c.cat],n=links(id);
+    $('s-kick').style.color=k.t;$('s-pos').textContent=(idx+1)+' / '+FEATURED.length;
+    $('s-badge').textContent=k.l;$('s-badge').style.color=k.t;
+    $('s-title').textContent=c.t;$('ghost').textContent=c.y;
+    $('s-facts').innerHTML='<span class="p">'+c.y+'</span><span class="sep" aria-hidden="true">·</span><span class="p">'+c.loc+'</span><span class="sep" aria-hidden="true">·</span><span class="status" style="color:'+ST[c.st]+'">'+c.sl+'</span><span class="sep" aria-hidden="true">·</span><span class="cx">'+n+(n===1?' caso conectado':' casos conectados')+'</span>';
+    $('s-sum').textContent=c.sum;
+    $('s-coords').textContent=fmt(c.lat,'N','S')+' · '+fmt(c.lon,'E','O');
+    $('tint').style.setProperty('--base',k.b);
+    $('halo-c').setAttribute('stop-color',k.c);$('halo-c').nextElementSibling.setAttribute('stop-color',k.c);
+    Array.prototype.forEach.call(tabs.children,function(b,i){b.setAttribute('aria-current',String(i===idx));});
+  }
+  function go(i){
+    idx=(i+FEATURED.length)%FEATURED.length;elapsed=0;turnTo(FEATURED[idx]);
+    clearTimeout(swapTimer);
+    if(reduce){paint();bars();return;}
+    hero.classList.add('out');
+    swapTimer=setTimeout(function(){paint();hero.classList.remove('out');},350);
+  }
+  function bars(){Array.prototype.forEach.call(tabs.children,function(b,i){var w=i===idx?(reduce?1:elapsed/DUR):(i<idx?1:0);b.querySelector('i').style.width=(w*100).toFixed(1)+'%';});}
+  var last=performance.now();
+  function tick(now){var dt=now-last;last=now;if(!reduce&&!hovered&&!focused&&!document.hidden){elapsed+=dt;if(elapsed>=DUR){go(idx+1);}}bars();requestAnimationFrame(tick);}
+  hero.addEventListener('mouseenter',function(){hovered=true;});
+  hero.addEventListener('mouseleave',function(){hovered=false;});
+  hero.addEventListener('focusin',function(){focused=true;});
+  hero.addEventListener('focusout',function(e){if(!hero.contains(e.relatedTarget)){focused=false;}});
+  hero.addEventListener('keydown',function(e){if(e.key==='ArrowRight'){go(idx+1);e.preventDefault();}else if(e.key==='ArrowLeft'){go(idx-1);e.preventDefault();}});
+  mq.addEventListener('change',function(e){reduce=e.matches;elapsed=0;});
+  view.lon=C[FEATURED[0]].lon;view.lat=C[FEATURED[0]].lat-18;selected=FEATURED[0];
+  paint();drawGlobe();requestAnimationFrame(tick);
+
+  // Fila «Sin resolver»: flechas de desplazamiento.
+  var row=$('open-row');
+  document.querySelectorAll('[data-scroll]').forEach(function(b){b.onclick=function(){row.scrollBy({left:+b.dataset.scroll*416*2,behavior:reduce?'auto':'smooth'});};});
+
+  // Notas de diseño.
+  var toggle=$('notes-toggle');
+  toggle.onclick=function(){var off=document.body.classList.toggle('notes-off');toggle.querySelector('span').textContent=off?'Mostrar notas':'Ocultar notas';};
+})();
+</script>
+</body>
+</html>

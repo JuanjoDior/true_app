@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/app/true_crime_app.dart';
+import 'package:true_app/app/navigation/app_navigation.dart';
+import 'package:true_app/features/cases/presentation/case_directory.dart';
 import 'package:true_app/core/config/map_config.dart';
 import 'package:true_app/core/design/design.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
@@ -23,12 +25,13 @@ TrueCrimeCase _crimeCase({
   required String slug,
   required int year,
   String? title,
+  CaseCategory category = CaseCategory.unsolved,
 }) {
   return TrueCrimeCase(
     id: slug,
     slug: slug,
     title: title ?? slug,
-    category: CaseCategory.unsolved,
+    category: category,
     country: 'España',
     countryCode: 'ES',
     regionOrCity: 'A Coruña',
@@ -157,7 +160,148 @@ Future<void> _openDirectory(WidgetTester tester) async {
   await _settle(tester);
 }
 
+class _RecordingNavigation implements AppNavigation {
+  String? slug;
+  @override
+  void openCase(String slug) => this.slug = slug;
+  @override
+  void openMap() {}
+  @override
+  void showSituationRoom() {}
+}
+
+Future<ProviderContainer> _pumpFilteredDirectory(
+  WidgetTester tester, {
+  CaseCategory? category,
+  int? decade,
+  required CasesRepository repository,
+  required _RecordingNavigation navigation,
+}) async {
+  final container = ProviderContainer(
+    overrides: [casesRepositoryProvider.overrideWithValue(repository)],
+  );
+  addTearDown(container.dispose);
+  await tester.pumpWidget(
+    UncontrolledProviderScope(
+      container: container,
+      child: MaterialApp(
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: TextButton(
+              onPressed: () => showCaseDirectory(
+                context,
+                navigation,
+                initialCategory: category,
+                initialDecade: decade,
+              ),
+              child: const Text('Abrir'),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.tap(find.text('Abrir'));
+  await _settle(tester);
+  return container;
+}
+
 void main() {
+  group('filtros iniciales del archivo', () {
+    final cases = [
+      _crimeCase(
+        slug: 'serial-1940',
+        year: 1940,
+        category: CaseCategory.serialKiller,
+      ),
+      _crimeCase(
+        slug: 'serial-1949',
+        year: 1949,
+        category: CaseCategory.serialKiller,
+      ),
+      _crimeCase(slug: 'unsolved-1950', year: 1950),
+      _crimeCase(slug: 'unsolved-1939', year: 1939),
+    ];
+
+    testWidgets(
+      'category filters ordered cases and opens the selected slug without changing map filters',
+      (tester) async {
+        final navigation = _RecordingNavigation();
+        final container = await _pumpFilteredDirectory(
+          tester,
+          category: CaseCategory.serialKiller,
+          repository: _StubRepository(cases),
+          navigation: navigation,
+        );
+        expect(_inDirectory('Asesinos en serie'), findsOneWidget);
+        expect(_inDirectory('serial-1949'), findsOneWidget);
+        expect(_inDirectory('serial-1940'), findsOneWidget);
+        expect(_inDirectory('unsolved-1950'), findsNothing);
+        expect(
+          tester.getTopLeft(_inDirectory('serial-1949')).dy,
+          lessThan(tester.getTopLeft(_inDirectory('serial-1940')).dy),
+        );
+        expect(container.read(searchQueryProvider), '');
+        expect(container.read(statusFilterProvider), isNull);
+        expect(container.read(timelineYearProvider), kTimelineMaxYear);
+        await tester.tap(_inDirectory('serial-1940'));
+        await _settle(tester);
+        expect(navigation.slug, 'serial-1940');
+        expect(find.byKey(const Key('case-directory')), findsNothing);
+      },
+    );
+
+    testWidgets('decade includes both boundaries and identifies the filter', (
+      tester,
+    ) async {
+      await _pumpFilteredDirectory(
+        tester,
+        decade: 1940,
+        repository: _StubRepository(cases),
+        navigation: _RecordingNavigation(),
+      );
+      expect(_inDirectory('Década de 1940'), findsOneWidget);
+      expect(_inDirectory('serial-1940'), findsOneWidget);
+      expect(_inDirectory('serial-1949'), findsOneWidget);
+      expect(_inDirectory('unsolved-1939'), findsNothing);
+      expect(_inDirectory('unsolved-1950'), findsNothing);
+    });
+
+    testWidgets('category and decade intersect when both are supplied', (
+      tester,
+    ) async {
+      await _pumpFilteredDirectory(
+        tester,
+        category: CaseCategory.unsolved,
+        decade: 1950,
+        repository: _StubRepository(cases),
+        navigation: _RecordingNavigation(),
+      );
+      expect(_inDirectory('Caso sin resolver'), findsOneWidget);
+      expect(_inDirectory('Década de 1950'), findsOneWidget);
+      expect(_inDirectory('unsolved-1950'), findsOneWidget);
+      expect(_inDirectory('unsolved-1939'), findsNothing);
+      expect(_inDirectory('serial-1949'), findsNothing);
+    });
+
+    testWidgets(
+      'a filter with no matches distinguishes an empty result from an empty archive',
+      (tester) async {
+        await _pumpFilteredDirectory(
+          tester,
+          decade: 1900,
+          repository: _StubRepository(cases),
+          navigation: _RecordingNavigation(),
+        );
+        expect(_inDirectory('Década de 1900'), findsOneWidget);
+        expect(
+          _inDirectory('No hay expedientes para este filtro.'),
+          findsOneWidget,
+        );
+        expect(find.byKey(const Key('case-directory-empty')), findsNothing);
+      },
+    );
+  });
   group('el punto de entrada existe en cada ancho', () {
     for (final (name, size) in [
       ('mobile', _mobile),

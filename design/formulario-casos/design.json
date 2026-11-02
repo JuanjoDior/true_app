@@ -1,0 +1,9 @@
+{
+  "title": "Formulario de casos",
+  "brief": "Rediseño visual del formulario de alta en la dirección D, conservando toda la funcionalidad actual (borradores locales, copia de seguridad, Copiar JSON, siete secciones, inicio de sesión)",
+  "feature": "odd/tasks/cinematic-design-system.md",
+  "artboards": [
+    { "file": "01-tres-paneles.html", "title": "Tres paneles", "tradeoff": "Todo a la vista (borradores, formulario completo y vista previa) con estado de cada sección; denso y con más scroll", "width": 1440, "height": 900 },
+    { "file": "02-redaccion-guiada.html", "title": "Redacción guiada", "tradeoff": "Una sección cada vez y vista previa grande casi idéntica al expediente; no se ve el borrador entero de un vistazo y los borradores quedan a un clic", "width": 1440, "height": 900 }
+  ]
+}

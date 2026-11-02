@@ -38,6 +38,20 @@ void main() {
   });
 
   group('contenido', () {
+    testWidgets('categoría visible en reposo', (tester) async {
+      await pumpPortadaPoster(tester, _zodiac);
+      expect(find.text('ASESINOS EN SERIE'), findsOneWidget);
+    });
+
+    testWidgets('estado editorial y respaldo visibles en reposo', (
+      tester,
+    ) async {
+      await pumpPortadaPoster(tester, unsolvedPortadaCases.last);
+      expect(find.text('Sin condena'), findsOneWidget);
+      await pumpPortadaPoster(tester, _zodiac);
+      expect(find.text('Sin resolver'), findsOneWidget);
+    });
+
     testWidgets('muestra título, lugar y año en la capa base', (tester) async {
       await pumpPortadaPoster(tester, _zodiac);
 

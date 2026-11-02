@@ -9,15 +9,16 @@ import '../../../cases/domain/true_crime_case.dart';
 import '../../../cases/presentation/case_directory.dart';
 import 'portada_bottom_bar.dart';
 import 'portada_catalog_status.dart';
+import 'portada_categories.dart';
+import 'portada_connections.dart';
+import 'portada_decades.dart';
+import 'portada_figures.dart';
 import 'portada_footer.dart';
 import 'portada_hero.dart';
-import 'portada_map_invite.dart';
 import 'portada_top_bar.dart';
 import 'portada_unsolved_row.dart';
 
-/// Portada: héroe con la barra superior encima, «Sin resolver», invitación al
-/// mapa y pie, en un único desplazamiento. En anchos estrechos añade la barra
-/// inferior fija.
+/// Portada editorial en un único desplazamiento, con barra inferior en móvil.
 class PortadaShell extends ConsumerStatefulWidget {
   const PortadaShell({super.key});
 
@@ -57,10 +58,11 @@ class _PortadaShellState extends ConsumerState<PortadaShell> {
     final catalog = ref.watch(casesProvider);
     final featured = ref.watch(featuredCasesProvider);
     final unsolved = ref.watch(unsolvedCasesProvider);
+    final connections = ref.watch(caseConnectionsProvider);
     final narrow = MediaQuery.sizeOf(context).width < DsBreakpoints.desktop;
 
-    // Es la lista del propio provider: la invitación al mapa y el héroe
-    // reindexan marcadores al cambiar su identidad, así que no se copia.
+    // El héroe reindexa marcadores al cambiar la identidad de la lista.
+    // Se conserva la lista del provider sin copiarla.
     final cases = catalog.hasValue ? catalog.requireValue : null;
 
     // El explorador del mapa llega en F5: hasta entonces no se pasan sus
@@ -91,6 +93,7 @@ class _PortadaShellState extends ConsumerState<PortadaShell> {
                         PortadaHero(
                           featured: featured,
                           allCases: cases ?? const <TrueCrimeCase>[],
+                          connections: connections,
                           onOpenCase: openCase,
                         ),
                         if (cases == null || cases.isEmpty)
@@ -115,9 +118,42 @@ class _PortadaShellState extends ConsumerState<PortadaShell> {
                     ),
                   ),
                   if (cases != null && cases.isNotEmpty) ...[
-                    const SizedBox(height: DsSpacing.s24),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: narrow ? DsSpacing.pageMarginMobile : DsSpacing.pageMarginDesktop,
+                        vertical: DsSpacing.s24,
+                      ),
+                      child: PortadaFigures(cases: cases),
+                    ),
                     PortadaUnsolvedRow(cases: unsolved, onOpenCase: openCase),
-                    PortadaMapInvite(cases: cases),
+                    PortadaCategories(
+                      cases: cases,
+                      onSelectCategory: (category) {
+                        if (navigation != null) {
+                          showCaseDirectory(context, navigation, initialCategory: category);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: DsSpacing.s80),
+                    PortadaDecades(
+                      cases: cases,
+                      onSelectDecade: (decade) {
+                        if (navigation != null) {
+                          showCaseDirectory(context, navigation, initialDecade: decade);
+                        }
+                      },
+                    ),
+                    const SizedBox(height: DsSpacing.s80),
+                    Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: narrow ? DsSpacing.pageMarginMobile : DsSpacing.pageMarginDesktop,
+                      ),
+                      child: PortadaConnections(
+                        cases: cases,
+                        connections: connections,
+                        onOpenCase: openCase,
+                      ),
+                    ),
                   ],
                   const PortadaFooter(),
                   if (narrow)

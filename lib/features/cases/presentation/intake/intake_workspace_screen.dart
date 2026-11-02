@@ -1,21 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../../core/design/components/ds_button.dart';
-import '../../../../core/design/components/ds_dialog.dart';
+import '../../../../core/design/design.dart';
 import '../../../../core/layout/breakpoints.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../home/presentation/widgets/situation/situation_styles.dart';
 import '../../application/case_draft_providers.dart';
-import '../../application/cases_providers.dart';
 import '../../application/draft_validator.dart';
-import '../../application/intake_session_providers.dart';
 import '../../domain/case_draft.dart';
-import 'case_form_section.dart';
-import 'drafts_backup_button.dart';
-import 'export_case_button.dart';
+import 'intake_drafts_pane.dart';
+import 'intake_editor.dart';
 import 'intake_preview_panel.dart';
-import 'intake_sign_in_screen.dart';
+import 'intake_top_bar.dart';
 
 /// Workspace local de alta de casos: la sesión se reserva para el envío
 /// explícito a revisión y nunca bloquea los borradores de este dispositivo.
@@ -40,7 +36,7 @@ class _IntakeFormBody extends ConsumerWidget {
       backgroundColor: AppColors.bgDeep,
       body: Column(
         children: [
-          _WorkspaceTopBar(compact: isNarrow),
+          IntakeTopBar(compact: isNarrow),
           Expanded(
             child: draftsAsync.when(
               data: (drafts) => isNarrow
@@ -55,7 +51,7 @@ class _IntakeFormBody extends ConsumerWidget {
                       children: [
                         SizedBox(
                           width: 260,
-                          child: _DraftList(
+                          child: IntakeDraftsPane(
                             drafts: drafts,
                             selectedId: editingDraftId,
                           ),
@@ -92,352 +88,121 @@ class _IntakeFormBody extends ConsumerWidget {
   }
 }
 
-class _WorkspaceTopBar extends ConsumerWidget {
-  const _WorkspaceTopBar({required this.compact});
-
-  /// Por debajo de `Breakpoints.intakeThreePane` la barra a tamaño completo
-  /// desborda (≈476px de contenido en 360px), así que se reduce a iconos
-  /// [Diseño D7].
-  final bool compact;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      height: 52,
-      padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: const BoxDecoration(
-        color: AppColors.bar,
-        border: Border(bottom: BorderSide(color: AppColors.panelMuted)),
-      ),
-      child: Row(
-        children: [
-          IconButton(
-            key: const Key('intake-back-button'),
-            icon: const Icon(Icons.arrow_back, color: AppColors.textSoft),
-            onPressed: () => ref.read(workspaceProvider.notifier).state =
-                Workspace.situationRoom,
-          ),
-          if (compact)
-            Flexible(
-              child: Text(
-                'Formulario de casos',
-                style: SituationStyles.serif(size: 16),
-                overflow: TextOverflow.ellipsis,
-                maxLines: 1,
-              ),
-            )
-          else ...[
-            Text('Formulario de casos', style: SituationStyles.serif(size: 16)),
-            const Spacer(),
-          ],
-          if (compact) ...[
-            IconButton(
-              key: const Key('intake-drafts-toggle-button'),
-              tooltip: 'Borradores',
-              icon: const Icon(Icons.list_alt, size: 20),
-              onPressed: () =>
-                  ref.read(intakeDraftListOpenProvider.notifier).state = !ref
-                      .read(intakeDraftListOpenProvider),
-            ),
-            IconButton(
-              key: const Key('intake-preview-toggle-button'),
-              tooltip: 'Previsualización',
-              icon: const Icon(Icons.visibility_outlined, size: 20),
-              onPressed: () =>
-                  ref.read(intakePreviewOpenProvider.notifier).state = !ref
-                      .read(intakePreviewOpenProvider),
-            ),
-            const DraftsBackupButton(compact: true),
-            const ExportCaseButton(compact: true),
-            IconButton(
-              key: const Key('intake-new-draft-button'),
-              tooltip: 'Nuevo borrador',
-              icon: const Icon(Icons.add, size: 20),
-              onPressed: () async {
-                final draftId = await ref
-                    .read(caseDraftsProvider.notifier)
-                    .createDraft();
-                ref.read(editingDraftIdProvider.notifier).state = draftId;
-              },
-            ),
-          ] else ...[
-            const DraftsBackupButton(),
-            const SizedBox(width: 8),
-            const ExportCaseButton(),
-            const SizedBox(width: 8),
-            TextButton.icon(
-              key: const Key('intake-new-draft-button'),
-              onPressed: () async {
-                final draftId = await ref
-                    .read(caseDraftsProvider.notifier)
-                    .createDraft();
-                ref.read(editingDraftIdProvider.notifier).state = draftId;
-              },
-              icon: const Icon(Icons.add, size: 16),
-              label: const Text('Nuevo borrador'),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _DraftList extends ConsumerWidget {
-  const _DraftList({
-    required this.drafts,
-    required this.selectedId,
-    this.onAfterSelect,
-  });
-
-  final List<CaseDraft> drafts;
-  final String? selectedId;
-
-  /// Sólo lo usa la hoja de lista en el workspace estrecho: elegir un
-  /// borrador ahí es una elección modal terminal, así que la hoja se cierra
-  /// sola [Diseño D3]. El escritorio no lo pasa y no cambia de
-  /// comportamiento.
-  final VoidCallback? onAfterSelect;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(right: BorderSide(color: AppColors.panelMuted)),
-      ),
-      child: Column(
-        children: [
-          Expanded(
-            child: ListView.builder(
-              itemCount: drafts.length,
-              itemBuilder: (context, index) {
-                final draft = drafts[index];
-                final isSelected = draft.draftId == selectedId;
-                final isValid = validateDraft(draft).isValid;
-                return ListTile(
-                  key: Key('intake-draft-item-${draft.draftId}'),
-                  selected: isSelected,
-                  title: Text(_draftLabel(draft)),
-                  subtitle: Text(
-                    isValid ? 'Listo · sin publicar' : 'Incompleto',
-                  ),
-                  trailing: IconButton(
-                    key: Key('intake-draft-delete-${draft.draftId}'),
-                    tooltip: 'Borrar borrador',
-                    icon: const Icon(Icons.delete_outline, size: 18),
-                    onPressed: () => _confirmAndDelete(context, ref, draft),
-                  ),
-                  onTap: () {
-                    ref.read(editingDraftIdProvider.notifier).state =
-                        draft.draftId;
-                    onAfterSelect?.call();
-                  },
-                );
-              },
-            ),
-          ),
-          const _AccountFooter(),
-        ],
-      ),
-    );
-  }
-
-  /// Un clic en la papelera no basta para perder un borrador: sólo se borra
-  /// tras confirmar. Cancelar, Escape o tocar fuera no tocan nada [S4].
-  Future<void> _confirmAndDelete(
-    BuildContext context,
-    WidgetRef ref,
-    CaseDraft draft,
-  ) async {
-    // Se leen antes de esperar: la hoja estrecha puede cerrarse mientras
-    // el diálogo está abierto y `ref` dejaría de ser utilizable.
-    final drafts = ref.read(caseDraftsProvider.notifier);
-    final editingDraftId = ref.read(editingDraftIdProvider.notifier);
-    final confirmed = await showDsDialog<bool>(
-      context: context,
-      builder: (dialogContext) => DsDialog(
-        key: const Key('intake-draft-delete-dialog'),
-        title: '¿Borrar este borrador?',
-        content: Text(
-          '«${_draftLabel(draft)}». '
-          'Se borra de este equipo y no se puede deshacer.',
-        ),
-        actions: [
-          DsButton(
-            key: const Key('intake-draft-delete-cancel'),
-            label: 'Cancelar',
-            variant: DsButtonVariant.outline,
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-          ),
-          DsButton(
-            key: const Key('intake-draft-delete-confirm'),
-            label: 'Borrar',
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true) {
-      return;
-    }
-    await drafts.deleteDraft(draft.draftId);
-    if (selectedId == draft.draftId) {
-      editingDraftId.state = null;
-    }
-  }
-}
-
-/// Etiqueta con la que se nombra un borrador en la lista y al borrarlo.
-String _draftLabel(CaseDraft draft) =>
-    draft.title?.isNotEmpty == true ? draft.title! : 'Sin título';
-
-/// Con quién se ha entrado, y la salida. Va al pie de la lista y no en la
-/// barra superior, que en pantallas estrechas ya no tiene sitio.
-class _AccountFooter extends ConsumerWidget {
-  const _AccountFooter();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final account = ref.watch(intakeAccountProvider).value;
-    return Container(
-      padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-      decoration: const BoxDecoration(
-        border: Border(top: BorderSide(color: AppColors.panelMuted)),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  account?.email ?? 'Sin sesión',
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  style: SituationStyles.sans(
-                    size: 12,
-                    color: AppColors.textSub,
-                  ),
-                ),
-                Text(
-                  'Borradores guardados en este dispositivo',
-                  key: const Key('intake-local-drafts-status'),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 1,
-                  style: SituationStyles.sans(
-                    size: 11,
-                    color: AppColors.textSub,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          if (account == null)
-            TextButton(
-              key: const Key('intake-signin-open'),
-              onPressed: () => _showSignIn(context),
-              child: const Text('Iniciar sesión'),
-            )
-          else
-            TextButton(
-              key: const Key('intake-signout-button'),
-              onPressed: () => _signOut(context, ref),
-              child: const Text('Cerrar sesión'),
-            ),
-        ],
-      ),
-    );
-  }
-
-  void _showSignIn(BuildContext context) {
-    showDialog<void>(
-      context: context,
-      builder: (_) => const _IntakeSignInDialog(),
-    );
-  }
-
-  Future<void> _signOut(BuildContext context, WidgetRef ref) async {
-    try {
-      await ref.read(intakeAuthProvider).signOut();
-    } catch (_) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo cerrar la sesión. Vuelve a probar.'),
-        ),
-      );
-    }
-  }
-}
-
-class _IntakeSignInDialog extends ConsumerWidget {
-  const _IntakeSignInDialog();
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    ref.listen(intakeAccountProvider, (previous, next) {
-      if (next.value != null && context.mounted) {
-        Navigator.of(context).pop();
-      }
-    });
-    return Dialog.fullscreen(
-      child: Stack(
-        children: [
-          const IntakeSignInScreen(),
-          Positioned(
-            top: 8,
-            right: 8,
-            child: SafeArea(
-              child: IconButton(
-                key: const Key('intake-signin-close'),
-                tooltip: 'Cerrar',
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FormAndPreview extends StatelessWidget {
+class _FormAndPreview extends StatefulWidget {
   const _FormAndPreview({super.key});
+
+  @override
+  State<_FormAndPreview> createState() => _FormAndPreviewState();
+}
+
+class _FormAndPreviewState extends State<_FormAndPreview> {
+  final _editorController = IntakeEditorController();
+
+  @override
+  void dispose() {
+    _editorController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Expanded(child: _IntakeFormColumn()),
-        const SizedBox(width: 380, child: IntakePreviewPanel()),
+        Expanded(child: _IntakeFormColumn(controller: _editorController)),
+        SizedBox(
+          width: 380,
+          child: IntakePreviewPanel(
+            onSelectSection: _editorController.scrollToSection,
+          ),
+        ),
       ],
     );
   }
 }
 
-/// La columna de secciones del formulario, sin la previsualización lateral.
-/// La usan tanto el escritorio (dentro de [_FormAndPreview]) como el
-/// workspace estrecho (a pantalla completa, con la previsualización como
-/// hoja aparte) [Diseño: Data Flow].
+/// La columna del editor, sin la previsualización lateral. La usan tanto el
+/// escritorio (dentro de [_FormAndPreview]) como el workspace estrecho (a
+/// pantalla completa, con la previsualización como hoja aparte)
+/// [Diseño: Data Flow].
 class _IntakeFormColumn extends StatelessWidget {
-  const _IntakeFormColumn({super.key});
+  const _IntakeFormColumn({super.key, required this.controller});
+
+  final IntakeEditorController controller;
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
+    return KeyedSubtree(
       key: const Key('intake-form-column'),
-      padding: const EdgeInsets.all(20),
+      child: IntakeEditor(
+        controller: controller,
+        header: const _EditorHeader(),
+      ),
+    );
+  }
+}
+
+/// Cabecera del editor: título del borrador y estado derivado de
+/// [validateDraft]. No guarda nada: sólo lee el borrador en edición.
+class _EditorHeader extends ConsumerWidget {
+  const _EditorHeader();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final draft = ref.watch(editingDraftProvider);
+    if (draft == null) {
+      return const SizedBox.shrink();
+    }
+    final styles = DsTextStylesResolver.of(context);
+    final compact = MediaQuery.sizeOf(context).width < DsBreakpoints.desktop;
+    final margin = compact ? DsSpacing.s16 : DsSpacing.s32;
+    final title = draft.title?.trim() ?? '';
+    final ready = validateDraft(draft).isValid;
+    final statusColor = ready ? DsStatusColors.open : DsStatusColors.inProgress;
+
+    return Padding(
+      key: const Key('intake-editor-header'),
+      padding: EdgeInsets.fromLTRB(
+        margin,
+        DsSpacing.s20,
+        margin,
+        DsSpacing.s16,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final section in kCaseFormSections) ...[
-            SituationSectionLabel(section.title),
-            const SizedBox(height: 10),
-            Builder(builder: section.builder),
-            const SizedBox(height: 24),
-          ],
+          const DsMonoLabel(
+            'Borrador local',
+            color: DsColors.accentRedText,
+            letterSpacingEm: 0.22,
+          ),
+          const SizedBox(height: DsSpacing.s8),
+          Semantics(
+            header: true,
+            child: Text(
+              title.isEmpty ? 'Sin título' : title,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: styles.displaySection.copyWith(
+                fontSize: compact ? 22 : 28,
+              ),
+            ),
+          ),
+          const SizedBox(height: DsSpacing.s10),
+          Row(
+            children: [
+              Icon(
+                ready ? Icons.check_circle_outline : Icons.circle_outlined,
+                size: 14,
+                color: statusColor,
+              ),
+              const SizedBox(width: DsSpacing.s8),
+              Text(
+                ready ? 'Listo · sin publicar' : 'Incompleto',
+                key: const Key('intake-editor-status'),
+                style: styles.monoLabel.copyWith(color: statusColor),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -463,11 +228,29 @@ class _NarrowIntakeBodyState extends ConsumerState<_NarrowIntakeBody> {
   // reconstrucción mientras el borrador todavía se está creando
   // [Diseño D6].
   bool _landingScheduled = false;
+  final _editorController = IntakeEditorController();
 
   @override
   void initState() {
     super.initState();
     _scheduleLandingIfNeeded();
+  }
+
+  @override
+  void dispose() {
+    _editorController.dispose();
+    super.dispose();
+  }
+
+  /// Cierra la hoja de previsualización y, ya con el editor a la vista, lo
+  /// desplaza hasta la sección pedida.
+  void _selectSection(int index) {
+    ref.read(intakePreviewOpenProvider.notifier).state = false;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _editorController.scrollToSection(index);
+      }
+    });
   }
 
   @override
@@ -512,7 +295,10 @@ class _NarrowIntakeBodyState extends ConsumerState<_NarrowIntakeBody> {
         Positioned.fill(
           child: editingDraftId == null
               ? const SizedBox.shrink()
-              : _IntakeFormColumn(key: ValueKey(editingDraftId)),
+              : _IntakeFormColumn(
+                  key: ValueKey(editingDraftId),
+                  controller: _editorController,
+                ),
         ),
         if (previewOpen)
           Positioned(
@@ -542,7 +328,7 @@ class _NarrowIntakeBodyState extends ConsumerState<_NarrowIntakeBody> {
                 ],
               ),
               clipBehavior: Clip.antiAlias,
-              child: const IntakePreviewPanel(),
+              child: IntakePreviewPanel(onSelectSection: _selectSection),
             ),
           ),
         if (draftListOpen) ...[
@@ -578,7 +364,7 @@ class _NarrowIntakeBodyState extends ConsumerState<_NarrowIntakeBody> {
               // fuera, Flutter avisa de que quedaría invisible.
               child: Material(
                 color: AppColors.bar,
-                child: _DraftList(
+                child: IntakeDraftsPane(
                   drafts: widget.drafts,
                   selectedId: editingDraftId,
                   onAfterSelect: () =>

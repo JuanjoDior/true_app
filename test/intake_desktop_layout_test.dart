@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:true_app/core/config/map_config.dart';
+import 'package:true_app/core/design/design.dart';
 import 'package:true_app/features/cases/application/case_draft_providers.dart';
 import 'package:true_app/features/cases/application/cases_providers.dart';
 import 'package:true_app/features/cases/application/intake_session_providers.dart';
@@ -17,7 +18,8 @@ import 'test_support/sample_cases.dart';
 import 'test_support/fake_intake_auth.dart';
 
 class _FakeCaseDraftsStore implements CaseDraftsStore {
-  _FakeCaseDraftsStore([List<CaseDraft>? seed]) : saved = seed ?? const <CaseDraft>[];
+  _FakeCaseDraftsStore([List<CaseDraft>? seed])
+    : saved = seed ?? const <CaseDraft>[];
   List<CaseDraft> saved;
 
   @override
@@ -31,7 +33,8 @@ class _FakeCaseDraftsStore implements CaseDraftsStore {
 
 class _NoGeocoder implements ReverseGeocoder {
   @override
-  Future<ResolvedPlace?> resolve(double latitude, double longitude) async => null;
+  Future<ResolvedPlace?> resolve(double latitude, double longitude) async =>
+      null;
 }
 
 /// Ancho cómodamente por encima de `Breakpoints.intakeThreePane` (1200).
@@ -52,7 +55,9 @@ Future<ProviderContainer> _pumpDesktopWorkspace(
   final container = ProviderContainer(
     overrides: [
       intakeAuthProvider.overrideWithValue(FakeIntakeAuth.signedIn()),
-      caseDraftsStoreProvider.overrideWithValue(_FakeCaseDraftsStore(seedDrafts)),
+      caseDraftsStoreProvider.overrideWithValue(
+        _FakeCaseDraftsStore(seedDrafts),
+      ),
       casesRepositoryProvider.overrideWithValue(const FakeCasesRepository([])),
       mapConfigProvider.overrideWithValue(MapConfig.testing()),
       reverseGeocoderProvider.overrideWithValue(_NoGeocoder()),
@@ -115,8 +120,12 @@ void main() {
         // El formulario ocupa lo que queda entre los dos paneles fijos.
         expect(
           tester.getSize(find.byKey(const Key('intake-form-column'))).width,
-          closeTo(_desktopSize.width - _draftListWidth - _previewPanelWidth, 0.5),
-          reason: 'The form column must be squeezed between the draft list '
+          closeTo(
+            _desktopSize.width - _draftListWidth - _previewPanelWidth,
+            0.5,
+          ),
+          reason:
+              'The form column must be squeezed between the draft list '
               'and the preview pane, not span the full width.',
         );
       },
@@ -136,11 +145,20 @@ void main() {
         expect(tester.takeException(), isNull);
 
         // Los borradores se ven sin abrir nada.
-        expect(find.byKey(const Key('intake-draft-item-draft-a')), findsOneWidget);
-        expect(find.byKey(const Key('intake-draft-item-draft-b')), findsOneWidget);
+        expect(
+          find.byKey(const Key('intake-draft-item-draft-a')),
+          findsOneWidget,
+        );
+        expect(
+          find.byKey(const Key('intake-draft-item-draft-b')),
+          findsOneWidget,
+        );
 
         // Y las affordances que sólo existen en estrecho no aparecen aquí.
-        expect(find.byKey(const Key('intake-drafts-toggle-button')), findsNothing);
+        expect(
+          find.byKey(const Key('intake-drafts-toggle-button')),
+          findsNothing,
+        );
         expect(find.byKey(const Key('intake-draft-list-sheet')), findsNothing);
         expect(find.byKey(const Key('intake-draft-list-scrim')), findsNothing);
         expect(find.byKey(const Key('intake-preview-sheet')), findsNothing);
@@ -189,8 +207,14 @@ void main() {
         .toList();
 
     void expectNothingDeleted(ProviderContainer container) {
-      expect(find.byKey(const Key('intake-draft-item-draft-a')), findsOneWidget);
-      expect(find.byKey(const Key('intake-draft-item-draft-b')), findsOneWidget);
+      expect(
+        find.byKey(const Key('intake-draft-item-draft-a')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('intake-draft-item-draft-b')),
+        findsOneWidget,
+      );
       expect(listedIds(container), ['draft-a', 'draft-b']);
       expect(storedIds(container), ['draft-a', 'draft-b']);
       expect(container.read(editingDraftIdProvider), 'draft-a');
@@ -206,10 +230,10 @@ void main() {
       );
 
       for (final id in ['draft-a', 'draft-b']) {
-        final button = tester.widget<IconButton>(
+        final button = tester.widget<DsIconButton>(
           find.byKey(Key('intake-draft-delete-$id')),
         );
-        expect(button.tooltip, 'Borrar borrador');
+        expect(button.semanticLabel, 'Borrar borrador');
       }
       expect(find.byTooltip('Borrar borrador'), findsNWidgets(2));
     });
@@ -334,7 +358,10 @@ void main() {
         expect(tester.takeException(), isNull);
 
         expect(find.text('¿Borrar este borrador?'), findsNothing);
-        expect(find.byKey(const Key('intake-draft-item-draft-a')), findsNothing);
+        expect(
+          find.byKey(const Key('intake-draft-item-draft-a')),
+          findsNothing,
+        );
         expect(
           find.byKey(const Key('intake-draft-item-draft-b')),
           findsOneWidget,

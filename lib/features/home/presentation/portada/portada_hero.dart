@@ -1,6 +1,8 @@
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
 import '../../../../core/design/design.dart';
+import '../../../cases/domain/case_connection.dart';
 import '../../../cases/domain/true_crime_case.dart';
 import '../../../cases/presentation/design/case_design_mapping.dart';
 import 'portada_carousel_controller.dart';
@@ -20,6 +22,7 @@ class PortadaHero extends StatefulWidget {
     required this.allCases,
     required this.onOpenCase,
     this.onExploreCase,
+    this.connections = const [],
     this.initialIndex = 0,
   });
 
@@ -28,6 +31,9 @@ class PortadaHero extends StatefulWidget {
 
   /// Todos los casos: son los marcadores del globo.
   final List<TrueCrimeCase> allCases;
+
+  /// Conexiones entre casos del catálogo publicado.
+  final List<CaseConnection> connections;
   final int initialIndex;
   final ValueChanged<TrueCrimeCase> onOpenCase;
 
@@ -108,6 +114,17 @@ class _PortadaHeroState extends State<PortadaHero>
   static List<DsMapMarker> _markersOf(List<TrueCrimeCase> cases) => [
     for (final crimeCase in cases) crimeCase.toMapMarker(),
   ];
+
+  int _connectionCount(String id) {
+    final published = widget.allCases.map((crimeCase) => crimeCase.id).toSet();
+    if (!published.contains(id)) return 0;
+    return widget.connections
+        .map((connection) => connection.otherId(id))
+        .whereType<String>()
+        .where((other) => other != id && published.contains(other))
+        .toSet()
+        .length;
+  }
 
   void _handleSlideChanged() => setState(_syncSlide);
 
@@ -205,6 +222,21 @@ class _PortadaHeroState extends State<PortadaHero>
         canRequestFocus: false,
         skipTraversal: true,
         onFocusChange: _setFocused,
+        onKeyEvent: (node, event) {
+          if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+            return KeyEventResult.ignored;
+          }
+          if (featured.length < 2) return KeyEventResult.ignored;
+          if (event.logicalKey == LogicalKeyboardKey.arrowRight) {
+            _carousel.next();
+            return KeyEventResult.handled;
+          }
+          if (event.logicalKey == LogicalKeyboardKey.arrowLeft) {
+            _carousel.select((_carousel.index - 1 + featured.length) % featured.length);
+            return KeyEventResult.handled;
+          }
+          return KeyEventResult.ignored;
+        },
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -232,6 +264,7 @@ class _PortadaHeroState extends State<PortadaHero>
                     motion: motion,
                     position: i + 1,
                     count: featured.length,
+                    connectionCount: _connectionCount(featured[i].id),
                     onOpen: () => widget.onOpenCase(featured[i]),
                     onExplore: widget.onExploreCase == null
                         ? null

@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../app/navigation/app_navigation.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../home/presentation/widgets/situation/case_dossier_content.dart';
 import '../../home/presentation/widgets/situation/situation_styles.dart';
 import '../application/cases_providers.dart';
 import '../domain/true_crime_case.dart';
+import 'dossier/dossier_body.dart';
+import 'dossier/dossier_body_footer.dart';
+import 'dossier/dossier_facts.dart';
+import 'dossier/dossier_hero.dart';
+import 'dossier/dossier_map_band.dart';
 
 /// Página pública de un expediente, la que vive en su propia URL
 /// [spec: expanded-case-dossier].
@@ -17,9 +21,8 @@ import '../domain/true_crime_case.dart';
 /// que le hemos borrado el caso cuando lo único que pasó es que el archivo no
 /// se pudo leer [diseño D10].
 ///
-/// El expediente en sí lo pinta [CaseDossierContent], el mismo renderizador que
-/// el panel compacto. Esta página no reimplementa ningún bloque editorial: pone
-/// la caja, el ancho de lectura y las acciones propias de estar en una URL.
+/// La página pública compone las secciones cinematográficas del expediente;
+/// la vista previa compacta mantiene su propio renderizador.
 class CaseDetailPage extends ConsumerWidget {
   const CaseDetailPage({
     super.key,
@@ -32,9 +35,6 @@ class CaseDetailPage extends ConsumerWidget {
   /// Se inyecta el contrato, no el controlador: la página puede pedir ir a un
   /// sitio, no husmear en qué ruta está.
   final AppNavigation navigation;
-
-  /// Ancho de lectura. Una columna de prosa a 1600px no se lee, se escanea.
-  static const _readingWidth = 760.0;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,7 +78,7 @@ class CaseDetailPage extends ConsumerWidget {
   }
 }
 
-/// El expediente encontrado, dentro de su propio scroll y ancho de lectura.
+/// El expediente encontrado, dentro de su propio scroll.
 class _Dossier extends ConsumerWidget {
   const _Dossier({required this.crimeCase, required this.navigation});
 
@@ -87,20 +87,39 @@ class _Dossier extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final cases = ref.watch(casesProvider).value ?? const <TrueCrimeCase>[];
+    final connections = ref.watch(caseConnectionsProvider);
+    final related = ref.watch(relatedCasesProvider(crimeCase.id));
+    final wide = MediaQuery.sizeOf(context).width >= 1200;
     return SingleChildScrollView(
-      child: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(
-            maxWidth: CaseDetailPage._readingWidth,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          DossierHero(crimeCase: crimeCase),
+          Transform.translate(
+            offset: const Offset(0, -DossierHero.factsOverlap),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: wide ? 80 : 20),
+              child: DossierFacts(
+                crimeCase: crimeCase,
+                connectionsCount: related.length,
+              ),
+            ),
           ),
-          child: CaseDossierContent(
+          DossierMapBand(
+            key: ValueKey(crimeCase.id),
+            dossierCase: crimeCase,
+            cases: cases,
+            connections: connections,
+            onOpenCase: navigation.openCase,
+          ),
+          DossierBody(
             crimeCase: crimeCase,
-            relatedCases: ref.watch(relatedCasesProvider(crimeCase.id)),
-            presentation: DossierPresentation.expanded,
-            // Se navega por SLUG, no por id: es la dirección pública del caso.
-            onOpenRelatedCase: (related) => navigation.openCase(related.slug),
+            relatedCases: related,
+            onOpenRelatedCase: (relatedCase) => navigation.openCase(relatedCase.slug),
           ),
-        ),
+          const DossierFooter(),
+        ],
       ),
     );
   }

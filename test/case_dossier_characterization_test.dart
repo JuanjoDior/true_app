@@ -12,6 +12,11 @@ import 'package:true_app/features/cases/domain/case_source.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/case_timeline_event.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_body.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_facts.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_hero.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_map_band.dart';
+import 'package:true_app/features/cases/presentation/intake/intake_preview_dossier.dart';
 import 'package:true_app/features/cases/presentation/intake/intake_preview_panel.dart';
 import 'package:true_app/features/home/presentation/widgets/situation/case_dossier_panel.dart';
 
@@ -352,35 +357,44 @@ void main() {
   });
 
   group('la previsualización de intake hospeda el mismo expediente', () {
-    testWidgets('an editing draft is previewed through CaseDossierPanel', (
-      tester,
-    ) async {
-      final container = ProviderContainer(
-        overrides: [
-          casesRepositoryProvider.overrideWithValue(
-            const FakeCasesRepository([]),
-          ),
-          caseDraftsStoreProvider.overrideWithValue(
-            _SingleDraftStore(const CaseDraft(draftId: 'draft-a')),
-          ),
-        ],
-      );
-      addTearDown(container.dispose);
-      await container.read(caseDraftsProvider.future);
-      container.read(editingDraftIdProvider.notifier).state = 'draft-a';
+    testWidgets(
+      'an editing draft is previewed through the public dossier components',
+      (tester) async {
+        final container = ProviderContainer(
+          overrides: [
+            casesRepositoryProvider.overrideWithValue(
+              const FakeCasesRepository([]),
+            ),
+            caseDraftsStoreProvider.overrideWithValue(
+              _SingleDraftStore(const CaseDraft(draftId: 'draft-a')),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
+        await container.read(caseDraftsProvider.future);
+        container.read(editingDraftIdProvider.notifier).state = 'draft-a';
 
-      await tester.pumpWidget(
-        UncontrolledProviderScope(
-          container: container,
-          child: const MaterialApp(home: Scaffold(body: IntakePreviewPanel())),
-        ),
-      );
-      await tester.pump();
+        await tester.pumpWidget(
+          UncontrolledProviderScope(
+            container: container,
+            child: const MaterialApp(
+              home: Scaffold(body: IntakePreviewPanel()),
+            ),
+          ),
+        );
+        await tester.pump();
 
-      // El contrato que la Unit 4c no puede romper: la previsualización no
-      // tiene su propio renderizador, hospeda el del expediente.
-      expect(find.byType(CaseDossierPanel), findsOneWidget);
-    });
+        // El contrato que la Unit 4c no puede romper: la previsualización no
+        // tiene su propio renderizador, hospeda el del expediente. Por la
+        // decisión L9 hospeda el expediente nuevo de la página pública.
+        expect(find.byType(IntakePreviewDossier), findsOneWidget);
+        expect(find.byType(DossierHero), findsOneWidget);
+        expect(find.byType(DossierFacts), findsOneWidget);
+        expect(find.byType(DossierMapBand), findsOneWidget);
+        expect(find.byType(DossierBody), findsOneWidget);
+        expect(find.byType(CaseDossierPanel), findsNothing);
+      },
+    );
 
     testWidgets('without an editing draft it invites to pick one', (
       tester,

@@ -13,30 +13,16 @@ import '../../../../cases/presentation/case_status_presentation.dart';
 import 'dossier_source_group.dart';
 import 'situation_styles.dart';
 
-/// Cómo se dispone el expediente.
+/// Renderizado compacto del expediente, con cabecera fija y cuerpo desplazable.
+/// Exige una altura acotada para estirar el cuerpo.
 ///
-/// - [compact] es el panel de siempre: cabecera fija y cuerpo con su propio
-///   scroll. Exige una altura acotada, porque el cuerpo se estira para
-///   llenarla.
-/// - [expanded] devuelve el mismo contenido en un flujo continuo, sin scroll
-///   propio ni altura exigida, para que una página lo componga dentro del
-///   suyo. Mismo contenido, distinta caja.
-enum DossierPresentation { compact, expanded }
-
-/// Renderizado del expediente: cabecera, métricas, resumen, capítulos,
-/// fotografías, cronología, fuentes y casos relacionados.
-///
-/// **No lee ni escribe estado.** Recibe los casos relacionados ya resueltos y
-/// devuelve las acciones por callback, así que no depende de Riverpod ni del
-/// mapa. Eso es lo que permite que la Sala de Situación y la futura página de
-/// detalle ampliada compartan un único renderizador en vez de duplicarlo
-/// [diseño D7]: el host pone el estado, el contenido pone los píxeles.
+/// No lee ni escribe estado: recibe los casos relacionados ya resueltos y
+/// devuelve las acciones por callback.
 class CaseDossierContent extends StatelessWidget {
   const CaseDossierContent({
     super.key,
     required this.crimeCase,
     required this.relatedCases,
-    this.presentation = DossierPresentation.compact,
     this.onOpenRelatedCase,
     this.sourceGroups,
   });
@@ -45,8 +31,6 @@ class CaseDossierContent extends StatelessWidget {
 
   /// Casos relacionados ya resueltos por el host.
   final List<RelatedCase> relatedCases;
-
-  final DossierPresentation presentation;
 
   /// Abrir el caso relacionado que se pasa. Se entrega el caso entero, no su
   /// id, porque el host ya lo tiene delante y volver a buscarlo sería trabajo
@@ -76,26 +60,11 @@ class CaseDossierContent extends StatelessWidget {
       child: _body(),
     );
 
-    // Mismo contenido, distinta caja. El panel compacto envuelve el cuerpo en
-    // su propio scroll y se estira para llenar la altura que le den; la página
-    // ampliada devuelve un flujo continuo y deja que sea ella quien desplace,
-    // porque dentro de un scroll no cabe otro que exija altura infinita.
-    return switch (presentation) {
-      DossierPresentation.compact => Column(
-        key: const Key('detail-panel'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          header,
-          Expanded(child: SingleChildScrollView(child: body)),
-        ],
-      ),
-      DossierPresentation.expanded => Column(
-        key: const Key('detail-panel'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [header, body],
-      ),
-    };
+    return Column(
+      key: const Key('detail-panel'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [header, Expanded(child: SingleChildScrollView(child: body))],
+    );
   }
 
   Widget _body() {

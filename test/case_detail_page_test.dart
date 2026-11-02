@@ -10,6 +10,9 @@ import 'package:true_app/features/cases/domain/case_connection.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
 import 'package:true_app/features/cases/presentation/case_detail_page.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_hero_keys.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_map_keys.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_related.dart';
 
 /// La página pública del expediente [spec: expanded-case-dossier].
 ///
@@ -102,6 +105,10 @@ Future<_RecordingNavigation> _pumpDetail(
         caseConnectionsProvider.overrideWithValue(connections),
       ],
       child: MaterialApp(
+        builder: (context, child) => MediaQuery(
+          data: MediaQuery.of(context).copyWith(disableAnimations: true),
+          child: child!,
+        ),
         home: CaseDetailPage(slug: slug, navigation: navigation),
       ),
     ),
@@ -249,10 +256,23 @@ void main() {
   });
 
   group('caso encontrado', () {
+    testWidgets('composes the cinematic dossier sections', (tester) async {
+      await _pumpDetail(tester, slug: 'known-case');
+
+      expect(find.byKey(const Key('dossier-map-band')), findsOneWidget);
+      expect(find.byKey(const Key('dossier-detail-panel')), findsOneWidget);
+      expect(find.byKey(const Key('dossier-footer')), findsOneWidget);
+      expect(find.text('UBICACIÓN'), findsOneWidget);
+    });
+
     testWidgets('renders the case title', (tester) async {
       await _pumpDetail(tester, slug: 'known-case');
 
-      expect(find.text('El caso del faro'), findsOneWidget);
+      expect(find.byKey(DossierHeroKeys.title), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(DossierHeroKeys.title)).data,
+        'El caso del faro',
+      );
     });
 
     testWidgets('renders its summary through the shared content', (
@@ -295,7 +315,7 @@ void main() {
     ) async {
       await _pumpDetail(tester, slug: 'known-case');
 
-      expect(find.text('El caso del faro'), findsOneWidget);
+      expect(find.byKey(DossierHeroKeys.title), findsOneWidget);
     });
 
     testWidgets('shows no map chrome', (tester) async {
@@ -339,12 +359,61 @@ void main() {
         ],
       );
 
-      await tester.tap(find.text('El caso Somerton'));
+      final poster = find.byKey(DossierRelatedKeys.poster('otro'));
+      await _dragUntilVisible(tester, poster, viewportHeight: 2400);
+      await tester.tap(poster);
       await tester.pump();
 
       // Por SLUG, no por id: la URL pública es la del slug.
       expect(navigation.opened, orderedEquals(const ['somerton']));
     });
+  });
+
+  testWidgets('map focuses a published connection and opens its slug', (
+    tester,
+  ) async {
+    final navigation = await _pumpDetail(
+      tester,
+      slug: 'known-case',
+      repository: _StubRepository([
+        _crimeCase(),
+        _crimeCase(id: 'otro', slug: 'somerton', title: 'El caso Somerton'),
+      ]),
+      connections: const [
+        CaseConnection(aId: 'legacy-7', bId: 'otro', relation: 'Misma comarca'),
+        CaseConnection(aId: 'legacy-7', bId: 'draft', relation: 'No publicado'),
+      ],
+    );
+    expect(find.text('No publicado'), findsNothing);
+    expect(find.byKey(DossierMapKeys.openCase), findsNothing);
+    await tester.tap(find.byKey(DossierMapKeys.connectedCase('otro')));
+    await tester.pump();
+    await tester.tap(find.byKey(DossierMapKeys.openCase));
+    expect(navigation.opened, ['somerton']);
+  });
+
+  testWidgets('dragging on the map scrolls while return stays fixed', (
+    tester,
+  ) async {
+    final navigation = await _pumpDetail(
+      tester,
+      slug: 'known-case',
+      size: const Size(360, 780),
+    );
+    final returnButton = find.byKey(const Key('case-detail-return'));
+    final top = tester.getTopLeft(returnButton).dy;
+    await tester.dragFrom(const Offset(180, 650), const Offset(0, -500));
+    await tester.pump();
+    final position = tester
+        .state<ScrollableState>(find.byType(Scrollable).first)
+        .position;
+    final before = position.pixels;
+    await tester.dragFrom(const Offset(340, 600), const Offset(0, -250));
+    await tester.pump();
+    expect(position.pixels, greaterThan(before));
+    expect(tester.getTopLeft(returnButton).dy, top);
+    await tester.tap(returnButton);
+    expect(navigation.returns, 1);
   });
 
   group('lectura en cualquier pantalla', () {
@@ -483,7 +552,7 @@ void main() {
       // Una columna de prosa a 1440px se escanea, no se lee. El ancho de
       // lectura es una decisión, y sin este test se perdería en silencio.
       expect(
-        tester.getSize(find.byKey(const Key('detail-panel'))).width,
+        tester.getSize(find.byKey(const Key('dossier-detail-panel'))).width,
         lessThan(desktop.width),
       );
     });

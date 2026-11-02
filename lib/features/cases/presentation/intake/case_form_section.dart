@@ -13,9 +13,21 @@ import 'sections/timeline_section.dart';
 /// ubicaciones) es sumar una entrada aquí, sin tocar las existentes ni el
 /// esquema de export (diseño #6).
 class CaseFormSection {
-  const CaseFormSection({required this.title, required this.builder});
+  const CaseFormSection({
+    required this.title,
+    required this.builder,
+    this.optional = false,
+    this.navLabel,
+  });
 
   final String title;
+
+  /// Las secciones opcionales se rotulan así en el editor; el resto aporta
+  /// campos obligatorios para validar el borrador.
+  final bool optional;
+
+  /// Texto corto para la navegación entre secciones; por defecto, [title].
+  final String? navLabel;
   final WidgetBuilder builder;
 }
 
@@ -31,19 +43,28 @@ final List<CaseFormSection> kCaseFormSections = <CaseFormSection>[
   ),
   CaseFormSection(
     title: 'Resumen y ficha',
+    navLabel: 'Resumen',
+    optional: true,
     builder: (context) => const SummarySection(),
   ),
   CaseFormSection(
     title: 'Cronología',
+    optional: true,
     builder: (context) => const TimelineSection(),
   ),
-  CaseFormSection(title: 'Enlaces', builder: (context) => const LinksSection()),
+  CaseFormSection(
+    title: 'Enlaces',
+    optional: true,
+    builder: (context) => const LinksSection(),
+  ),
   CaseFormSection(
     title: 'Fotografías',
+    optional: true,
     builder: (context) => const PhotosSection(),
   ),
   CaseFormSection(
     title: 'Capítulos',
+    optional: true,
     builder: (context) => const ChaptersSection(),
   ),
 ];

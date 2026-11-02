@@ -82,8 +82,15 @@ List<String> _visibleTexts(WidgetTester tester, Set<String> wanted) {
 }
 
 void main() {
-  testWidgets('groups preview links by their typed kind', (tester) async {
+  testWidgets('lists the draft links as cited sources in kind order', (
+    tester,
+  ) async {
     await _pumpPreview(tester, const [
+      DraftLink(
+        title: 'Documental',
+        url: 'https://example.com/doc',
+        kind: DraftLinkKind.video,
+      ),
       DraftLink(
         title: 'Serial',
         url: 'https://example.com/serial',
@@ -94,6 +101,61 @@ void main() {
         url: 'https://example.com/crimen',
         kind: DraftLinkKind.podcast,
       ),
+    ]);
+
+    // El expediente nuevo lista las fuentes en una sola columna, con el tipo
+    // en cada tarjeta; el orden sigue siendo el de los tipos declarados.
+    expect(
+      _visibleTexts(tester, {
+        'FUENTES CITADAS · 3',
+        'Serial',
+        'Crimen en el bosque',
+        'Documental',
+      }),
+      orderedEquals(const [
+        'FUENTES CITADAS · 3',
+        'Serial',
+        'Crimen en el bosque',
+        'Documental',
+      ]),
+    );
+  });
+
+  testWidgets('shows unset and "other" links once each, never as a podcast', (
+    tester,
+  ) async {
+    await _pumpPreview(tester, const [
+      DraftLink(title: 'Sin tipo', url: 'https://example.com/a'),
+      DraftLink(
+        title: 'Marcado como otro',
+        url: 'https://example.com/b',
+        kind: DraftLinkKind.other,
+      ),
+    ]);
+
+    expect(
+      _visibleTexts(tester, {
+        'FUENTES CITADAS · 2',
+        'PODCAST',
+        'INVESTIGACIÓN',
+        'Sin tipo',
+        'Marcado como otro',
+      }),
+      orderedEquals(const [
+        'FUENTES CITADAS · 2',
+        'INVESTIGACIÓN',
+        'Sin tipo',
+        'INVESTIGACIÓN',
+        'Marcado como otro',
+      ]),
+    );
+    expect(find.text('PODCAST'), findsNothing);
+  });
+
+  testWidgets('a video link shows its kind label, not the podcast one', (
+    tester,
+  ) async {
+    await _pumpPreview(tester, const [
       DraftLink(
         title: 'Documental',
         url: 'https://example.com/doc',
@@ -101,58 +163,33 @@ void main() {
       ),
     ]);
 
-    // Los dos podcasts quedan entre su encabezado y el siguiente; el vídeo,
-    // detrás del suyo. Eso ES el agrupamiento.
+    // El dominio de fuentes sólo distingue podcast e investigación: un vídeo
+    // se cita como «Investigación» y nunca como «Podcast».
     expect(
-      _visibleTexts(tester, {
-        'PODCAST',
-        'Serial',
-        'Crimen en el bosque',
-        'VÍDEO',
-        'Documental',
-      }),
-      orderedEquals(const [
-        'PODCAST',
-        'Serial',
-        'Crimen en el bosque',
-        'VÍDEO',
-        'Documental',
-      ]),
+      _visibleTexts(tester, {'PODCAST', 'INVESTIGACIÓN', 'Documental'}),
+      orderedEquals(const ['INVESTIGACIÓN', 'Documental']),
     );
   });
 
-  testWidgets(
-    'groups unset and "other" links under a single unclassified group',
-    (tester) async {
-      await _pumpPreview(tester, const [
-        DraftLink(title: 'Sin tipo', url: 'https://example.com/a'),
-        DraftLink(
-          title: 'Marcado como otro',
-          url: 'https://example.com/b',
-          kind: DraftLinkKind.other,
-        ),
-      ]);
-
-      // Un solo encabezado para los dos, y dice "Sin clasificar" y no "Otro".
-      expect(
-        _visibleTexts(tester, {
-          'SIN CLASIFICAR',
-          'OTRO',
-          'Sin tipo',
-          'Marcado como otro',
-        }),
-        orderedEquals(const [
-          'SIN CLASIFICAR',
-          'Sin tipo',
-          'Marcado como otro',
-        ]),
-      );
-    },
-  );
-
-  testWidgets('a single link still gets its own group heading', (
+  testWidgets('a link repeated in the draft is cited only once', (
     tester,
   ) async {
+    await _pumpPreview(tester, const [
+      DraftLink(title: 'Serial', url: 'https://example.com/serial'),
+      DraftLink(title: 'Serial otra vez', url: 'https://example.com/serial'),
+    ]);
+
+    expect(
+      _visibleTexts(tester, {
+        'FUENTES CITADAS · 1',
+        'Serial',
+        'Serial otra vez',
+      }),
+      orderedEquals(const ['FUENTES CITADAS · 1', 'Serial']),
+    );
+  });
+
+  testWidgets('a single link is still cited as a source', (tester) async {
     await _pumpPreview(tester, const [
       DraftLink(
         title: 'Serial',
@@ -161,11 +198,11 @@ void main() {
       ),
     ]);
 
-    // Gemelo de presencia del test de abajo: sin él, "no se pinta ningún
-    // grupo nunca" pasaría el caso vacío sin probar nada.
+    // Gemelo de presencia del test de abajo: sin él, "no se pinta ninguna
+    // fuente nunca" pasaría el caso vacío sin probar nada.
     expect(
-      _visibleTexts(tester, {'PODCAST'}),
-      orderedEquals(const ['PODCAST']),
+      _visibleTexts(tester, {'FUENTES CITADAS · 1', 'PODCAST'}),
+      orderedEquals(const ['FUENTES CITADAS · 1', 'PODCAST']),
     );
   });
 
@@ -178,6 +215,7 @@ void main() {
       _visibleTexts(tester, {
         for (final kind in DraftLinkKind.values) kind.label.toUpperCase(),
         'SIN CLASIFICAR',
+        'FUENTES CITADAS · 0',
       }),
       isEmpty,
     );
@@ -186,9 +224,8 @@ void main() {
   testWidgets('the preview shows no map chrome', (tester) async {
     await _pumpPreview(tester, const []);
 
-    // La cadena completa: IntakePreviewPanel → CaseDossierPanel →
-    // CaseDossierContent. El expediente ya no tiene cromo de mapa, así que
-    // nada de él puede aparecer dentro del formulario de intake.
+    // El expediente ya no tiene cromo de mapa de la sala de situación, así
+    // que nada de él puede aparecer dentro del formulario de intake.
     expect(find.text('VOLVER AL MAPA'), findsNothing);
   });
 

@@ -14,6 +14,7 @@ import 'package:true_app/features/cases/domain/case_photo.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/resolved_place.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_hero_keys.dart';
 import 'package:true_app/features/cases/presentation/intake/case_form_section.dart';
 import 'package:true_app/features/cases/presentation/intake/intake_workspace_screen.dart';
 import 'package:true_app/features/home/presentation/widgets/situation/case_dossier_panel.dart';
@@ -153,13 +154,20 @@ void main() {
         );
 
         final form = find.byKey(const Key('intake-form-column'));
+        // El editor lleva además una barra de pastillas con scroll horizontal:
+        // el que se arrastra es el vertical de las tarjetas.
         final scrollable = find
-            .descendant(of: form, matching: find.byType(Scrollable))
+            .descendant(
+              of: find.byKey(const Key('intake-editor-scroll')),
+              matching: find.byType(Scrollable),
+            )
             .first;
         expect(scrollable, findsOneWidget);
 
-        Finder headerOf(String title) =>
-            find.descendant(of: form, matching: find.text(title.toUpperCase()));
+        Finder headerOf(String title) => find.descendant(
+          of: find.byKey(const Key('intake-editor-scroll')),
+          matching: find.text(title),
+        );
 
         for (final title in _expectedCaseFormSectionTitles) {
           expect(headerOf(title), findsOneWidget);
@@ -316,12 +324,18 @@ void main() {
         // La hoja sigue abierta: no se cerró y volvió a abrir para reflejar
         // el cambio [Requirement: Live Preview Behind an Open Sheet].
         expect(find.byKey(const Key('intake-preview-sheet')), findsOneWidget);
+        // El expediente de la vista previa es el nuevo: su título es el de la
+        // cabecera, dentro de la hoja.
         expect(
           find.descendant(
-            of: find.byKey(const Key('detail-panel')),
-            matching: find.text('Título en vivo'),
+            of: find.byKey(const Key('intake-preview-sheet')),
+            matching: find.byKey(DossierHeroKeys.title),
           ),
           findsOneWidget,
+        );
+        expect(
+          tester.widget<Text>(find.byKey(DossierHeroKeys.title)).data,
+          'Título en vivo',
         );
       },
     );

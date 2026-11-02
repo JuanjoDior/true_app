@@ -7,6 +7,7 @@ import '../../../core/theme/app_theme.dart';
 import '../../home/presentation/widgets/situation/situation_styles.dart';
 import '../application/cases_providers.dart';
 import '../domain/true_crime_case.dart';
+import '../domain/case_category.dart';
 import 'case_category_presentation.dart';
 
 /// Abre el directorio del archivo sobre lo que haya en pantalla.
@@ -14,7 +15,14 @@ import 'case_category_presentation.dart';
 /// Es una capa superpuesta y no una ruta: entrar y salir del índice no debería
 /// dejar rastro en el historial del navegador ni cambiar la dirección. Lo que
 /// sí cambia la ruta es abrir un caso desde él.
-Future<void> showCaseDirectory(BuildContext context, AppNavigation navigation) {
+/// [initialDecade] es el primer año de una década; ambos filtros, si se
+/// proporcionan, se aplican juntos y solo afectan a esta hoja.
+Future<void> showCaseDirectory(
+  BuildContext context,
+  AppNavigation navigation, {
+  CaseCategory? initialCategory,
+  int? initialDecade,
+}) {
   final isCompact = MediaQuery.sizeOf(context).width < Breakpoints.sidePanel;
 
   return showModalBottomSheet<void>(
@@ -23,6 +31,8 @@ Future<void> showCaseDirectory(BuildContext context, AppNavigation navigation) {
     isScrollControlled: true,
     builder: (sheetContext) {
       final content = _CaseDirectory(
+        category: initialCategory,
+        decade: initialDecade,
         onOpenCase: (slug) {
           // Se cierra primero: dejar el índice abierto detrás de la ficha haría
           // que volver del caso aterrizara en una hoja que ya no viene a cuento.
@@ -58,8 +68,15 @@ Future<void> showCaseDirectory(BuildContext context, AppNavigation navigation) {
 }
 
 class _CaseDirectory extends ConsumerWidget {
-  const _CaseDirectory({required this.onOpenCase, required this.onClose});
+  const _CaseDirectory({
+    required this.onOpenCase,
+    required this.onClose,
+    this.category,
+    this.decade,
+  });
 
+  final CaseCategory? category;
+  final int? decade;
   final ValueChanged<String> onOpenCase;
   final VoidCallback onClose;
 
@@ -79,6 +96,17 @@ class _CaseDirectory extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           _DirectoryHeader(onClose: onClose),
+          if (category != null || decade != null)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20, 0, 20, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (category != null) Text(category!.presentation.label),
+                  if (decade != null) Text('Década de $decade'),
+                ],
+              ),
+            ),
           Flexible(
             child: directory.when(
               loading: () => const Padding(
@@ -91,20 +119,34 @@ class _CaseDirectory extends ConsumerWidget {
                 messageKey: Key('case-directory-error'),
                 text: 'No se pudo leer el archivo. Inténtalo en un momento.',
               ),
-              data: (cases) => cases.isEmpty
-                  ? const _DirectoryMessage(
-                      messageKey: Key('case-directory-empty'),
-                      text: 'Todavía no hay expedientes publicados.',
-                    )
-                  : ListView.builder(
-                      shrinkWrap: true,
-                      padding: const EdgeInsets.only(bottom: 12),
-                      itemCount: cases.length,
-                      itemBuilder: (context, index) => _DirectoryRow(
-                        crimeCase: cases[index],
-                        onTap: () => onOpenCase(cases[index].slug),
-                      ),
-                    ),
+              data: (cases) {
+                if (cases.isEmpty) {
+                  return const _DirectoryMessage(
+                    messageKey: Key('case-directory-empty'),
+                    text: 'Todavía no hay expedientes publicados.',
+                  );
+                }
+                final visible = cases.where((crimeCase) =>
+                    (category == null || crimeCase.category == category) &&
+                    (decade == null ||
+                        (crimeCase.year >= decade! && crimeCase.year < decade! + 10)))
+                    .toList(growable: false);
+                if (visible.isEmpty) {
+                  return const _DirectoryMessage(
+                    messageKey: Key('case-directory-filter-empty'),
+                    text: 'No hay expedientes para este filtro.',
+                  );
+                }
+                return ListView.builder(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.only(bottom: 12),
+                  itemCount: visible.length,
+                  itemBuilder: (context, index) => _DirectoryRow(
+                    crimeCase: visible[index],
+                    onTap: () => onOpenCase(visible[index].slug),
+                  ),
+                );
+              },
             ),
           ),
         ],

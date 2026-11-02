@@ -9,6 +9,7 @@ import 'package:true_app/features/cases/domain/case_category.dart';
 import 'package:true_app/features/cases/domain/case_status.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
 import 'package:true_app/features/cases/presentation/case_detail_page.dart';
+import 'package:true_app/features/cases/presentation/dossier/dossier_hero_keys.dart';
 import 'package:true_app/features/cases/presentation/intake/intake_workspace_screen.dart';
 import 'package:true_app/features/home/presentation/home_page.dart';
 import 'test_support/fake_intake_auth.dart';
@@ -179,7 +180,10 @@ void main() {
     testWidgets('a case deep link shows the case itself', (tester) async {
       await _pumpApp(tester, location: '/casos/known-case');
 
-      expect(find.text('El caso del faro'), findsOneWidget);
+      expect(
+        tester.widget<Text>(find.byKey(DossierHeroKeys.title)).data,
+        'El caso del faro',
+      );
     });
 
     testWidgets('an unknown route shows the not-found page', (tester) async {

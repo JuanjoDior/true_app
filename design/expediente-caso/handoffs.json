@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "chosen": "01-mapa-protagonista.html",
+  "handoffs": {
+    "01-mapa-protagonista.html": {
+      "status": "sent",
+      "queued": false,
+      "sentAt": "2026-10-31T08:33:01.313Z",
+      "startedAt": null,
+      "implementedAt": null,
+      "feature": "odd/tasks/cinematic-design-system.md"
+    }
+  }
+}

@@ -12,7 +12,11 @@ import 'package:true_app/features/cases/data/cases_repository.dart';
 import 'package:true_app/features/cases/domain/true_crime_case.dart';
 import 'package:true_app/features/cases/presentation/intake/intake_workspace_screen.dart';
 import 'package:true_app/features/home/presentation/home_page.dart';
+import 'package:true_app/features/home/presentation/portada/portada_categories.dart';
 import 'package:true_app/features/home/presentation/portada/portada_closing_keys.dart';
+import 'package:true_app/features/home/presentation/portada/portada_connections.dart';
+import 'package:true_app/features/home/presentation/portada/portada_decades.dart';
+import 'package:true_app/features/home/presentation/portada/portada_figures.dart';
 import 'package:true_app/features/home/presentation/portada/portada_footer.dart';
 import 'package:true_app/features/home/presentation/portada/portada_hero.dart';
 import 'package:true_app/features/home/presentation/portada/portada_map_invite.dart';
@@ -116,13 +120,13 @@ Future<_Pumped> _pumpHome(
 
 Finder _shell(Key key) => find.byKey(key);
 
-// El explorador del mapa llega en F5: hasta entonces la portada no ofrece
-// ninguna entrada a él, pero la invitación sigue como sección decorativa.
+// Hasta F5 se ocultan tanto las entradas al mapa como la invitación.
 Future<void> _expectNoMapEntryPoints(
   WidgetTester tester, {
   required Key navigationBar,
 }) async {
   expect(find.text('Mapa'), findsNothing);
+  expect(find.text('Globo'), findsNothing);
   expect(_shell(PortadaShellKeys.topBarMap), findsNothing);
   expect(_shell(PortadaShellKeys.bottomBarMap), findsNothing);
   expect(_shell(PortadaShellKeys.searchField), findsNothing);
@@ -138,17 +142,14 @@ Future<void> _expectNoMapEntryPoints(
     );
   }
 
-  final invite = find.byType(PortadaMapInvite);
-  expect(invite, findsOneWidget);
-  await tester.ensureVisible(invite);
-  await tester.pump();
-  expect(find.text('El archivo, punto por punto'), findsOneWidget);
+  expect(find.byType(PortadaMapInvite), findsNothing);
+  expect(find.text('El archivo, punto por punto'), findsNothing);
   expect(find.text('Abrir el mapa'), findsNothing);
 }
 
 void main() {
   group('portada', () {
-    testWidgets('shows hero, unsolved row, map invite and footer in order', (
+    testWidgets('shows the artboard sections in order without a map invite', (
       tester,
     ) async {
       await _pumpHome(tester);
@@ -156,14 +157,19 @@ void main() {
       final tops = [
         for (final type in [
           PortadaHero,
+          PortadaFigures,
           PortadaUnsolvedRow,
-          PortadaMapInvite,
+          PortadaCategories,
+          PortadaDecades,
+          PortadaConnections,
           PortadaFooter,
         ])
           tester.getTopLeft(find.byType(type)).dy,
       ];
       expect(tops, orderedEquals([...tops]..sort()));
-      expect(tops.toSet(), hasLength(4));
+      // The connections section can be empty for a catalog without curated pairs.
+      expect(tops.take(6).toSet(), hasLength(6));
+      expect(find.byType(PortadaMapInvite), findsNothing);
     });
 
     testWidgets('the top bar offers the logo and the links', (tester) async {
@@ -204,20 +210,18 @@ void main() {
       expect(_shell(PortadaShellKeys.bottomBar), findsNothing);
     });
 
-    testWidgets('passes the provider list itself to the map invite', (
-      tester,
-    ) async {
+    testWidgets('passes the provider list itself to the hero', (tester) async {
       final pumped = await _pumpHome(tester);
       final loaded = pumped.container.read(casesProvider).requireValue;
 
-      PortadaMapInvite invite() =>
-          tester.widget<PortadaMapInvite>(find.byType(PortadaMapInvite));
-      expect(identical(invite().cases, loaded), isTrue);
+      PortadaHero hero() =>
+          tester.widget<PortadaHero>(find.byType(PortadaHero));
+      expect(identical(hero().allCases, loaded), isTrue);
 
       // Un rebuild del shell no debe fabricar otra lista.
       tester.view.physicalSize = const Size(1500, 900);
       await tester.pump();
-      expect(identical(invite().cases, loaded), isTrue);
+      expect(identical(hero().allCases, loaded), isTrue);
     });
   });
 
